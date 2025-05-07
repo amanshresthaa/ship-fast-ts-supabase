@@ -1,0 +1,25 @@
+import Link from 'next/link';
+
+const QuizCTA = () => {
+  return (
+    <section className="py-12 md:py-20 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+      <div className="container mx-auto px-6 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          Up for a Challenge? Test Your Skills!
+        </h2>
+        <p className="mb-8 text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
+          Our brand new interactive quizzes are here! Start with our engaging Single Selection questions
+          and prove your expertise. More question types are on the way. Dare to see your score?
+        </p>
+        <Link
+          href="/quiz-test/azure-a102" // Assuming 'azure-a102' is a valid quiz ID
+          className="inline-block bg-white hover:bg-gray-100 text-purple-700 font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+        >
+          Take the Challenge!
+        </Link>
+      </div>
+    </section>
+  );
+};
+
+export default QuizCTA; 
