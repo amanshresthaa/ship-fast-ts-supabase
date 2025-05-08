@@ -2,7 +2,7 @@
 
 import React, { createContext, useReducer, useContext, ReactNode, Dispatch } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js'; // Import Supabase client
-import { AnyQuestion, Quiz, BaseQuestion } from '../types/quiz'; // Added BaseQuestion
+import { AnyQuestion, Quiz, BaseQuestion, QuestionType, SingleSelectionQuestion } from '../types/quiz'; // Added BaseQuestion, QuestionType, SingleSelectionQuestion
 
 // Define structure for storing answers
 export interface UserAnswer {
@@ -45,7 +45,16 @@ export type QuizAction =
   | { type: 'LOAD_QUIZ_START' }
   | { type: 'LOAD_QUIZ_SUCCESS'; payload: Quiz }
   | { type: 'LOAD_QUIZ_FAILURE'; payload: string }
-  | { type: 'SUBMIT_ANSWER'; payload: { questionId: string; answer: any; } } // Answer submitted, awaiting validation
+  | { 
+      type: 'SUBMIT_ANSWER'; 
+      payload: { 
+        questionId: string; 
+        answer: any; 
+        questionType: QuestionType; 
+        // For single_selection, provide its correct answer ID for immediate client-side validation
+        correctAnswerOptionId?: string; 
+      }
+    }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
   | { type: 'NEXT_QUESTION' }
   | { type: 'PREVIOUS_QUESTION' } // Added for navigation
@@ -80,33 +89,43 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
     case 'LOAD_QUIZ_FAILURE':
       return { ...state, isLoading: false, error: action.payload };
     
-    case 'SUBMIT_ANSWER': // This action now primarily records the attempt
+    case 'SUBMIT_ANSWER':
+      let isClientCorrect: boolean | undefined = undefined;
+      if (action.payload.questionType === 'single_selection' && action.payload.correctAnswerOptionId !== undefined) {
+        isClientCorrect = action.payload.answer === action.payload.correctAnswerOptionId;
+      }
+      // For other question types, isClientCorrect might remain undefined here, 
+      // relying on server validation via UPDATE_ANSWER_CORRECTNESS
+
       return {
         ...state,
         userAnswers: {
           ...state.userAnswers,
           [action.payload.questionId]: {
             answer: action.payload.answer,
-            isCorrect: undefined, // Server will confirm this
+            isCorrect: isClientCorrect, // Set based on immediate client-side check if possible
             timestamp: Date.now(),
           },
         },
-        showFeedbackForCurrentQuestion: true, // Show some immediate feedback indication
+        showFeedbackForCurrentQuestion: true, 
       };
 
-    case 'UPDATE_ANSWER_CORRECTNESS':
+    case 'UPDATE_ANSWER_CORRECTNESS': // Server confirmation
       if (!state.userAnswers[action.payload.questionId]) {
         console.warn('UPDATE_ANSWER_CORRECTNESS called for a question not in userAnswers', action.payload.questionId);
         return state; 
       }
+      // Optionally, log if server validation differs from client-side (should not for single_selection)
+      // if (state.userAnswers[action.payload.questionId].isCorrect !== action.payload.isCorrect) {
+      //   console.warn(`Client/Server correctness mismatch for Q ${action.payload.questionId}`);
+      // }
       return {
         ...state,
         userAnswers: {
           ...state.userAnswers,
           [action.payload.questionId]: {
             ...state.userAnswers[action.payload.questionId],
-            isCorrect: action.payload.isCorrect,
-            // Optionally store serverVerifiedCorrectAnswer if needed for complex feedback
+            isCorrect: action.payload.isCorrect, // Trust the server's final say
           },
         },
       };
@@ -116,7 +135,7 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
         return {
           ...state,
           currentQuestionIndex: state.currentQuestionIndex + 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex + 1]?.id], // Show feedback if next Q already answered
+          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex + 1]?.id]?.isCorrect !== undefined,
         };
       }
       // If on the last question, clicking next could mean complete quiz
@@ -127,7 +146,7 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
         return {
           ...state,
           currentQuestionIndex: state.currentQuestionIndex - 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex - 1]?.id], // Show feedback if prev Q already answered
+          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex - 1]?.id]?.isCorrect !== undefined,
         };
       }
       return state;
@@ -150,29 +169,36 @@ interface QuizContextType {
   state: QuizState;
   dispatch: Dispatch<QuizAction>;
   // Expose the submitAndScoreAnswer function via context
-  submitAndScoreAnswer: (question: BaseQuestion, answer: any) => Promise<void>; 
+  submitAndScoreAnswer: (question: AnyQuestion, answer: any) => Promise<void>; 
 }
 
 export const QuizContext = createContext<QuizContextType | undefined>(undefined);
 
 // New async thunk-like function to handle submitting and scoring
 export const createSubmitAndScoreAnswerFunction = (dispatch: Dispatch<QuizAction>) => {
-  return async (question: BaseQuestion, answer: any) => {
+  // question type changed to AnyQuestion to access type-specific details for SUBMIT_ANSWER
+  return async (question: AnyQuestion, answer: any) => { 
     if (!supabaseFunctionsClient) {
       console.error('Supabase client for functions not initialized.');
-      // Optionally dispatch an error action to update UI
-      // dispatch({ type: 'QUIZ_ERROR', payload: 'Failed to connect to scoring service.' });
       return;
     }
 
-    // 1. Dispatch SUBMIT_ANSWER to record the attempt immediately
-    dispatch({ 
-      type: 'SUBMIT_ANSWER', 
-      payload: { questionId: question.id, answer }
-    });
+    let submitPayload: QuizAction = {
+        type: 'SUBMIT_ANSWER',
+        payload: {
+            questionId: question.id,
+            answer,
+            questionType: question.type,
+        }
+    };
+
+    if (question.type === 'single_selection') {
+        submitPayload.payload.correctAnswerOptionId = (question as SingleSelectionQuestion).correctAnswerOptionId;
+    }
+
+    dispatch(submitPayload);
 
     try {
-      // 2. Invoke the Edge Function
       const { data: scoreData, error: functionError } = await supabaseFunctionsClient.functions.invoke(
         'score-answer', 
         {
@@ -186,29 +212,23 @@ export const createSubmitAndScoreAnswerFunction = (dispatch: Dispatch<QuizAction
 
       if (functionError) {
         console.error('Error invoking score-answer Edge Function:', functionError.message);
-        // Optionally dispatch an error to UI
-        // dispatch({ type: 'QUIZ_ERROR', payload: 'Error scoring answer.' });
-        // Potentially revert SUBMIT_ANSWER or mark as error if needed
         return;
       }
 
       if (scoreData && scoreData.questionId === question.id) {
-        // 3. Dispatch UPDATE_ANSWER_CORRECTNESS with the server-validated result
         dispatch({
           type: 'UPDATE_ANSWER_CORRECTNESS',
           payload: { 
             questionId: scoreData.questionId,
             isCorrect: scoreData.isCorrect,
-            serverVerifiedCorrectAnswer: scoreData.correctAnswer // Optional: if you want to store it
+            serverVerifiedCorrectAnswer: scoreData.correctAnswer 
           }
         });
       } else {
         console.error('Score data mismatch or missing from Edge Function response:', scoreData);
-        // dispatch({ type: 'QUIZ_ERROR', payload: 'Invalid response from scoring service.' });
       }
     } catch (e: any) {
       console.error('Unexpected error during submitAndScoreAnswer:', e.message);
-      // dispatch({ type: 'QUIZ_ERROR', payload: 'Unexpected error scoring answer.' });
     }
   };
 };
