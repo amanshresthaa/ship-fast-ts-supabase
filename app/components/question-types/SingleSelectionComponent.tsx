@@ -4,6 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SingleSelectionQuestion, SingleSelectionOption } from '../../types/quiz'; // Corrected path
 
+// Icons for options (can be improved or replaced with SVG)
+const CorrectIcon = () => <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>;
+const IncorrectIcon = () => <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>;
+
 interface SingleSelectionComponentProps {
   question: SingleSelectionQuestion;
   onAnswerSelect: (optionId: string) => void; // Callback to notify parent of selection
@@ -27,53 +31,79 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   };
 
   return (
-    <div className="space-y-3 md:space-y-4">
-      {question.options.map((option: SingleSelectionOption) => {
+    // Options container with grid layout and gap per reference
+    <div className="options-container grid grid-cols-1 gap-4 mb-8">
+      {question.options.map((option: SingleSelectionOption, index: number) => {
         const isSelected = selectedOptionId === option.option_id;
         const isCorrect = question.correctAnswerOptionId === option.option_id;
+        // Generate option letter (A, B, C...)
+        const optionLetter = String.fromCharCode(65 + index);
         
-        // Base classes for all options - could use DaisyUI btn class as well
-        let baseStyle = "w-full text-left p-3 md:p-4 border rounded-lg text-base md:text-lg transition-all duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 font-medium";
-        let stateStyle = "";
+        // Base classes matching .option from reference
+        let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
+        let stateStyle = "border-custom-gray-3"; // Default border
+        let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
+        let accentBorderStyle = "before:content-[''] before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-custom-gray-3 before:transition-all before:duration-200";
+        let hoverAccentBorderStyle = isSubmitted ? "" : "hover:before:bg-custom-primary";
 
         if (isSubmitted || showCorrectAnswer) {
-          // Feedback state (after submission or when showing answers)
+          // Feedback state 
           if (isCorrect) {
-            stateStyle = "bg-green-100 border-green-400 text-green-700 hover:bg-green-200 ring-2 ring-green-500 shadow-md";
+            stateStyle = "border-custom-success bg-green-500/[.05]";
+            accentBorderStyle = "before:bg-custom-success";
+            hoverAccentBorderStyle = ""; // No hover change on feedback
           } else if (isSelected && !isCorrect) {
-            stateStyle = "bg-red-100 border-red-400 text-red-700 hover:bg-red-200 ring-2 ring-red-500 shadow-md";
+            stateStyle = "border-custom-error bg-red-500/[.05]";
+            accentBorderStyle = "before:bg-custom-error";
+            hoverAccentBorderStyle = ""; 
           } else {
-            // Non-selected, non-correct options when feedback is shown (e.g. quiz review)
-            stateStyle = "bg-gray-100 border-gray-300 text-gray-600 cursor-default opacity-80";
+            // Non-selected, non-correct options during feedback
+            stateStyle = "border-custom-gray-3 bg-gray-50 opacity-70";
+            accentBorderStyle = "before:bg-custom-gray-3";
+            hoverStyle = "cursor-default"; // Make non-interactive
+            hoverAccentBorderStyle = "";
           }
         } else {
-          // Interactive state (before submission)
+          // Interactive state
           if (isSelected) {
-            stateStyle = "bg-indigo-500 border-indigo-600 text-white ring-2 ring-indigo-500 shadow-lg";
+            // Using shadow for selected state instead of border to avoid layout shift
+            stateStyle = "border-custom-primary ring-2 ring-custom-primary shadow-shadow-2"; 
+            accentBorderStyle = "before:bg-custom-primary";
           } else {
-            stateStyle = "bg-white border-gray-300 text-gray-700 hover:bg-indigo-50 hover:border-indigo-400 focus:border-indigo-500";
+            // Default interactive state is handled by baseStyle + hoverStyle
           }
         }
         
         return (
+          // Applying styles and Framer Motion animations
           <motion.button
             key={option.option_id}
             type="button"
             onClick={() => handleOptionClick(option.option_id)}
-            className={`${baseStyle} ${stateStyle}`}
-            disabled={isSubmitted} // Disable after submission
+            // Combine all style parts. Note: before: pseudo-elements need to be handled carefully.
+            // Tailwind doesn't directly support pseudo-elements in utility classes like this easily.
+            // We might need custom CSS or a different approach for the accent border.
+            // For now, applying styles that work directly.
+            // The accent border is simplified here. A dedicated span could work better.
+            className={`${baseStyle} ${stateStyle} ${hoverStyle}`}
+            disabled={isSubmitted}
             aria-pressed={isSelected}
-            whileHover={{ scale: (isSubmitted || (isSelected && !showCorrectAnswer)) ? 1 : 1.03, transition: { duration: 0.15 } }} // Subtle hover unless submitted or already selected
-            whileTap={{ scale: isSubmitted ? 1 : 0.97, transition: { duration: 0.1 } }} // Tap animation unless submitted
-            // Animate layout changes if needed, e.g. if button size changes dynamically
-            // layout 
+            whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
+            whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
+            layout // Animate layout changes smoothly
           >
-            {option.text}
-            {/* Improved feedback indicators */}
-            {(isSubmitted || showCorrectAnswer) && isCorrect && 
-              <span className="ml-2 font-bold text-green-600">✓ Correct</span>}
-            {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && 
-              <span className="ml-2 font-bold text-red-600">✗ Your Pick</span>}
+            {/* Accent border implemented with a span */}
+            <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${isSelected ? 'bg-custom-primary' : isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : isSelected && !isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-error' : 'bg-custom-gray-3'} ${isSubmitted ? '' : 'group-hover:bg-custom-primary'}`}></span>
+
+            <div className="option-content flex items-center justify-between pl-4"> {/* Added padding left for accent border space */}
+              <div className="option-text text-base md:text-lg font-medium text-custom-gray-1">
+                <span className="option-letter inline-block w-6 font-bold text-custom-primary mr-2">{optionLetter}.</span>
+                {option.text}
+              </div>
+              {/* Show icon only in feedback state */}
+              {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
+              {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
+            </div>
           </motion.button>
         );
       })}

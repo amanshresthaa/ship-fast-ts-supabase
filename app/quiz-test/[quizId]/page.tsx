@@ -46,75 +46,103 @@ const QuizRunner: React.FC<{ quizId: string }> = ({ quizId }) => {
     }
   }, [quizId, dispatch]);
 
-  if (state.isLoading) return <div className="flex justify-center items-center h-screen"><p className="text-xl">Loading quiz...</p></div>;
-  if (state.error) return <div className="flex justify-center items-center h-screen"><p className="text-xl text-red-500">Error: {state.error}</p></div>;
-  if (!state.quiz || state.questions.length === 0) return <div className="flex justify-center items-center h-screen"><p className="text-xl">Quiz not found or no questions available.</p></div>;
+  // Calculate progress for the progress bar
+  const progressPercentage = state.questions.length > 0 
+    ? ((state.currentQuestionIndex + 1) / state.questions.length) * 100 
+    : 0;
+
+  if (state.isLoading) return <div className="flex justify-center items-center min-h-screen bg-custom-light-bg"><p className="text-xl text-custom-dark-blue">Loading quiz...</p></div>;
+  if (state.error) return <div className="flex justify-center items-center min-h-screen bg-custom-light-bg"><p className="text-xl text-custom-error">Error: {state.error}</p></div>;
+  if (!state.quiz || state.questions.length === 0) return <div className="flex justify-center items-center min-h-screen bg-custom-light-bg"><p className="text-xl text-custom-dark-blue">Quiz not found or no questions available.</p></div>;
 
   const currentQuestion = state.questions[state.currentQuestionIndex];
+  const isLastQuestion = state.questions.length > 0 && state.currentQuestionIndex === state.questions.length - 1;
 
-  if (!currentQuestion) {
-    // This case might be hit if currentQuestionIndex is out of bounds after quiz load or if questions array is empty
-    // Or if quiz is complete and we want to show a summary
-    if(state.isQuizComplete) {
-        return (
-            <div className="container mx-auto p-4 text-center">
-                <h1 className="text-3xl font-bold mb-4 text-green-600">Quiz Completed!</h1>
+  if (!currentQuestion && state.isQuizComplete) {
+    return (
+        <div className="min-h-screen bg-custom-light-bg flex flex-col justify-center items-center p-6 animate-fade-in">
+            <div className="container mx-auto p-4 md:p-8 text-center bg-white shadow-shadow-strong rounded-rounded-lg-ref">
+                <h1 className="text-3xl md:text-4xl font-bold mb-6 text-custom-success">Quiz Completed!</h1>
+                <p className="text-lg md:text-xl text-custom-gray-1 mb-8">You have completed the quiz: <span className="font-semibold">{state.quiz.title}</span>.</p>
                 {/* TODO: Display score or summary here */}
-                <p className="text-lg">You have completed the quiz: {state.quiz.title}.</p>
                 <button 
                     onClick={() => dispatch({ type: 'RESET_QUIZ' })} 
-                    className="mt-6 px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    className="btn-primary-custom"
                 >
-                    Take Another Quiz (Reset)
+                    Take Another Quiz
                 </button>
             </div>
-        );
-    }
-    return <div className="flex justify-center items-center h-screen"><p className="text-xl">No current question available.</p></div>;
+        </div>
+    );
   }
+  if (!currentQuestion) return <div className="flex justify-center items-center min-h-screen bg-custom-light-bg"><p className="text-xl text-custom-dark-blue">No current question available.</p></div>;
+  
+  // Define button styles based on reference
+  const btnBase = "inline-flex items-center justify-center px-8 h-12 border-none rounded-rounded-full font-semibold text-base cursor-pointer transition-all duration-200 relative overflow-hidden";
+  const btnSecondaryCustom = `${btnBase} bg-gray-100 text-custom-gray-1 hover:bg-gray-200 hover:-translate-y-0.5`;
+  const btnPrimaryCustom = `${btnBase} bg-primary-gradient text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5`;
+  // Note: Ripple effect from reference is complex for pure Tailwind; focusing on static/hover styles.
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-2 text-center">{state.quiz.title}</h1>
-      <p className="text-sm text-gray-600 mb-6 text-center">Question {state.currentQuestionIndex + 1} of {state.questions.length}</p>
-      
-      <QuestionCard question={currentQuestion} />
+    <div className="min-h-screen bg-custom-light-bg py-6 px-4 md:px-6">
+      <div className="quiz-container max-w-3xl mx-auto">
+        <header className="text-center mb-8 animate-fade-in">
+          <h1 className="text-3xl md:text-4xl font-bold text-custom-dark-blue mb-3 relative inline-block pb-2">
+            {state.quiz.title}
+            <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
+          </h1>
+          
+          <div className="progress-container relative my-8 mx-auto w-full max-w-xl">
+            <div className="progress-info flex justify-between mb-2 font-medium text-sm">
+              <div className="question-counter bg-primary-gradient text-white py-1 px-4 rounded-rounded-full shadow-shadow-1 text-xs md:text-sm">
+                Question {state.currentQuestionIndex + 1} of {state.questions.length}
+              </div>
+              {/* Score could go here if available: <div className="score-display">Score: ...</div> */}
+            </div>
+            <div className="progress-bar h-2 bg-gray-200 rounded-rounded-full overflow-hidden shadow-inner">
+              <div 
+                className="progress-fill h-full bg-primary-gradient rounded-rounded-full transition-all duration-300 ease-out shadow-md"
+                style={{ width: `${progressPercentage}%` }}
+              ></div>
+            </div>
+          </div>
+        </header>
+        
+        {/* QuestionCard will be animated with animate-card-appear inside its own component if possible */}
+        <QuestionCard question={currentQuestion} />
 
-      <div className="mt-6 flex justify-between items-center">
-        <button 
-          onClick={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
-          disabled={state.currentQuestionIndex === 0}
-          className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 disabled:opacity-50 transition-colors"
-        >
-          Previous
-        </button>
-        <button 
-          onClick={() => {
-            const isLastQuestion = state.currentQuestionIndex === state.questions.length - 1;
-            // Allow submitting answer for the last question, then next will complete it.
-            if (isLastQuestion) {
-              // If answer for last question is already submitted, then complete quiz
-              if (state.userAnswers[currentQuestion.id]) {
-                 dispatch({ type: 'COMPLETE_QUIZ' });
+        <div className="navigation flex flex-col md:flex-row justify-between mt-10 gap-4">
+          <button 
+            onClick={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
+            disabled={state.currentQuestionIndex === 0}
+            className={`${btnSecondaryCustom} disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 w-full md:w-auto`}
+          >
+            Previous
+          </button>
+          <button 
+            onClick={() => {
+              if (isLastQuestion) {
+                if (state.userAnswers[currentQuestion.id]) {
+                  dispatch({ type: 'COMPLETE_QUIZ' });
+                } else {
+                  alert("Please submit your answer before finishing the quiz.");
+                }
               } else {
-                // If last question but not answered, user must answer first.
-                // The 'Next' button could be 'Submit Answer' or change based on context.
-                // For now, we assume an answer submission via QuestionCard handles this.
-                // If they click next without answering the last question, we don't automatically complete.
-                // This part of logic might need refinement based on desired UX for last question.
-                // A common pattern is for the last question submission to also trigger completion.
-                 alert("Please submit your answer before finishing the quiz.");
+                dispatch({ type: 'NEXT_QUESTION' });
               }
-            } else {
-              dispatch({ type: 'NEXT_QUESTION' });
+            }}
+            disabled={isLastQuestion && !state.userAnswers[currentQuestion.id]}
+            className={`${btnPrimaryCustom} disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 w-full md:w-auto`}
+          >
+            {isLastQuestion ? 'Finish Quiz' : 'Next Question'}
+            {/* Icon can be added here */}
+            {!isLastQuestion && 
+              <svg className="ml-2 w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z" fill="currentColor"/>
+              </svg>
             }
-          }}
-          // Disable if it's the last question AND it hasn't been answered yet (prevents finishing without answering last q)
-          disabled={state.currentQuestionIndex === state.questions.length - 1 && !state.userAnswers[currentQuestion.id]}
-          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 transition-colors"
-        >
-          {state.currentQuestionIndex === state.questions.length - 1 ? 'Finish Quiz' : 'Next Question'}
-        </button>
+          </button>
+        </div>
       </div>
     </div>
   );
