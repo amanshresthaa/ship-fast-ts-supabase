@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchQuizById } from '../../../lib/quizService'; // Corrected path
+import { fetchQuizById } from '../../../lib/quizService'; // We'll keep using the server-side service for API routes
 
 export async function GET(
   request: Request, // Added request parameter, though not used for query params here
