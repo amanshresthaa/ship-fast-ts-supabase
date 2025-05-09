@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchQuizById } from '../../../lib/quizService'; // We'll keep using the server-side service for API routes
+import { fetchQuizById } from '../../../lib/supabaseQuizService'; // Server-side service for direct Supabase DB interaction
 
 export async function GET(
   request: Request, // Added request parameter, though not used for query params here

@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { useQuiz } from '../context/QuizContext';
-import { QuizService } from '../services/quizService';
+import { QuizApiClient } from '../services/quizApiClient';
 import QuestionCard from '../components/QuestionCard';
 import QuizProgress from '../components/QuizProgress';
 import QuizNavigation from '../components/QuizNavigation';
@@ -20,7 +20,7 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
       dispatch({ type: 'LOAD_QUIZ_START' });
       
       try {
-        const quizData = await QuizService.fetchQuizById(quizId);
+        const quizData = await QuizApiClient.fetchQuizById(quizId);
         dispatch({ type: 'LOAD_QUIZ_SUCCESS', payload: quizData });
       } catch (error: any) {
         console.error("Error fetching quiz data:", error);

@@ -19,7 +19,10 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
   isSubmitted,
   showCorrectAnswer,
 }) => {
-  switch (question.type) {
+  // Ensure question has a valid type property
+  const questionType = question.type as string;
+  
+  switch (questionType) {
     case 'single_selection':
       return (
         <SingleSelectionComponent 
@@ -46,7 +49,7 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
     default:
       return (
         <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
-          <p className="font-semibold text-red-700">Error: Unknown question type: {question.type}</p>
+          <p className="font-semibold text-red-700">Error: Unknown question type: {questionType}</p>
         </div>
       );
   }

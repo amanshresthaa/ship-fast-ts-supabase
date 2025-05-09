@@ -1,8 +1,14 @@
 import axios from 'axios';
 
+// Define interface for chat message
+interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
 // Use this if you want to make a call to OpenAI GPT-4 for instance. userId is used to identify the user on openAI side.
 export const sendOpenAi = async (
-  messages: any[], // TODO: type this
+  messages: ChatMessage[],
   userId: number,
   max = 100,
   temp = 1
@@ -48,8 +54,14 @@ export const sendOpenAi = async (
     console.log('\n');
 
     return answer;
-  } catch (e) {
-    console.error('GPT Error: ' + e?.response?.status, e?.response?.data);
+  } catch (e: unknown) {
+    // Safely handle error with proper type checking
+    if (e && typeof e === 'object' && 'response' in e) {
+      const errorObj = e as { response?: { status?: number; data?: any } };
+      console.error('GPT Error: ' + errorObj.response?.status, errorObj.response?.data);
+    } else {
+      console.error('GPT Error:', e);
+    }
     return null;
   }
 };

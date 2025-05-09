@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'; // Added useCal
 import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType } from '../../types/quiz';
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
-import { fetchRandomQuestionByTypeAndFilters } from '../../lib/quizService'; // Import the new service function
+import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Using server-side quiz service
 
 export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);

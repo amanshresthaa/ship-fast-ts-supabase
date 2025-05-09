@@ -22,7 +22,7 @@ export { default as QuestionTypeRenderer } from './components/question-types/Que
 export { default as SingleSelectionComponent } from './components/question-types/SingleSelectionComponent';
 
 // Services
-export { QuizService } from './services/quizService';
+export { QuizApiClient } from './services/quizApiClient';
 
 // Pages
 export { default as QuizPage } from './pages/QuizPage';
