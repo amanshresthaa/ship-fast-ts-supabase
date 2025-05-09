@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion } from '../../../../types/quiz';
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
+import MultiChoiceComponent from './MultiChoiceComponent';
 
 interface QuestionTypeRendererProps {
   question: AnyQuestion;
@@ -29,9 +30,17 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           showCorrectAnswer={showCorrectAnswer}
         />
       );
+    case 'multi':
+      return (
+        <MultiChoiceComponent
+          question={question as MultiChoiceQuestion}
+          onAnswerSelect={onAnswerSelect}
+          selectedOptionIds={selectedAnswer as string[] | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={showCorrectAnswer}
+        />
+      );
     // Add other question type cases as they are implemented
-    // case 'multi':
-    //   return <MultiChoiceComponent ... />;
     // case 'drag_and_drop':
     //   return <DragAndDropComponent ... />;
     default:

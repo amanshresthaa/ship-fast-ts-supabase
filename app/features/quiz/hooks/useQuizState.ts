@@ -36,6 +36,7 @@ export type QuizAction =
         answer: any; 
         questionType: QuestionType; 
         correctAnswerOptionId?: string; 
+        correctAnswerOptionIds?: string[];
       }
     }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
@@ -74,8 +75,19 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
     
     case 'SUBMIT_ANSWER':
       let isClientCorrect: boolean | undefined = undefined;
+      
       if (action.payload.questionType === 'single_selection' && action.payload.correctAnswerOptionId !== undefined) {
         isClientCorrect = action.payload.answer === action.payload.correctAnswerOptionId;
+      } else if (action.payload.questionType === 'multi' && action.payload.correctAnswerOptionIds !== undefined) {
+        // For multi-selection questions, check if the selected answers match the correct answers exactly
+        const selectedAnswers = action.payload.answer as string[];
+        const correctAnswers = action.payload.correctAnswerOptionIds;
+        
+        // Check if arrays have the same elements (regardless of order)
+        isClientCorrect = 
+          selectedAnswers.length === correctAnswers.length && 
+          selectedAnswers.every(id => correctAnswers.includes(id)) &&
+          correctAnswers.every(id => selectedAnswers.includes(id));
       }
 
       return {

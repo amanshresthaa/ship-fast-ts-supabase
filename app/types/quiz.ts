@@ -23,7 +23,7 @@ export interface BaseQuestion {
   updated_at: string; // TIMESTAMPTZ
 }
 
-export interface SingleSelectionOption {
+export interface SelectionOption {
   option_id: string;
   text: string;
   // Note: The database table `single_selection_options` does not have `question_id` directly in its TS type,
@@ -33,15 +33,22 @@ export interface SingleSelectionOption {
 // Updated SingleSelectionQuestion to include specific properties
 export interface SingleSelectionQuestion extends BaseQuestion {
   type: 'single_selection';
-  options: SingleSelectionOption[];
+  options: SelectionOption[];
   // The `single_selection_correct_answer` table stores `option_id` for the correct answer,
   // linked to the `question_id`.
   correctAnswerOptionId: string; 
 }
 
+// Multi-choice question where users can select multiple answers
+export interface MultiChoiceQuestion extends BaseQuestion {
+  type: 'multi';
+  options: SelectionOption[];
+  // An array of correct option IDs
+  correctAnswerOptionIds: string[];
+}
+
 // AnyQuestion will be a union of all specific question types
-// Initially, it only includes SingleSelectionQuestion
-export type AnyQuestion = SingleSelectionQuestion; // | MultiChoiceQuestion | DragAndDropQuestion etc.
+export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion; // | DragAndDropQuestion etc.
 
 export interface Quiz {
   id: string; // e.g. azure-a102

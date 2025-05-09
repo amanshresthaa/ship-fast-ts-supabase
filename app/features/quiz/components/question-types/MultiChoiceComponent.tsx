@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
-import { SingleSelectionQuestion, SelectionOption } from '../../../../types/quiz';
+import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
 
 // Icons for options
 const CorrectIcon = memo(() => (
@@ -13,32 +13,54 @@ const IncorrectIcon = memo(() => (
   <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>
 ));
 
-interface SingleSelectionComponentProps {
-  question: SingleSelectionQuestion;
-  onAnswerSelect: (optionId: string) => void;
-  selectedOptionId?: string | null;
+interface MultiChoiceComponentProps {
+  question: MultiChoiceQuestion;
+  onAnswerSelect: (optionIds: string[]) => void;
+  selectedOptionIds?: string[];
   isSubmitted?: boolean;
   showCorrectAnswer?: boolean;
 }
 
-const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
+const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   question,
   onAnswerSelect,
-  selectedOptionId,
+  selectedOptionIds = [],
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
+  // Determine the correct number of answers to select
+  const correctAnswersCount = question.correctAnswerOptionIds.length;
+  
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
-      onAnswerSelect(optionId);
+      // If option is already selected, allow deselecting it
+      if (selectedOptionIds.includes(optionId)) {
+        const newSelectedOptions = selectedOptionIds.filter(id => id !== optionId);
+        onAnswerSelect(newSelectedOptions);
+      } 
+      // If we haven't reached the limit yet, allow selecting the option
+      else if (selectedOptionIds.length < correctAnswersCount) {
+        const newSelectedOptions = [...selectedOptionIds, optionId];
+        onAnswerSelect(newSelectedOptions);
+        
+        // If we've reached the required number of selections, auto-submit
+        if (newSelectedOptions.length === correctAnswersCount) {
+          setTimeout(() => onAnswerSelect(newSelectedOptions), 150); // Small delay for better UX
+        }
+      }
+      // If we've reached the limit, don't allow more selections
     }
   };
 
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
+      <p className="text-sm text-gray-500 mb-2 font-medium">
+        Select {question.correctAnswerOptionIds.length} answer{question.correctAnswerOptionIds.length > 1 ? 's' : ''} ({selectedOptionIds.length}/{question.correctAnswerOptionIds.length} selected)
+      </p>
+      
       {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionId === option.option_id;
-        const isCorrect = question.correctAnswerOptionId === option.option_id;
+        const isSelected = selectedOptionIds.includes(option.option_id);
+        const isCorrect = question.correctAnswerOptionIds.includes(option.option_id);
         const optionLetter = String.fromCharCode(65 + index);
         
         // Determine option styles
@@ -86,6 +108,13 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
                 {option.text}
               </div>
               
+              {/* Checkbox indicator */}
+              <div className={`w-6 h-6 border-2 rounded flex items-center justify-center mr-2 ${
+                isSelected ? 'bg-custom-primary border-custom-primary' : 'border-gray-300'
+              }`}>
+                {isSelected && <span className="text-white">✓</span>}
+              </div>
+              
               {/* Show feedback icons when appropriate */}
               {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
               {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
@@ -98,4 +127,4 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
 };
 
 // Memoize to prevent unnecessary re-renders
-export default memo(SingleSelectionComponent);
+export default memo(MultiChoiceComponent);

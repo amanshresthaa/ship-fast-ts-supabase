@@ -29,9 +29,11 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
       }
     };
 
-    // For single selection questions, we can do client-side validation
+    // For single selection and multi questions, we can do client-side validation
     if (question.type === 'single_selection') {
       submitPayload.payload.correctAnswerOptionId = question.correctAnswerOptionId;
+    } else if (question.type === 'multi') {
+      submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
     }
 
     // First update the UI immediately

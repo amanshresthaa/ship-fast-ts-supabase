@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnyQuestion } from '../../../types/quiz';
 import { useQuiz } from '../context/QuizContext';
-import QuestionHeader from './QuestionHeader';
-import QuestionContent from './QuestionContent';
-import FeedbackSection from './FeedbackSection';
+import QuestionHeader from '../components/QuestionHeader';
+import QuestionContent from '../components/QuestionContent';
+import FeedbackSection from '../components/FeedbackSection';
 import QuestionTypeRenderer from './question-types/QuestionTypeRenderer';
 
 interface QuestionCardProps {
@@ -14,15 +14,45 @@ interface QuestionCardProps {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const { state, submitAndScoreAnswer } = useQuiz();
-
+  // For multi-choice questions, we need to track selections locally before submission
+  const [multiChoiceSelections, setMultiChoiceSelections] = useState<string[]>([]);
+  
   const userAnswerDetails = state.userAnswers[question.id];
-  const selectedAnswerForThisQuestion = userAnswerDetails?.answer;
+  const selectedAnswerForThisQuestion = userAnswerDetails?.answer || 
+    (question.type === 'multi' ? multiChoiceSelections : undefined);
   const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
   const showCorrectAnswerStyling = state.isQuizComplete || 
     (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
+    
+  // Reset selections when question changes
+  useEffect(() => {
+    setMultiChoiceSelections([]);
+  }, [question.id]);
+  
+  // Update local selections when user answer is available from context
+  useEffect(() => {
+    if (question.type === 'multi' && userAnswerDetails?.answer) {
+      setMultiChoiceSelections(userAnswerDetails.answer);
+    }
+  }, [question.type, userAnswerDetails]);
 
   const handleLocalAnswerSelection = async (answerPayload: any) => {
+    // For all question types, submit immediately when ready
     if (isSubmittedForThisQuestion && userAnswerDetails.isCorrect !== undefined) return;
+    
+    // For multi-choice, we need to check if we've reached the required selections
+    if (question.type === 'multi') {
+      setMultiChoiceSelections(answerPayload);
+      
+      // If we reached the exact number of correct answers needed, submit automatically
+      const correctAnswersCount = (question as any).correctAnswerOptionIds?.length || 0;
+      if (Array.isArray(answerPayload) && answerPayload.length === correctAnswersCount) {
+        await submitAndScoreAnswer(question, answerPayload);
+      }
+      return;
+    }
+    
+    // For other question types like single selection, submit immediately
     await submitAndScoreAnswer(question, answerPayload);
   };
 

@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { AnyQuestion, SingleSelectionQuestion, BaseQuestion } from '../types/quiz';
-import SingleSelectionComponent from './question-types/SingleSelectionComponent';
-import { useQuiz } from '../context/QuizContext';
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, BaseQuestion } from '../types/quiz';
+import { useQuiz } from '../features/quiz/context/QuizContext';
+import QuestionTypeRenderer from '../features/quiz/components/question-types/QuestionTypeRenderer';
 // TODO: Import other question type components as they are created
 
 // Import an SVG icon for the feedback box, or use a character
@@ -41,29 +41,15 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   };
 
   const renderQuestionType = () => {
-    switch (question.type) {
-      case 'single_selection':
-        return (
-          <SingleSelectionComponent 
-            question={question as SingleSelectionQuestion} 
-            onAnswerSelect={(optionId) => {
-              handleLocalAnswerSelection(optionId);
-            }}
-            selectedOptionId={selectedAnswerForThisQuestion as string | undefined}
-            isSubmitted={isSubmittedForThisQuestion}
-            showCorrectAnswer={showCorrectAnswerStyling}
-          />
-        );
-      // TODO: Add cases for other question types as they are implemented
-      // case 'multi':
-      //   return <MultiChoiceComponent question={question} />;
-      default:
-        return (
-          <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
-            <p className="font-semibold text-red-700">Error: Unknown question type: {question.type}</p>
-          </div>
-        );
-    }
+    return (
+      <QuestionTypeRenderer
+        question={question}
+        onAnswerSelect={(answer) => handleLocalAnswerSelection(answer)}
+        selectedAnswer={selectedAnswerForThisQuestion}
+        isSubmitted={isSubmittedForThisQuestion}
+        showCorrectAnswer={showCorrectAnswerStyling}
+      />
+    );
   };
 
   // Use the server-verified isCorrect from userAnswers if available, otherwise it's undefined.

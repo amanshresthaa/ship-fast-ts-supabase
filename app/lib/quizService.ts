@@ -3,7 +3,8 @@ import {
   BaseQuestion, 
   AnyQuestion, 
   SingleSelectionQuestion, 
-  SingleSelectionOption,
+  MultiChoiceQuestion,
+  SelectionOption,
   Quiz // Will be needed for fetchQuizById
 } from '../types/quiz';
 
@@ -59,7 +60,7 @@ export async function enrichQuestionWithDetails(
         return null;
       }
 
-      const typedOptions: SingleSelectionOption[] = (optionsData || []).map((opt: any) => ({
+      const typedOptions: SelectionOption[] = (optionsData || []).map((opt: any) => ({
         option_id: opt.option_id,
         text: opt.text,
       }));
@@ -83,6 +84,54 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching single_selection question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'multi') {
+    try {
+      // Fetch options for the multi-choice question
+      const { data: optionsData, error: optionsError } = await supabase
+        .from('multi_options')
+        .select('option_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (optionsError) {
+        console.error(`Error fetching options for multi question ${baseQuestion.id}:`, optionsError.message);
+        return null;
+      }
+
+      // Fetch the correct answers for the multi-choice question
+      const { data: correctAnswersData, error: correctAnswersError } = await supabase
+        .from('multi_correct_answers')
+        .select('option_id')
+        .eq('question_id', baseQuestion.id);
+
+      if (correctAnswersError) {
+        console.error(`Error fetching correct answers for multi question ${baseQuestion.id}:`, correctAnswersError.message);
+        return null;
+      }
+
+      const typedOptions: SelectionOption[] = (optionsData || []).map((opt: any) => ({
+        option_id: opt.option_id,
+        text: opt.text,
+      }));
+
+      const correctAnswerOptionIds = (correctAnswersData || []).map((ans: any) => ans.option_id);
+
+      if (!correctAnswerOptionIds.length) {
+        console.warn(`No correct answer options found for multi question ${baseQuestion.id}`);
+        return null; // Critical data missing
+      }
+      
+      const multiChoiceQuestion: MultiChoiceQuestion = {
+        ...baseQuestion,
+        type: 'multi',
+        options: typedOptions,
+        correctAnswerOptionIds: correctAnswerOptionIds,
+      };
+      return multiChoiceQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching multi question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {
@@ -147,4 +196,59 @@ export async function fetchQuizById(
     console.error(`Unexpected error in fetchQuizById for quiz ${quizId}:`, error.message || error);
     return null;
   }
-} 
+}
+
+// New function to fetch a random question by type and filters
+export async function fetchRandomQuestionByTypeAndFilters(
+  type: string, // Should be QuestionType, but using string for broader initial compatibility
+  filters: { difficulty?: string; tags?: string[] }
+): Promise<AnyQuestion | null> {
+  try {
+    let query = supabase
+      .from('questions')
+      .select('*')
+      .eq('type', type);
+
+    if (filters.difficulty && filters.difficulty !== 'all') {
+      query = query.eq('difficulty', filters.difficulty);
+    }
+
+    if (filters.tags && filters.tags.length > 0) {
+      // Assuming quiz_tag can be used for general tagging for now
+      // If you have a separate tags table or array column, this would need adjustment
+      query = query.in('quiz_tag', filters.tags);
+    }
+
+    // Fetch multiple to then pick one randomly, or use a database-specific random function
+    // For simplicity, fetching a few and picking the first one.
+    // For true randomness and performance on large datasets, a DB function like RANDOM() or TABLESAMPLE is better.
+    query = query.limit(10); // Fetch up to 10 matching questions
+
+    const { data: baseQuestionsData, error: questionsError } = await query;
+
+    if (questionsError) {
+      console.error(`Error fetching questions by type ${type} and filters:`, questionsError.message);
+      return null;
+    }
+
+    if (!baseQuestionsData || baseQuestionsData.length === 0) {
+      console.warn(`No questions found for type ${type} with current filters.`);
+      return null;
+    }
+
+    // Pick a random question from the fetched ones
+    const randomIndex = Math.floor(Math.random() * baseQuestionsData.length);
+    const randomBaseQuestion = baseQuestionsData[randomIndex] as BaseQuestion;
+
+    if (!randomBaseQuestion) {
+      return null;
+    }
+
+    // Enrich the selected base question with its specific details
+    return await enrichQuestionWithDetails(randomBaseQuestion);
+
+  } catch (error: any) {
+    console.error(`Unexpected error in fetchRandomQuestionByTypeAndFilters for type ${type}:`, error.message || error);
+    return null;
+  }
+}
