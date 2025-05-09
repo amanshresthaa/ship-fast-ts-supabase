@@ -1,18 +1,23 @@
 import { NextResponse } from 'next/server';
-import { fetchQuizById } from '../../../lib/supabaseQuizService'; // Server-side service for direct Supabase DB interaction
+import { fetchQuizById } from '../../../lib/supabaseQuizService'; // We'll keep using the server-side service for API routes
 
 export async function GET(
-  request: Request, // Added request parameter, though not used for query params here
+  request: Request,
   { params }: { params: { quizId: string } }
 ) {
   const quizId = params.quizId;
+  
+  // Extract questionType from URL if present
+  const url = new URL(request.url);
+  const questionType = url.searchParams.get('questionType');
 
   if (!quizId) {
     return NextResponse.json({ error: 'Quiz ID is required' }, { status: 400 });
   }
 
   try {
-    const quiz = await fetchQuizById(quizId);
+    // Pass questionType to the fetchQuizById function
+    const quiz = await fetchQuizById(quizId, questionType || undefined);
     if (!quiz) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
     }

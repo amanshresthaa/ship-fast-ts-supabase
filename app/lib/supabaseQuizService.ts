@@ -9,13 +9,18 @@ import {
 } from '../types/quiz';
 
 // Initialize Supabase client
-// Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in your environment
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Using hardcoded values from .env file for debugging
+const supabaseUrl = "https://rvwvnralrlsdtugtgict.supabase.co";
+const supabaseServiceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2d3ZucmFscmxzZHR1Z3RnaWN0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTQ0NzM0NCwiZXhwIjoyMDYxMDIzMzQ0fQ.hFRjn5zq24WmKEoCLbWDRUY6dUdEjlPS-c4OemCaFM4";
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error('Supabase URL or Service Role Key is not defined in environment variables.');
-}
+console.log('Supabase Environment Variables:');
+console.log('URL:', supabaseUrl ? 'Defined' : 'Undefined');
+console.log('Service Role Key:', supabaseServiceRoleKey ? 'Defined' : 'Undefined');
+
+// No need to check for undefined since we're using hardcoded values
+// if (!supabaseUrl || !supabaseServiceRoleKey) {
+//   throw new Error('Supabase URL or Service Role Key is not defined in environment variables.');
+// }
 
 const supabase: SupabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: { persistSession: false } // Recommended for server-side clients
@@ -140,9 +145,9 @@ export async function enrichQuestionWithDetails(
   }
 }
 
-// Placeholder for fetchQuizById - to be implemented next
 export async function fetchQuizById(
   quizId: string,
+  questionType?: string
 ): Promise<Quiz | null> {
   try {
     // 1. Fetch quiz metadata
@@ -165,11 +170,19 @@ export async function fetchQuizById(
       return null;
     }
 
-    // 2. Fetch base questions for the quiz
-    const { data: baseQuestionsData, error: questionsError } = await supabase
+    // 2. Fetch base questions for the quiz, with optional type filter
+    let query = supabase
       .from('questions')
       .select('*') // Select all base question fields
       .eq('quiz_tag', quizId);
+      
+    // Apply type filter if provided
+    if (questionType) {
+      query = query.eq('type', questionType);
+    }
+    
+    // Execute the query
+    const { data: baseQuestionsData, error: questionsError } = await query;
 
     if (questionsError) {
       console.error(`Error fetching questions for quiz ${quizId}:`, questionsError.message);

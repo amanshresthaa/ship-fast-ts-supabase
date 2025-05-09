@@ -1,26 +1,29 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { useQuiz } from '../context/QuizContext';
-import { QuizApiClient } from '../services/quizApiClient';
+import { QuizService } from '../services/quizService';
 import QuestionCard from '../components/QuestionCard';
 import QuizProgress from '../components/QuizProgress';
 import QuizNavigation from '../components/QuizNavigation';
 import QuizCompletionSummary from '../components/QuizCompletionSummary';
 
 // Quiz Runner Component
-const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
+const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ quizId, questionType }) => {
   const { state, dispatch } = useQuiz();
 
-  // Load quiz data on component mount
+  // Load quiz data on component mount or when quizId/questionType changes
   useEffect(() => {
     const loadQuiz = async () => {
       if (!quizId) return;
       
+      // Reset quiz state when question type changes to avoid confusion
+      dispatch({ type: 'RESET_QUIZ' });
       dispatch({ type: 'LOAD_QUIZ_START' });
       
       try {
-        const quizData = await QuizApiClient.fetchQuizById(quizId);
+        const quizData = await QuizService.fetchQuizById(quizId, questionType);
         dispatch({ type: 'LOAD_QUIZ_SUCCESS', payload: quizData });
       } catch (error: any) {
         console.error("Error fetching quiz data:", error);
@@ -32,7 +35,7 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
     };
     
     loadQuiz();
-  }, [quizId, dispatch]);
+  }, [quizId, questionType, dispatch]);
 
   // Loading states
   if (state.isLoading) {
@@ -53,10 +56,84 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
   }
 
   // No quiz data
-  if (!state.quiz || state.questions.length === 0) {
+  if (!state.quiz) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-custom-light-bg">
-        <p className="text-xl text-custom-dark-blue">Quiz not found or no questions available.</p>
+        <p className="text-xl text-custom-dark-blue">Quiz not found.</p>
+      </div>
+    );
+  }
+  
+  // Quiz loaded but no questions match the filter
+  if (state.questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-custom-light-bg py-6 px-4 md:px-6">
+        <div className="quiz-container max-w-3xl mx-auto">
+          <header className="text-center mb-8 animate-fade-in">
+            <h1 className="text-3xl md:text-4xl font-bold text-custom-dark-blue mb-3 relative inline-block pb-2">
+              {state.quiz.title}
+              <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
+            </h1>
+            
+            {/* Filter by question type */}
+            <div className="mb-6">
+              <div className="flex flex-wrap justify-center gap-2 mb-2">
+                <Link 
+                  href={`/quiz-test/${quizId}`}
+                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  All Questions
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/single_selection`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Single Selection
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/multi`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Multiple Selection
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/drag_and_drop`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Drag and Drop
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/dropdown_selection`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Dropdown
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/order`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Order
+                </Link>
+              </div>
+              <div className="mt-2">
+                <Link 
+                  href={`/quiz-test/${quizId}`}
+                  className="text-custom-primary text-sm hover:underline flex items-center justify-center"
+                >
+                  View all question types
+                </Link>
+              </div>
+            </div>
+          </header>
+          
+          <div className="flex justify-center items-center p-10 bg-white rounded-xl shadow-md">
+            <p className="text-xl text-custom-dark-blue">
+              {questionType 
+                ? `No questions of type "${questionType}" available in this quiz.` 
+                : "No questions available in this quiz."}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -87,6 +164,46 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
             <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
           </h1>
           
+          {/* Filter by question type */}
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            <Link 
+              href={`/quiz-test/${quizId}`}
+              className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              All Questions
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/single_selection`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Single Selection
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/multi`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Multiple Selection
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/drag_and_drop`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Drag and Drop
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/dropdown_selection`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Dropdown
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/order`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Order
+            </Link>
+          </div>
+          
           <QuizProgress 
             currentIndex={state.currentQuestionIndex} 
             totalQuestions={state.questions.length} 
@@ -99,11 +216,18 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
       </div>
     </div>
   );
-};
-
-// Main Quiz Page Component that can be used directly
-const QuizPage: React.FC<{ quizId: string }> = (props) => {
+};  // Main Quiz Page Component that can be used directly
+const QuizPage: React.FC<{ quizId: string; questionType?: string }> = (props) => {
   return <QuizPageContent {...props} />;
 };
 
 export default QuizPage;
+
+// Define list of available question types for easy import elsewhere
+export const availableQuestionTypes = [
+  { type: 'single_selection', name: 'Single Selection' },
+  { type: 'multi', name: 'Multiple Selection' },
+  { type: 'drag_and_drop', name: 'Drag and Drop' },
+  { type: 'dropdown_selection', name: 'Dropdown' },
+  { type: 'order', name: 'Order' }
+];

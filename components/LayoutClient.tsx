@@ -15,14 +15,7 @@ const CrispChat = (): null => {
   const pathname = usePathname();
 
   const supabase = createClientComponentClient();
-  // Define a proper type for user data
-  interface UserData {
-    user?: {
-      id: string;
-      [key: string]: any;
-    };
-  }
-  const [data, setData] = useState<UserData | null>(null);
+  const [data, setData] = useState(null);
 
   // This is used to get the user data from Supabase Auth (if logged in) => user ID is used to identify users in Crisp
   useEffect(() => {
@@ -32,7 +25,7 @@ const CrispChat = (): null => {
       } = await supabase.auth.getSession();
 
       if (session) {
-        setData({ user: session.user });
+        setData(session.user);
       }
     };
     getUser();
@@ -60,7 +53,7 @@ const CrispChat = (): null => {
   // Add User Unique ID to Crisp to easily identify users when reaching support (optional)
   useEffect(() => {
     if (data?.user && config?.crisp?.id) {
-      Crisp.session.setData({ userId: data.user.id });
+      Crisp.session.setData({ userId: data.user?.id });
     }
   }, [data]);
 
