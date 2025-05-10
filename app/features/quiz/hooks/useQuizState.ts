@@ -88,6 +88,10 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
           selectedAnswers.length === correctAnswers.length && 
           selectedAnswers.every(id => correctAnswers.includes(id)) &&
           correctAnswers.every(id => selectedAnswers.includes(id));
+      } else if (action.payload.questionType === 'drag_and_drop') {
+        // For drag-and-drop, we'll rely on server validation
+        console.log('Drag and drop answer submitted:', action.payload.answer);
+        // Don't set isClientCorrect here, will be updated by server response
       }
 
       return {
@@ -122,20 +126,24 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
 
     case 'NEXT_QUESTION':
       if (state.currentQuestionIndex < state.questions.length - 1) {
+        const nextQuestionId = state.questions[state.currentQuestionIndex + 1]?.id;
+        const nextQuestionHasAnswer = nextQuestionId ? state.userAnswers[nextQuestionId] !== undefined : false;
         return {
           ...state,
           currentQuestionIndex: state.currentQuestionIndex + 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex + 1]?.id]?.isCorrect !== undefined,
+          showFeedbackForCurrentQuestion: nextQuestionHasAnswer,
         };
       }
       return { ...state, isQuizComplete: true }; 
 
     case 'PREVIOUS_QUESTION':
       if (state.currentQuestionIndex > 0) {
+        const prevQuestionId = state.questions[state.currentQuestionIndex - 1]?.id;
+        const prevQuestionHasAnswer = prevQuestionId ? state.userAnswers[prevQuestionId] !== undefined : false;
         return {
           ...state,
           currentQuestionIndex: state.currentQuestionIndex - 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex - 1]?.id]?.isCorrect !== undefined,
+          showFeedbackForCurrentQuestion: prevQuestionHasAnswer,
         };
       }
       return state;

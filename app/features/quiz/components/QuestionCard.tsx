@@ -21,7 +21,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const selectedAnswerForThisQuestion = userAnswerDetails?.answer || 
     (question.type === 'multi' ? multiChoiceSelections : undefined);
   const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
-  const showCorrectAnswerStyling = state.isQuizComplete || 
+  // Renamed from showCorrectAnswerStyling
+  const shouldApplyFeedbackStyling = state.isQuizComplete || 
     (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
     
   // Reset selections when question changes
@@ -77,7 +78,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           onAnswerSelect={handleLocalAnswerSelection}
           selectedAnswer={selectedAnswerForThisQuestion}
           isSubmitted={isSubmittedForThisQuestion}
-          showCorrectAnswer={showCorrectAnswerStyling}
+          shouldApplyFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop
+          isQuizReviewMode={state.isQuizComplete} // Pass new prop
         />
 
         {/* Explanation Box */}

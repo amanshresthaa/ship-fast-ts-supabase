@@ -19,4 +19,22 @@ progress::-webkit-progress-value {
   .btn {
     @apply !capitalize;
   }
+  
+  /* Add custom style for drag-over state */
+  .drag-over {
+    border-color: #3b82f6 !important; /* blue-500 */
+    background-color: rgba(219, 234, 254, 0.5) !important; /* blue-100 with opacity */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important; /* blue glow effect */
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+  }
+  
+  /* Additional styles for drag and drop functionality */
+  [data-target-id]:empty.drag-over {
+    background-color: rgba(219, 234, 254, 0.8) !important; /* brighter blue-100 for empty targets */
+  }
+  
+  [data-option-id] {
+    touch-action: none; /* Prevents browsers from handling touch events in ways that interfere with dragging */
+  }
 }

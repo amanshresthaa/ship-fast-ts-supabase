@@ -1,6 +1,6 @@
 # Cognitive Quiz Codebase
 
-Generated on: 2025-05-09 12:38:34
+Generated on: 2025-05-11 00:10:27
 
 ## Project Structure
 
@@ -36,11 +36,7 @@ app/blog/author/[authorId]/page.tsx
 app/blog/category/[categoryId]/page.tsx
 app/blog/layout.tsx
 app/blog/page.tsx
-app/components/QuestionCard.tsx
 app/components/QuizCTA.tsx
-app/components/question-types/MultiChoiceComponent.tsx
-app/components/question-types/SingleSelectionComponent.tsx
-app/context/QuizContext.tsx
 app/dashboard/layout.tsx
 app/dashboard/page.tsx
 app/data/quizzes/azure-a102/sample_multi_question.json
@@ -53,6 +49,7 @@ app/features/quiz/components/QuestionHeader.tsx
 app/features/quiz/components/QuizCompletionSummary.tsx
 app/features/quiz/components/QuizNavigation.tsx
 app/features/quiz/components/QuizProgress.tsx
+app/features/quiz/components/question-types/DragAndDropQuestionComponent.tsx
 app/features/quiz/components/question-types/MultiChoiceComponent.tsx
 app/features/quiz/components/question-types/QuestionTypeRenderer.tsx
 app/features/quiz/components/question-types/SingleSelectionComponent.tsx
@@ -61,15 +58,19 @@ app/features/quiz/hooks/useQuizScoring.ts
 app/features/quiz/hooks/useQuizState.ts
 app/features/quiz/index.ts
 app/features/quiz/pages/QuizPage.tsx
+app/features/quiz/pages/QuizPage.tsx.new
+app/features/quiz/services/quizApiClient.ts
 app/features/quiz/services/quizService.ts
 app/globals.css
 app/layout.tsx
-app/lib/quizService.ts
+app/lib/supabaseQuizService.ts
 app/not-found.tsx
 app/page.tsx
 app/privacy-policy/page.tsx
 app/question-types-demo/[type]/page.tsx
+app/question-types-demo/type-client-page.tsx
 app/question-types/page.tsx
+app/quiz-test/[quizId]/[questionType]/page.tsx
 app/quiz-test/[quizId]/client-page.tsx
 app/quiz-test/[quizId]/page-fixed.tsx
 app/quiz-test/[quizId]/page-new.tsx
@@ -77,6 +78,11 @@ app/quiz-test/[quizId]/page-server.tsx
 app/quiz-test/[quizId]/page-updated.tsx
 app/quiz-test/[quizId]/page.tsx
 app/quiz-test/[quizId]/page.tsx.bak
+app/quiz-test/[quizId]/questions/[type]/page.tsx
+app/quiz-test/[quizId]/questions/page.tsx
+app/quiz-test/[quizId]/type-client-page.tsx
+app/quiz-type-filters/layout.tsx
+app/quiz-type-filters/page.tsx
 app/signin/layout.tsx
 app/signin/page.tsx
 app/tos/page.tsx
@@ -10592,6 +10598,24 @@ progress::-webkit-progress-value {
   .btn {
     @apply !capitalize;
   }
+  
+  /* Add custom style for drag-over state */
+  .drag-over {
+    border-color: #3b82f6 !important; /* blue-500 */
+    background-color: rgba(219, 234, 254, 0.5) !important; /* blue-100 with opacity */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important; /* blue glow effect */
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+  }
+  
+  /* Additional styles for drag and drop functionality */
+  [data-target-id]:empty.drag-over {
+    background-color: rgba(219, 234, 254, 0.8) !important; /* brighter blue-100 for empty targets */
+  }
+  
+  [data-option-id] {
+    touch-action: none; /* Prevents browsers from handling touch events in ways that interfere with dragging */
+  }
 }
 
 ```
@@ -10732,7 +10756,7 @@ export default function Custom404() {
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useQuiz } from '../context/QuizContext';
+import { useQuiz } from '../features/quiz/context/QuizContext';
 import { Quiz, QuestionType } from '../types/quiz';
 
 // Mock quiz metadata
@@ -10961,8 +10985,31 @@ export interface MultiChoiceQuestion extends BaseQuestion {
   correctAnswerOptionIds: string[];
 }
 
+export interface DragAndDropTarget {
+  target_id: string;
+  text: string;
+}
+
+export interface DragAndDropOption {
+  option_id: string;
+  text: string;
+}
+
+export interface DragAndDropCorrectPair {
+  option_id: string;
+  target_id: string;
+}
+
+// Drag and drop question where users match options to targets
+export interface DragAndDropQuestion extends BaseQuestion {
+  type: 'drag_and_drop';
+  targets: DragAndDropTarget[];
+  options: DragAndDropOption[];
+  correctPairs: DragAndDropCorrectPair[];
+}
+
 // AnyQuestion will be a union of all specific question types
-export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion; // | DragAndDropQuestion etc.
+export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion | DragAndDropQuestion; // Add more as implemented
 
 export interface Quiz {
   id: string; // e.g. azure-a102
@@ -10976,288 +11023,7 @@ export interface Quiz {
   created_at: string; // TIMESTAMPTZ
   updated_at: string; // TIMESTAMPTZ
   questions: AnyQuestion[];
-} 
-```
-
-### app/context/QuizContext.tsx
-
-```tsx
-'use client';
-
-import React, { createContext, useReducer, useContext, ReactNode, Dispatch } from 'react';
-import { createClient, SupabaseClient } from '@supabase/supabase-js'; // Import Supabase client
-import { AnyQuestion, Quiz, BaseQuestion, QuestionType, SingleSelectionQuestion } from '../types/quiz'; // Added BaseQuestion, QuestionType, SingleSelectionQuestion
-
-// Define structure for storing answers
-export interface UserAnswer {
-  answer: any; // The actual answer given by the user (e.g., optionId)
-  isCorrect?: boolean; // To be updated after server-side validation
-  timestamp: number; // When the answer was submitted
 }
-
-export interface UserAnswersState {
-  [questionId: string]: UserAnswer;
-}
-
-// Initialize Supabase client for Edge Function calls
-// This should use the public URL and anon key as Edge Functions are typically invoked from the client-side context.
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-let supabaseFunctionsClient: SupabaseClient | null = null;
-if (supabaseUrl && supabaseAnonKey) {
-  supabaseFunctionsClient = createClient(supabaseUrl, supabaseAnonKey);
-} else {
-  console.warn('Supabase URL or Anon Key for function calls is not defined. NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set.');
-}
-
-// 1. Define QuizState
-interface QuizState {
-  quiz: Quiz | null;
-  questions: AnyQuestion[];
-  currentQuestionIndex: number;
-  userAnswers: UserAnswersState;
-  isLoading: boolean;
-  error: string | null;
-  isQuizComplete: boolean;
-  // To control when to show feedback/correct answers for the current question
-  showFeedbackForCurrentQuestion: boolean; 
-}
-
-// 2. Define QuizAction Types
-export type QuizAction = 
-  | { type: 'LOAD_QUIZ_START' }
-  | { type: 'LOAD_QUIZ_SUCCESS'; payload: Quiz }
-  | { type: 'LOAD_QUIZ_FAILURE'; payload: string }
-  | { 
-      type: 'SUBMIT_ANSWER'; 
-      payload: { 
-        questionId: string; 
-        answer: any; 
-        questionType: QuestionType; 
-        // For single_selection, provide its correct answer ID for immediate client-side validation
-        correctAnswerOptionId?: string;
-        // For multi questions, provide correct answer IDs for client-side validation
-        correctAnswerOptionIds?: string[];
-      }
-    }
-  | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
-  | { type: 'NEXT_QUESTION' }
-  | { type: 'PREVIOUS_QUESTION' } // Added for navigation
-  | { type: 'COMPLETE_QUIZ' }
-  | { type: 'RESET_QUIZ' }
-  | { type: 'SHOW_FEEDBACK'; payload: { questionId: string } }; // Action to trigger feedback display for a question
-
-// Initial State
-const initialState: QuizState = {
-  quiz: null,
-  questions: [],
-  currentQuestionIndex: 0,
-  userAnswers: {},
-  isLoading: false,
-  error: null,
-  isQuizComplete: false,
-  showFeedbackForCurrentQuestion: false,
-};
-
-// 3. Implement quizReducer
-const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
-  switch (action.type) {
-    case 'LOAD_QUIZ_START':
-      return { ...initialState, isLoading: true }; 
-    case 'LOAD_QUIZ_SUCCESS':
-      return {
-        ...initialState, // Reset most state for a new quiz
-        quiz: action.payload,
-        questions: action.payload.questions,
-        isLoading: false,
-      };
-    case 'LOAD_QUIZ_FAILURE':
-      return { ...state, isLoading: false, error: action.payload };
-    
-    case 'SUBMIT_ANSWER':
-      let isClientCorrect: boolean | undefined = undefined;
-      if (action.payload.questionType === 'single_selection' && action.payload.correctAnswerOptionId !== undefined) {
-        isClientCorrect = action.payload.answer === action.payload.correctAnswerOptionId;
-      }
-      // For other question types, isClientCorrect might remain undefined here, 
-      // relying on server validation via UPDATE_ANSWER_CORRECTNESS
-
-      return {
-        ...state,
-        userAnswers: {
-          ...state.userAnswers,
-          [action.payload.questionId]: {
-            answer: action.payload.answer,
-            isCorrect: isClientCorrect, // Set based on immediate client-side check if possible
-            timestamp: Date.now(),
-          },
-        },
-        showFeedbackForCurrentQuestion: true, 
-      };
-
-    case 'UPDATE_ANSWER_CORRECTNESS': // Server confirmation
-      if (!state.userAnswers[action.payload.questionId]) {
-        console.warn('UPDATE_ANSWER_CORRECTNESS called for a question not in userAnswers', action.payload.questionId);
-        return state; 
-      }
-      // Optionally, log if server validation differs from client-side (should not for single_selection)
-      // if (state.userAnswers[action.payload.questionId].isCorrect !== action.payload.isCorrect) {
-      //   console.warn(`Client/Server correctness mismatch for Q ${action.payload.questionId}`);
-      // }
-      return {
-        ...state,
-        userAnswers: {
-          ...state.userAnswers,
-          [action.payload.questionId]: {
-            ...state.userAnswers[action.payload.questionId],
-            isCorrect: action.payload.isCorrect, // Trust the server's final say
-          },
-        },
-      };
-
-    case 'NEXT_QUESTION':
-      if (state.currentQuestionIndex < state.questions.length - 1) {
-        return {
-          ...state,
-          currentQuestionIndex: state.currentQuestionIndex + 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex + 1]?.id]?.isCorrect !== undefined,
-        };
-      }
-      // If on the last question, clicking next could mean complete quiz
-      return { ...state, isQuizComplete: true }; 
-
-    case 'PREVIOUS_QUESTION':
-      if (state.currentQuestionIndex > 0) {
-        return {
-          ...state,
-          currentQuestionIndex: state.currentQuestionIndex - 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex - 1]?.id]?.isCorrect !== undefined,
-        };
-      }
-      return state;
-
-    case 'COMPLETE_QUIZ':
-      return { ...state, isQuizComplete: true, showFeedbackForCurrentQuestion: true }; // Show feedback for all on completion
-
-    case 'SHOW_FEEDBACK': // Could be used to manually trigger feedback for a question if needed
-        return { ...state, showFeedbackForCurrentQuestion: true };
-
-    case 'RESET_QUIZ':
-      return initialState;
-    default:
-      return state;
-  }
-};
-
-// 4. Create QuizContext
-interface QuizContextType {
-  state: QuizState;
-  dispatch: Dispatch<QuizAction>;
-  // Expose the submitAndScoreAnswer function via context
-  submitAndScoreAnswer: (question: AnyQuestion, answer: any) => Promise<void>; 
-}
-
-export const QuizContext = createContext<QuizContextType | undefined>(undefined);
-
-// New async thunk-like function to handle submitting and scoring
-export const createSubmitAndScoreAnswerFunction = (dispatch: Dispatch<QuizAction>) => {
-  // question type changed to AnyQuestion to access type-specific details for SUBMIT_ANSWER
-  return async (question: AnyQuestion, answer: any) => { 
-    if (!supabaseFunctionsClient) {
-      console.error('Supabase client for functions not initialized.');
-      return;
-    }
-
-    let submitPayload: QuizAction = {
-        type: 'SUBMIT_ANSWER',
-        payload: {
-            questionId: question.id,
-            answer,
-            questionType: question.type,
-        }
-    };
-
-    if (question.type === 'single_selection') {
-        submitPayload.payload.correctAnswerOptionId = (question as SingleSelectionQuestion).correctAnswerOptionId;
-    } else if (question.type === 'multi') {
-        submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
-    }
-
-    dispatch(submitPayload);
-
-    try {
-      const { data: scoreData, error: functionError } = await supabaseFunctionsClient.functions.invoke(
-        'score-answer', 
-        {
-          body: { 
-            questionId: question.id, 
-            userAnswer: answer, 
-            questionType: question.type 
-          }
-        }
-      );
-
-      if (functionError) {
-        console.error('Error invoking score-answer Edge Function:', functionError.message);
-        return;
-      }
-
-      if (scoreData && scoreData.questionId === question.id) {
-        dispatch({
-          type: 'UPDATE_ANSWER_CORRECTNESS',
-          payload: { 
-            questionId: scoreData.questionId,
-            isCorrect: scoreData.isCorrect,
-            serverVerifiedCorrectAnswer: scoreData.correctAnswer 
-          }
-        });
-      } else {
-        console.error('Score data mismatch or missing from Edge Function response:', scoreData);
-      }
-    } catch (e: any) {
-      console.error('Unexpected error during submitAndScoreAnswer:', e.message);
-    }
-  };
-};
-
-// 5. Create QuizProvider component
-interface QuizProviderProps {
-  children: ReactNode;
-  initialQuiz?: Quiz;
-}
-
-export const QuizProvider = ({ children, initialQuiz }: QuizProviderProps) => {
-  // If initialQuiz is provided, use it to initialize state
-  const initialStateWithQuiz = initialQuiz 
-    ? { 
-        ...initialState, 
-        quiz: initialQuiz, 
-        questions: initialQuiz.questions, 
-        isLoading: false 
-      } 
-    : initialState;
-
-  const [state, dispatch] = useReducer(quizReducer, initialStateWithQuiz);
-  
-  // Create the submitAndScoreAnswer function with the current dispatch
-  const submitAndScoreAnswer = createSubmitAndScoreAnswerFunction(dispatch);
-
-  return (
-    <QuizContext.Provider value={{ state, dispatch, submitAndScoreAnswer }}>
-      {children}
-    </QuizContext.Provider>
-  );
-};
-
-// Custom hook to use the QuizContext
-export const useQuiz = () => {
-  const context = useContext(QuizContext);
-  if (context === undefined) {
-    throw new Error('useQuiz must be used within a QuizProvider');
-  }
-  return context;
-}; 
 ```
 
 ### app/privacy-policy/page.tsx
@@ -12051,6 +11817,479 @@ export default memo(MultiChoiceComponent);
 
 ```
 
+### app/features/quiz/components/question-types/DragAndDropQuestionComponent.tsx
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { DragAndDropQuestion, DragAndDropOption, DragAndDropTarget } from '@/app/types/quiz';
+
+interface DragAndDropQuestionComponentProps {
+  question: DragAndDropQuestion;
+  onAnswerChange: (answers: Record<string, string | null>) => void; // Maps target_id to option_id or null
+  userAnswer?: Record<string, string | null>; // Previously selected answers
+  isSubmitted?: boolean; // Added
+  showCorrectAnswer?: boolean; // Added
+  validateOnDrop?: boolean; // Auto-validate when all targets are filled
+}
+
+const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> = ({ 
+  question, 
+  onAnswerChange, 
+  userAnswer, 
+  isSubmitted = false,
+  showCorrectAnswer = false,
+  validateOnDrop = true // Default to true for auto-validation
+}) => {
+  // State to track which option is placed in which target
+  // Format: { target_id: option_id | null }
+  const [placedAnswers, setPlacedAnswers] = useState<Record<string, string | null>>({});
+  // State to track available (unplaced) options
+  const [availableOptions, setAvailableOptions] = useState<DragAndDropOption[]>(question.options);
+  // State to track if all targets are filled
+  const [allTargetsFilled, setAllTargetsFilled] = useState<boolean>(false);
+  // State to track if answers are being validated 
+  const [autoValidating, setAutoValidating] = useState<boolean>(false);
+  // Track the current dragged option ID for browsers that don't support dataTransfer properly
+  const [currentDraggedOptionId, setCurrentDraggedOptionId] = useState<string | null>(null);
+
+  // Helper function to check if all targets are filled
+  const checkAllTargetsFilled = (answers: Record<string, string | null>): boolean => {
+    // If no answers object or it's empty, targets can't be filled
+    if (!answers || Object.keys(answers).length === 0) return false;
+    
+    // No targets means nothing to fill
+    if (question.targets.length === 0) return false;
+    
+    // Check that every target has a valid non-null option assigned
+    const allFilled = question.targets.every(target => {
+      const targetId = target.target_id;
+      // Make sure the target exists in answers and has a non-null value
+      return targetId in answers && answers[targetId] !== null && answers[targetId] !== undefined;
+    });
+    
+    return allFilled;
+  };
+
+  // Helper function to validate answers against correct pairs
+  const validateAnswers = (answers: Record<string, string | null>): Record<string, boolean> => {
+    const validationResults: Record<string, boolean> = {};
+    
+    question.targets.forEach(target => {
+      const targetId = target.target_id;
+      const placedOptionId = answers[targetId];
+      
+      if (placedOptionId) {
+        const correctPair = question.correctPairs.find(p => p.target_id === targetId);
+        validationResults[targetId] = correctPair ? correctPair.option_id === placedOptionId : false;
+      } else {
+        validationResults[targetId] = false; // Empty targets are incorrect
+      }
+    });
+    
+    return validationResults;
+  };
+
+  useEffect(() => {
+    // Always ensure we have entries for all targets
+    const initializedAnswers: Record<string, string | null> = {};
+    question.targets.forEach(target => {
+      initializedAnswers[target.target_id] = null;
+    });
+
+    // If showing correct answers, populate state with correct pairings
+    if (showCorrectAnswer) {
+      const correctAnswers: Record<string, string | null> = {};
+      question.targets.forEach(target => {
+        const correctPair = question.correctPairs.find(p => p.target_id === target.target_id);
+        correctAnswers[target.target_id] = correctPair ? correctPair.option_id : null;
+      });
+      setPlacedAnswers(correctAnswers);
+
+      // Remove used options from available options
+      const usedOptionIds = Object.values(correctAnswers).filter(id => id !== null) as string[];
+      setAvailableOptions(question.options.filter(opt => !usedOptionIds.includes(opt.option_id)));
+
+      // Determine if all targets are filled (or correctly empty)
+      const correctAllFilled = question.targets.every(target => {
+        const correctPair = question.correctPairs.find(p => p.target_id === target.target_id);
+        return !correctPair || (correctAnswers[target.target_id] !== null);
+      });
+      setAllTargetsFilled(correctAllFilled);
+      setAutoValidating(false);
+    }
+    // Handle user answers if not showing correct answers
+    else if (userAnswer && Object.keys(userAnswer).length > 0) {
+      // Merge user answers with initialized answers to ensure all targets have entries
+      const mergedAnswers = { ...initializedAnswers, ...userAnswer };
+      setPlacedAnswers(mergedAnswers);
+
+      // Only count non-null values for used options
+      const usedOptionIds = Object.values(mergedAnswers).filter(id => id !== null) as string[];
+
+      // Filter available options
+      const availableOpts = question.options.filter(opt => !usedOptionIds.includes(opt.option_id));
+      setAvailableOptions(availableOpts);
+
+      // Check if all targets are filled
+      const areAllFilled = checkAllTargetsFilled(mergedAnswers);
+      setAllTargetsFilled(areAllFilled);
+
+      // If all targets are filled and validateOnDrop is true, set autoValidating
+      if (areAllFilled && validateOnDrop && !isSubmitted && !showCorrectAnswer) {
+        setAutoValidating(true);
+      } else {
+        setAutoValidating(false);
+      }
+    } else {
+      // Initialize with empty answers
+      setPlacedAnswers(initializedAnswers);
+      setAvailableOptions([...question.options]);
+      setAllTargetsFilled(false);
+      setAutoValidating(false);
+    }
+  }, [question, userAnswer, validateOnDrop, isSubmitted, showCorrectAnswer]);
+
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, optionId: string) => {
+    // Store the current dragged option ID in state (fallback for browsers with dataTransfer issues)
+    setCurrentDraggedOptionId(optionId);
+    
+    try {
+      // Set data in dataTransfer object
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', optionId);
+    } catch (err) {
+      console.warn('Could not set dataTransfer data:', err);
+      // We'll rely on the state variable in this case
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
+    e.preventDefault();
+
+    // Remove drag-over styling
+    e.currentTarget.classList.remove('drag-over');
+
+    // Don't process drops if submitted or showing correct answers
+    if (isSubmitted || showCorrectAnswer) return;
+
+    // Get the optionId from dataTransfer or state
+    let optionId = null;
+
+    try {
+      optionId = e.dataTransfer.getData('text/plain');
+    } catch (err) {
+      console.warn('Error getting data from dataTransfer:', err);
+    }
+
+    // Fall back to the state variable if dataTransfer doesn't work
+    if (!optionId && currentDraggedOptionId) {
+      optionId = currentDraggedOptionId;
+    }
+
+    if (!optionId) {
+      console.warn('No option ID found in drop data or state');
+      return; // Early return if no option ID found
+    }
+
+    setPlacedAnswers(prev => {
+      const newAnswers = { ...prev };
+      const previousOptionInTarget = newAnswers[targetId];
+
+      // Remove the option from its previous target if it was placed somewhere
+      Object.keys(newAnswers).forEach(tId => {
+        if (newAnswers[tId] === optionId) {
+          newAnswers[tId] = null;
+        }
+      });
+
+      // Place the option in the new target
+      newAnswers[targetId] = optionId;
+
+      // Check if all targets are filled after this change
+      const nowAllFilled = checkAllTargetsFilled(newAnswers);
+      setAllTargetsFilled(nowAllFilled);
+
+      // Auto-validate if all targets are filled
+      if (nowAllFilled && validateOnDrop && !isSubmitted && !showCorrectAnswer) {
+        setAutoValidating(true);
+      } else if (!nowAllFilled) {
+        setAutoValidating(false);
+      }
+
+      // Update available options
+      setAvailableOptions(currentOptions => {
+        let updated = [...currentOptions];
+
+        // Add back the option that was previously in this target (if any)
+        if (previousOptionInTarget) {
+          const prevOpt = question.options.find(o => o.option_id === previousOptionInTarget);
+          if (prevOpt && !updated.some(o => o.option_id === prevOpt.option_id)) {
+            updated.push(prevOpt);
+          }
+        }
+
+        // Remove the newly placed option
+        updated = updated.filter(opt => opt.option_id !== optionId);
+        return updated;
+      });
+
+      // Notify parent of change
+      onAnswerChange(newAnswers);
+
+      return newAnswers;
+    });
+
+    // Clear the tracked dragged option
+    setCurrentDraggedOptionId(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = 'move';
+  };
+  
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+  };
+  
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+  };
+
+  // Allow removing an item from a target back to the available options
+  const handleRemoveFromTarget = (targetId: string) => {
+    if (isSubmitted || showCorrectAnswer) return; // Prevent removal if submitted/showing answer
+    
+    const optionId = placedAnswers[targetId];
+    if (!optionId) return; // Nothing to remove
+    
+    // Update the answers state
+    setPlacedAnswers(prev => {
+      // Create a new answers object with the target set to null
+      const newAnswers: Record<string, string | null> = { ...prev, [targetId]: null };
+      
+      // Check if all targets are still filled after this removal
+      const stillAllFilled = checkAllTargetsFilled(newAnswers);
+      
+      // Since we're removing an item, targets are likely no longer all filled
+      setAllTargetsFilled(stillAllFilled);
+      
+      // Only turn off auto-validation if not all targets are filled
+      if (!stillAllFilled) {
+        setAutoValidating(false);
+      }
+      
+      // Notify parent component of the change
+      onAnswerChange(newAnswers);
+      return newAnswers;
+    });
+    
+    // Add the removed option back to available options
+    const removedOption = question.options.find(opt => opt.option_id === optionId);
+    if (removedOption) {
+      setAvailableOptions(prev => {
+        // Only add if it's not already in available options
+        if (!prev.some(o => o.option_id === optionId)) {
+          return [...prev, removedOption];
+        }
+        return prev;
+      });
+    }
+  };
+
+  return (
+    <div className="p-4 bg-white shadow-md rounded-lg">
+      {/* Debug message (only in development) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-2 p-2 bg-gray-100 text-xs">
+          <div>All targets filled: {allTargetsFilled ? 'true' : 'false'}</div>
+          <div>Auto validating: {autoValidating ? 'true' : 'false'}</div>
+          <div>Targets filled: {Object.entries(placedAnswers).filter(([_, val]) => val !== null).length}/{question.targets.length}</div>
+        </div>
+      )}
+
+      {/* Feedback area that shows when all targets are filled during auto-validation */}
+      {autoValidating && allTargetsFilled && !showCorrectAnswer && !isSubmitted && (
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md animate-fade-in-up">
+          <p className="flex items-center text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <span className="font-medium">All targets filled!</span> Showing immediate feedback below.
+          </p>
+        </div>
+      )}
+      
+      {allTargetsFilled && !autoValidating && !showCorrectAnswer && !isSubmitted && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md animate-fade-in-up">
+          <p className="flex items-center text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span className="font-medium">All targets filled!</span> Click "Submit Answer" when you're ready.
+          </p>
+        </div>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Draggable Options Area */}
+        <div className="border p-4 rounded-md bg-gray-50 min-h-[150px]">
+          <h4 className="text-md font-medium mb-2 text-gray-700">Available Items:</h4>
+          {availableOptions.length > 0 ? (
+            availableOptions.map(option => {
+              let currentOptionStyle = "p-2 mb-2 bg-blue-100 border border-blue-300 rounded shadow-sm hover:shadow-md transition-shadow";
+              let optionTitle = undefined;
+              const isInteractive = !(isSubmitted || showCorrectAnswer);
+              currentOptionStyle += isInteractive ? " cursor-grab" : " cursor-default";
+
+              if (showCorrectAnswer) {
+                const isCorrectForSomeTarget = question.correctPairs.find(cp => cp.option_id === option.option_id);
+                if (isCorrectForSomeTarget && !Object.values(placedAnswers).includes(option.option_id)) {
+                  // This option is correct for at least one target and is currently not placed.
+                  // Check if the target it's correct for is either empty or has a wrong item.
+                  const correctTargetInfo = question.correctPairs.find(cp => cp.option_id === option.option_id);
+                  if (correctTargetInfo) {
+                    const targetCurrentOption = placedAnswers[correctTargetInfo.target_id];
+                    if (!targetCurrentOption || targetCurrentOption !== option.option_id) {
+                      currentOptionStyle = "p-2 mb-2 bg-yellow-100 border border-yellow-400 rounded shadow-sm cursor-default"; 
+                      optionTitle = "This item could have been used correctly elsewhere.";
+                    }
+                  }
+                }
+              }
+
+              return (
+                <div
+                  key={option.option_id}
+                  draggable={isInteractive}
+                  onDragStart={(e) => isInteractive && handleDragStart(e, option.option_id)}
+                  onDragEnd={() => setCurrentDraggedOptionId(null)}
+                  className={`${currentOptionStyle} select-none touch-manipulation`} 
+                  title={optionTitle}
+                  data-option-id={option.option_id}
+                >
+                  {option.text}
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-gray-500 italic">All items placed.</p>
+          )}
+        </div>
+
+        {/* Drop Targets Area */}
+        <div className="space-y-4">
+          {question.targets.map(target => {
+            const placedOptionId = placedAnswers[target.target_id];
+            const isInteractive = !(isSubmitted || showCorrectAnswer);
+            
+            let dropZoneClassName = "p-3 border-2 border-dashed rounded min-h-[60px] bg-white flex items-center justify-center transition-colors";
+            let placedItemDivClassName = "p-2 rounded shadow-sm w-full text-center relative";
+
+            if (showCorrectAnswer) {
+              const correctPairForThisTarget = question.correctPairs.find(p => p.target_id === target.target_id);
+              if (placedOptionId) {
+                // An item is placed in this target
+                if (correctPairForThisTarget && correctPairForThisTarget.option_id === placedOptionId) {
+                  dropZoneClassName += " border-green-500";
+                  placedItemDivClassName += " bg-green-100 border border-green-400";
+                } else {
+                  dropZoneClassName += " border-red-500";
+                  placedItemDivClassName += " bg-red-100 border border-red-400";
+                }
+              } else {
+                // This target is empty
+                if (correctPairForThisTarget) {
+                  dropZoneClassName += " border-red-500"; // Should have had an item
+                } else {
+                  dropZoneClassName += " border-gray-300"; // Correctly empty
+                }
+              }
+            } else {
+              dropZoneClassName += " border-gray-300 hover:border-blue-400";
+            }
+
+            // Get validation result for auto-validation (only if autoValidating is true)
+            let validationClass = "";
+            let feedbackText = null;
+            
+            // Only show validation feedback if all targets are filled or showing correct answer
+            if ((autoValidating && allTargetsFilled) || showCorrectAnswer) {
+              // Find the correct pair for this target
+              const correctPair = question.correctPairs.find(p => p.target_id === target.target_id);
+              const placedOptionId = placedAnswers[target.target_id];
+              
+              // Check if placed option is correct
+              const isCorrect = correctPair && placedOptionId === correctPair.option_id;
+              
+              if (placedOptionId) {
+                if (isCorrect) {
+                  validationClass = " border-green-400 bg-green-50";
+                  feedbackText = (
+                    <div className="mt-2 text-xs text-green-600 font-medium">
+                      <span>✓ Correct</span>
+                    </div>
+                  );
+                } else {
+                  validationClass = " border-red-400 bg-red-50";
+                  feedbackText = (
+                    <div className="mt-2 text-xs text-red-600 font-medium">
+                      <span>✗ Incorrect</span>
+                    </div>
+                  );
+                }
+              }
+            }
+            
+            return (
+              <div key={target.target_id} className={`border p-4 rounded-md bg-gray-50${validationClass}`}>
+                <h4 className="text-md font-medium mb-2 text-gray-700">{target.text}</h4>
+                <div
+                  onDrop={isInteractive ? (e) => handleDrop(e, target.target_id) : undefined}
+                  onDragOver={isInteractive ? handleDragOver : undefined}
+                  onDragEnter={isInteractive ? handleDragEnter : undefined}
+                  onDragLeave={isInteractive ? handleDragLeave : undefined}
+                  className={`${dropZoneClassName} ${isInteractive ? 'transition-colors duration-200 ease-in-out cursor-pointer' : ''}`}
+                  data-target-id={target.target_id}
+                >
+                  {placedOptionId ? (
+                    <div className={placedItemDivClassName}>
+                      {question.options.find(opt => opt.option_id === placedOptionId)?.text}
+                      {isInteractive && (
+                        <button 
+                          onClick={() => handleRemoveFromTarget(target.target_id)}
+                          className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700 text-xs p-1 bg-red-100 rounded-full"
+                          title="Remove"
+                        >
+                          &#x2715; {/* Cross symbol */}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    showCorrectAnswer && question.correctPairs.find(p => p.target_id === target.target_id) ?
+                      <span className="text-xs text-green-700 italic">
+                        (Correct: {question.options.find(opt => opt.option_id === question.correctPairs.find(cp => cp.target_id === target.target_id)?.option_id)?.text || 'Item'})
+                      </span> :
+                      <span className="text-gray-400 italic">Drop here</span>
+                  )}
+                </div>
+                {/* Show feedback for auto-validation only if all targets are filled, or when showing correct answers */}
+                {((autoValidating && allTargetsFilled) || showCorrectAnswer) && placedOptionId && feedbackText}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DragAndDropQuestionComponent;
+
+```
+
 ### app/features/quiz/components/question-types/SingleSelectionComponent.tsx
 
 ```tsx
@@ -12162,9 +12401,10 @@ export default memo(SingleSelectionComponent);
 
 ```tsx
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion } from '../../../../types/quiz';
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
+import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
 
 interface QuestionTypeRendererProps {
   question: AnyQuestion;
@@ -12182,6 +12422,15 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
   isSubmitted,
   showCorrectAnswer,
 }) => {
+  // Type guard to check if question is defined
+  if (!question || !question.type) {
+    return (
+      <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
+        <p className="font-semibold text-red-700">Error: Invalid question object</p>
+      </div>
+    );
+  }
+
   switch (question.type) {
     case 'single_selection':
       return (
@@ -12203,9 +12452,17 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           showCorrectAnswer={showCorrectAnswer}
         />
       );
-    // Add other question type cases as they are implemented
-    // case 'drag_and_drop':
-    //   return <DragAndDropComponent ... />;
+    case 'drag_and_drop':
+      return (
+        <DragAndDropQuestionComponent
+          question={question as DragAndDropQuestion}
+          onAnswerChange={onAnswerSelect}
+          userAnswer={selectedAnswer as Record<string, string | null> | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={showCorrectAnswer}
+          validateOnDrop={true} // Enable immediate feedback validation
+        />
+      );
     default:
       return (
         <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
@@ -12397,6 +12654,10 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
           selectedAnswers.length === correctAnswers.length && 
           selectedAnswers.every(id => correctAnswers.includes(id)) &&
           correctAnswers.every(id => selectedAnswers.includes(id));
+      } else if (action.payload.questionType === 'drag_and_drop') {
+        // For drag-and-drop, we'll rely on server validation
+        console.log('Drag and drop answer submitted:', action.payload.answer);
+        // Don't set isClientCorrect here, will be updated by server response
       }
 
       return {
@@ -12481,6 +12742,7 @@ export const useQuizState = () => {
 'use client';
 
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { useQuiz } from '../context/QuizContext';
 import { QuizService } from '../services/quizService';
 import QuestionCard from '../components/QuestionCard';
@@ -12489,18 +12751,20 @@ import QuizNavigation from '../components/QuizNavigation';
 import QuizCompletionSummary from '../components/QuizCompletionSummary';
 
 // Quiz Runner Component
-const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
+const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ quizId, questionType }) => {
   const { state, dispatch } = useQuiz();
 
-  // Load quiz data on component mount
+  // Load quiz data on component mount or when quizId/questionType changes
   useEffect(() => {
     const loadQuiz = async () => {
       if (!quizId) return;
       
+      // Reset quiz state when question type changes to avoid confusion
+      dispatch({ type: 'RESET_QUIZ' });
       dispatch({ type: 'LOAD_QUIZ_START' });
       
       try {
-        const quizData = await QuizService.fetchQuizById(quizId);
+        const quizData = await QuizService.fetchQuizById(quizId, questionType);
         dispatch({ type: 'LOAD_QUIZ_SUCCESS', payload: quizData });
       } catch (error: any) {
         console.error("Error fetching quiz data:", error);
@@ -12512,7 +12776,7 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
     };
     
     loadQuiz();
-  }, [quizId, dispatch]);
+  }, [quizId, questionType, dispatch]);
 
   // Loading states
   if (state.isLoading) {
@@ -12533,10 +12797,84 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
   }
 
   // No quiz data
-  if (!state.quiz || state.questions.length === 0) {
+  if (!state.quiz) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-custom-light-bg">
-        <p className="text-xl text-custom-dark-blue">Quiz not found or no questions available.</p>
+        <p className="text-xl text-custom-dark-blue">Quiz not found.</p>
+      </div>
+    );
+  }
+  
+  // Quiz loaded but no questions match the filter
+  if (state.questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-custom-light-bg py-6 px-4 md:px-6">
+        <div className="quiz-container max-w-3xl mx-auto">
+          <header className="text-center mb-8 animate-fade-in">
+            <h1 className="text-3xl md:text-4xl font-bold text-custom-dark-blue mb-3 relative inline-block pb-2">
+              {state.quiz.title}
+              <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
+            </h1>
+            
+            {/* Filter by question type */}
+            <div className="mb-6">
+              <div className="flex flex-wrap justify-center gap-2 mb-2">
+                <Link 
+                  href={`/quiz-test/${quizId}`}
+                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  All Questions
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/single_selection`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Single Selection
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/multi`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Multiple Selection
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/drag_and_drop`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Drag and Drop
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/dropdown_selection`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Dropdown
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/order`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                >
+                  Order
+                </Link>
+              </div>
+              <div className="mt-2">
+                <Link 
+                  href={`/quiz-test/${quizId}`}
+                  className="text-custom-primary text-sm hover:underline flex items-center justify-center"
+                >
+                  View all question types
+                </Link>
+              </div>
+            </div>
+          </header>
+          
+          <div className="flex justify-center items-center p-10 bg-white rounded-xl shadow-md">
+            <p className="text-xl text-custom-dark-blue">
+              {questionType 
+                ? `No questions of type "${questionType}" available in this quiz.` 
+                : "No questions available in this quiz."}
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -12567,6 +12905,46 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
             <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
           </h1>
           
+          {/* Filter by question type */}
+          <div className="mb-6 flex flex-wrap justify-center gap-2">
+            <Link 
+              href={`/quiz-test/${quizId}`}
+              className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              All Questions
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/single_selection`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Single Selection
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/multi`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Multiple Selection
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/drag_and_drop`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Drag and Drop
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/dropdown_selection`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Dropdown
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/order`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+            >
+              Order
+            </Link>
+          </div>
+          
           <QuizProgress 
             currentIndex={state.currentQuestionIndex} 
             totalQuestions={state.questions.length} 
@@ -12579,14 +12957,33 @@ const QuizPageContent: React.FC<{ quizId: string }> = ({ quizId }) => {
       </div>
     </div>
   );
-};
-
-// Main Quiz Page Component that can be used directly
-const QuizPage: React.FC<{ quizId: string }> = (props) => {
+};  // Main Quiz Page Component that can be used directly
+const QuizPage: React.FC<{ quizId: string; questionType?: string }> = (props) => {
   return <QuizPageContent {...props} />;
 };
 
 export default QuizPage;
+
+// Define list of available question types for easy import elsewhere
+export const availableQuestionTypes = [
+  { type: 'single_selection', name: 'Single Selection' },
+  { type: 'multi', name: 'Multiple Selection' },
+  { type: 'drag_and_drop', name: 'Drag and Drop' },
+  { type: 'dropdown_selection', name: 'Dropdown' },
+  { type: 'order', name: 'Order' }
+];
+
+```
+
+### app/features/quiz/pages/QuizPage.tsx.new
+
+```new
+
+```
+
+### app/features/quiz/services/quizApiClient.ts
+
+```typescript
 
 ```
 
@@ -12597,9 +12994,13 @@ import { Quiz } from '../../../types/quiz';
 
 // Client-side service for fetching quiz data
 export class QuizService {
-  // Fetch quiz by ID
-  static async fetchQuizById(quizId: string): Promise<Quiz> {
-    const response = await fetch(`/api/quiz/${quizId}`);
+  // Fetch quiz by ID with optional question type filter
+  static async fetchQuizById(quizId: string, questionType?: string): Promise<Quiz> {
+    const url = questionType 
+      ? `/api/quiz/${quizId}?questionType=${questionType}`
+      : `/api/quiz/${quizId}`;
+    
+    const response = await fetch(url);
     
     if (!response.ok) {
       const errorData = await response.json();
@@ -13867,6 +14268,116 @@ export default async function Author({
 
 ```
 
+### app/quiz-type-filters/layout.tsx
+
+```tsx
+import React from 'react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Quiz Type Filters | Test Your Knowledge',
+  description: 'Filter quizzes by question type - single selection, multiple choice, drag and drop, and more!',
+};
+
+export default function QuizTypeFiltersLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
+
+```
+
+### app/quiz-type-filters/page.tsx
+
+```tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { availableQuestionTypes } from '../features/quiz/pages/QuizPage';
+
+// Sample quizzes - in a real implementation you'd fetch these from an API
+const SAMPLE_QUIZZES = [
+  { id: 'azure-a102', title: 'Microsoft Azure A102 Certification' },
+  { id: 'aws-fundamentals', title: 'AWS Cloud Fundamentals' },
+  { id: 'react-basics', title: 'React Basics Quiz' },
+];
+
+export default function QuizTypesPage() {
+  const [quizzes, setQuizzes] = useState(SAMPLE_QUIZZES);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // In a real implementation, you'd fetch quizzes from the API
+  // useEffect(() => {
+  //   const fetchQuizzes = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       const response = await fetch('/api/quizzes');
+  //       const data = await response.json();
+  //       setQuizzes(data);
+  //     } catch (error) {
+  //       console.error("Error fetching quizzes:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   
+  //   fetchQuizzes();
+  // }, []);
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-custom-light-bg flex items-center justify-center">
+        <p className="text-xl text-custom-dark-blue">Loading quizzes...</p>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="min-h-screen bg-custom-light-bg py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8 text-custom-dark-blue">
+          Quizzes with Question Type Filtering
+        </h1>
+        
+        {quizzes.map((quiz) => (
+          <div key={quiz.id} className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4 text-custom-primary">{quiz.title}</h2>
+            <div className="mb-6">
+              <h3 className="text-lg font-medium mb-2 text-gray-700">Take quiz with all question types:</h3>
+              <Link 
+                href={`/quiz-test/${quiz.id}`}
+                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-4"
+              >
+                All Questions
+              </Link>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-medium mb-2 text-gray-700">Filter by question type:</h3>
+              <div className="flex flex-wrap gap-2">
+                {availableQuestionTypes.map((type) => (
+                  <Link
+                    key={type.type}
+                    href={`/quiz-test/${quiz.id}/${type.type}`}
+                    className="px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                  >
+                    {type.name} Questions
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+```
+
 ### app/dashboard/layout.tsx
 
 ```tsx
@@ -14029,168 +14540,6 @@ export default TOS;
 
 ```
 
-### app/components/QuestionCard.tsx
-
-```tsx
-'use client';
-
-import React from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, BaseQuestion } from '../types/quiz';
-import SingleSelectionComponent from './question-types/SingleSelectionComponent';
-import MultiChoiceComponent from './question-types/MultiChoiceComponent';
-import { useQuiz } from '../context/QuizContext';
-// TODO: Import other question type components as they are created
-
-// Import an SVG icon for the feedback box, or use a character
-const InfoIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-custom-error">
-    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z" fill="currentColor"/>
-  </svg>
-);
-const CheckCircleIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-custom-success">
-        <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-.997-6l6.06-6.061L15.65 8.527 11.003 13.17l-2.12-2.121L7.47 12.461l3.533 3.539z" fill="currentColor" />
-    </svg>
-);
-
-interface QuestionCardProps {
-  question: AnyQuestion;
-  // Removed props that will now come from context: 
-  // onAnswerSelect, selectedAnswer, isSubmitted, showCorrectAnswer
-}
-
-const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
-  const { state, dispatch, submitAndScoreAnswer } = useQuiz();
-
-  const userAnswerDetails = state.userAnswers[question.id];
-  const selectedAnswerForThisQuestion = userAnswerDetails?.answer;
-  const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
-  // Show correct answer styling if quiz is complete OR (feedback is shown AND answer is submitted)
-  const showCorrectAnswerStyling = state.isQuizComplete || (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
-
-  const handleLocalAnswerSelection = async (answerPayload: any) => {
-    if (isSubmittedForThisQuestion && userAnswerDetails.isCorrect !== undefined) return;
-    if (!submitAndScoreAnswer) return;
-    // Explicitly cast question to AnyQuestion to satisfy linter, though it should already be inferred
-    await submitAndScoreAnswer(question as AnyQuestion, answerPayload);
-  };
-
-  const renderQuestionType = () => {
-    switch (question.type) {
-      case 'single_selection':
-        return (
-          <SingleSelectionComponent 
-            question={question as SingleSelectionQuestion} 
-            onAnswerSelect={(optionId) => {
-              handleLocalAnswerSelection(optionId);
-            }}
-            selectedOptionId={selectedAnswerForThisQuestion as string | undefined}
-            isSubmitted={isSubmittedForThisQuestion}
-            showCorrectAnswer={showCorrectAnswerStyling}
-          />
-        );
-      case 'multi':
-        return (
-          <MultiChoiceComponent
-            question={question as MultiChoiceQuestion}
-            onAnswerSelect={(optionIds) => {
-              handleLocalAnswerSelection(optionIds);
-            }}
-            selectedOptionIds={selectedAnswerForThisQuestion as string[] | undefined}
-            isSubmitted={isSubmittedForThisQuestion}
-            showCorrectAnswer={showCorrectAnswerStyling}
-          />
-        );
-      // TODO: Add cases for other question types as they are implemented
-      default:
-        return (
-          <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
-            <p className="font-semibold text-red-700">Error: Unknown question type: {question.type}</p>
-          </div>
-        );
-    }
-  };
-
-  // Use the server-verified isCorrect from userAnswers if available, otherwise it's undefined.
-  const isCorrectServerVerified = userAnswerDetails?.isCorrect;
-  const difficultyText = question.difficulty.charAt(0).toUpperCase() + question.difficulty.slice(1);
-
-  // Determine feedback box styles
-  let feedbackBoxBorderColor = 'border-custom-error';
-  let feedbackBoxBgColor = 'bg-red-500/[.05]'; // using custom error with opacity
-  let feedbackBoxTextColor = 'text-custom-error';
-  let FeedbackIcon = InfoIcon;
-
-  if (isCorrectServerVerified === true) {
-    feedbackBoxBorderColor = 'border-custom-success';
-    feedbackBoxBgColor = 'bg-green-500/[.05]'; // using custom success with opacity
-    feedbackBoxTextColor = 'text-custom-success';
-    FeedbackIcon = CheckCircleIcon;
-  }
-
-  return (
-    // Applying .question-card styles and animation
-    <div className="bg-white rounded-rounded-lg-ref shadow-shadow-strong p-7 md:p-10 mb-8 relative overflow-hidden animate-card-appear">
-      {/* Card Decoration - simplified with Tailwind */}
-      <div className="card-decoration absolute top-0 right-0 w-24 h-24 md:w-36 md:h-36 bg-primary-gradient opacity-5 rounded-bl-full z-0"></div>
-
-      <div className="relative z-10"> {/* Content wrapper for z-indexing above decoration */}
-        <div className="question-meta flex flex-col sm:flex-row gap-3 mb-6">
-          <div className="meta-badge inline-flex items-center py-1.5 px-4 rounded-rounded-full font-semibold text-sm shadow-shadow-1 bg-custom-primary/[.1] text-custom-primary border-l-4 border-custom-primary">
-            Points: {question.points}
-          </div>
-          <div className={`meta-badge inline-flex items-center py-1.5 px-4 rounded-rounded-full font-semibold text-sm shadow-shadow-1 bg-yellow-500/[.1] text-yellow-600 border-l-4 border-yellow-500`}>
-            Difficulty: {difficultyText}
-          </div>
-        </div>
-
-        <section className="question-section">
-          <h2 className="text-xl md:text-2xl font-bold text-custom-dark-blue mb-6 relative inline-block pb-1.5">
-            Question
-            <span className="absolute left-0 bottom-0 w-10 h-0.5 bg-custom-primary rounded-rounded-full"></span>
-          </h2>
-          <div className="question-text text-base md:text-lg text-custom-gray-1 mb-6 whitespace-pre-wrap">
-            {question.question} 
-            {/* TODO: If question has requirements list or specific prompt, render here */}
-          </div>
-        </section>
-
-        {renderQuestionType()}
-
-        {/* Explanation Box - styled like feedback but neutral */}
-        {((state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion) || state.isQuizComplete) && question.explanation && (
-          <div className="feedback-box bg-blue-500/[.05] border-custom-primary border-l-4 rounded-rounded-md-ref p-5 mt-6 shadow-shadow-1 animate-fade-in-up">
-            <h3 className="feedback-header flex items-center gap-2 mb-2 font-bold text-custom-primary text-lg">
-              {/* Optional: Icon for explanation */}
-              Explanation:
-            </h3>
-            <div className="feedback-content text-custom-gray-1 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-              {question.explanation}
-            </div>
-          </div>
-        )}
-        
-        {/* Feedback Message Box (Correct/Incorrect) */}
-        {state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion && isCorrectServerVerified !== undefined && (
-            <div className={`feedback-box ${feedbackBoxBgColor} ${feedbackBoxBorderColor} border-l-4 rounded-rounded-md-ref p-5 mt-6 shadow-shadow-1 animate-fade-in-up`}>
-              <div className={`feedback-header flex items-center gap-2 mb-2 font-bold ${feedbackBoxTextColor} text-lg`}>
-                <FeedbackIcon />
-                { isCorrectServerVerified ? question.feedback_correct.split('!')[0] : question.feedback_incorrect.split('!')[0] }!
-              </div>
-              <div className="feedback-content text-custom-gray-1 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                {/* Show the rest of the feedback message if it exists after the first sentence */}
-                { isCorrectServerVerified ? question.feedback_correct.split('!').slice(1).join('!').trim() : question.feedback_incorrect.split('!').slice(1).join('!').trim() }
-              </div>
-            </div>
-          )}
-      </div>
-    </div>
-  );
-};
-
-export default QuestionCard; 
-```
-
 ### app/components/QuizCTA.tsx
 
 ```tsx
@@ -14215,10 +14564,10 @@ const QuizCTA = () => {
             Take the Challenge!
           </Link>
           <Link
-            href="/question-types"
-            className="inline-block bg-purple-800 hover:bg-purple-900 text-white font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+            href="/quiz-type-filters"
+            className="inline-block bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
-            Explore Question Types
+            Filtered Quizzes
           </Link>
         </div>
       </div>
@@ -14229,253 +14578,10 @@ const QuizCTA = () => {
 export default QuizCTA; 
 ```
 
-### app/components/question-types/MultiChoiceComponent.tsx
+### app/question-types-demo/type-client-page.tsx
 
 ```tsx
-'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import { MultiChoiceQuestion, SelectionOption } from '../../types/quiz';
-
-// Icons for options (can be improved or replaced with SVG)
-const CorrectIcon = () => <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>;
-const IncorrectIcon = () => <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>;
-
-interface MultiChoiceComponentProps {
-  question: MultiChoiceQuestion;
-  onAnswerSelect: (optionIds: string[]) => void;
-  selectedOptionIds?: string[];
-  isSubmitted?: boolean;
-  showCorrectAnswer?: boolean;
-}
-
-const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
-  question,
-  onAnswerSelect,
-  selectedOptionIds = [],
-  isSubmitted = false,
-  showCorrectAnswer = false,
-}) => {
-  // Determine the correct number of answers to select
-  const correctAnswersCount = question.correctAnswerOptionIds.length;
-  
-  const handleOptionClick = (optionId: string) => {
-    if (!isSubmitted) {
-      // If option is already selected, allow deselecting it
-      if (selectedOptionIds.includes(optionId)) {
-        const newSelectedOptions = selectedOptionIds.filter(id => id !== optionId);
-        onAnswerSelect(newSelectedOptions);
-      } 
-      // If we haven't reached the limit yet, allow selecting the option
-      else if (selectedOptionIds.length < correctAnswersCount) {
-        const newSelectedOptions = [...selectedOptionIds, optionId];
-        onAnswerSelect(newSelectedOptions);
-        
-        // If we've reached the required number of selections, auto-submit
-        if (newSelectedOptions.length === correctAnswersCount) {
-          setTimeout(() => onAnswerSelect(newSelectedOptions), 150); // Small delay for better UX
-        }
-      }
-      // If we've reached the limit, don't allow more selections
-    }
-  };
-
-  return (
-    <div className="options-container grid grid-cols-1 gap-4 mb-8">
-      <p className="text-sm text-gray-500 mb-2 font-medium">
-        Select {question.correctAnswerOptionIds.length} answer{question.correctAnswerOptionIds.length > 1 ? 's' : ''} ({selectedOptionIds.length}/{question.correctAnswerOptionIds.length} selected)
-      </p>
-      
-      {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionIds.includes(option.option_id);
-        const isCorrect = question.correctAnswerOptionIds.includes(option.option_id);
-        const optionLetter = String.fromCharCode(65 + index);
-        
-        // Base classes matching .option from reference
-        let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
-        let stateStyle = "border-custom-gray-3"; // Default border
-        let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
-        
-        // Apply feedback styling if necessary
-        if (isSubmitted || showCorrectAnswer) {
-          if (isCorrect) {
-            stateStyle = "border-custom-success bg-green-500/[.05]";
-          } else if (isSelected && !isCorrect) {
-            stateStyle = "border-custom-error bg-red-500/[.05]";
-          } else {
-            stateStyle = "border-custom-gray-3 bg-gray-50 opacity-70";
-            hoverStyle = "cursor-default";
-          }
-        } else if (isSelected) {
-          stateStyle = "border-custom-primary ring-2 ring-custom-primary shadow-shadow-2";
-        }
-        
-        return (
-          <motion.button
-            key={option.option_id}
-            type="button"
-            onClick={() => handleOptionClick(option.option_id)}
-            className={`${baseStyle} ${stateStyle} ${hoverStyle}`}
-            disabled={isSubmitted}
-            aria-pressed={isSelected}
-            whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
-            whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
-            layout
-          >
-            {/* Accent border */}
-            <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${
-              isSelected ? 'bg-custom-primary' : 
-              isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : 
-              isSelected && !isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-error' : 
-              'bg-custom-gray-3'
-            } ${isSubmitted ? '' : 'group-hover:bg-custom-primary'}`}></span>
-
-            <div className="option-content flex items-center justify-between pl-4">
-              <div className="option-text text-base md:text-lg font-medium text-custom-gray-1">
-                <span className="option-letter inline-block w-6 font-bold text-custom-primary mr-2">{optionLetter}.</span>
-                {option.text}
-              </div>
-              
-              {/* Checkbox indicator */}
-              <div className={`w-6 h-6 border-2 rounded flex items-center justify-center mr-2 ${
-                isSelected ? 'bg-custom-primary border-custom-primary' : 'border-gray-300'
-              }`}>
-                {isSelected && <span className="text-white">✓</span>}
-              </div>
-              
-              {/* Show feedback icons when appropriate */}
-              {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
-              {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
-            </div>
-          </motion.button>
-        );
-      })}
-    </div>
-  );
-};
-
-export default MultiChoiceComponent;
-
-```
-
-### app/components/question-types/SingleSelectionComponent.tsx
-
-```tsx
-'use client';
-
-import React from 'react';
-import { motion } from 'framer-motion';
-import { SingleSelectionQuestion, SelectionOption } from '../../types/quiz'; // Corrected path
-
-// Icons for options (can be improved or replaced with SVG)
-const CorrectIcon = () => <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>;
-const IncorrectIcon = () => <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>;
-
-interface SingleSelectionComponentProps {
-  question: SingleSelectionQuestion;
-  onAnswerSelect: (optionId: string) => void; // Callback to notify parent of selection
-  selectedOptionId?: string | null; // Controlled by parent (QuizContext)
-  isSubmitted?: boolean; // To disable controls after submission or show correct/incorrect states
-  showCorrectAnswer?: boolean; // To highlight the correct answer after evaluation
-}
-
-const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
-  question,
-  onAnswerSelect,
-  selectedOptionId,
-  isSubmitted = false,
-  showCorrectAnswer = false,
-}) => {
-
-  const handleOptionClick = (optionId: string) => {
-    if (!isSubmitted) {
-      onAnswerSelect(optionId);
-    }
-  };
-
-  return (
-    // Options container with grid layout and gap per reference
-    <div className="options-container grid grid-cols-1 gap-4 mb-8">
-      {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionId === option.option_id;
-        const isCorrect = question.correctAnswerOptionId === option.option_id;
-        // Generate option letter (A, B, C...)
-        const optionLetter = String.fromCharCode(65 + index);
-        
-        // Base classes matching .option from reference
-        let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
-        let stateStyle = "border-custom-gray-3"; // Default border
-        let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
-        let accentBorderStyle = "before:content-[''] before:absolute before:top-0 before:left-0 before:w-1 before:h-full before:bg-custom-gray-3 before:transition-all before:duration-200";
-        let hoverAccentBorderStyle = isSubmitted ? "" : "hover:before:bg-custom-primary";
-
-        if (isSubmitted || showCorrectAnswer) {
-          // Feedback state 
-          if (isCorrect) {
-            stateStyle = "border-custom-success bg-green-500/[.05]";
-            accentBorderStyle = "before:bg-custom-success";
-            hoverAccentBorderStyle = ""; // No hover change on feedback
-          } else if (isSelected && !isCorrect) {
-            stateStyle = "border-custom-error bg-red-500/[.05]";
-            accentBorderStyle = "before:bg-custom-error";
-            hoverAccentBorderStyle = ""; 
-          } else {
-            // Non-selected, non-correct options during feedback
-            stateStyle = "border-custom-gray-3 bg-gray-50 opacity-70";
-            accentBorderStyle = "before:bg-custom-gray-3";
-            hoverStyle = "cursor-default"; // Make non-interactive
-            hoverAccentBorderStyle = "";
-          }
-        } else {
-          // Interactive state
-          if (isSelected) {
-            // Using shadow for selected state instead of border to avoid layout shift
-            stateStyle = "border-custom-primary ring-2 ring-custom-primary shadow-shadow-2"; 
-            accentBorderStyle = "before:bg-custom-primary";
-          } else {
-            // Default interactive state is handled by baseStyle + hoverStyle
-          }
-        }
-        
-        return (
-          // Applying styles and Framer Motion animations
-          <motion.button
-            key={option.option_id}
-            type="button"
-            onClick={() => handleOptionClick(option.option_id)}
-            // Combine all style parts. Note: before: pseudo-elements need to be handled carefully.
-            // Tailwind doesn't directly support pseudo-elements in utility classes like this easily.
-            // We might need custom CSS or a different approach for the accent border.
-            // For now, applying styles that work directly.
-            // The accent border is simplified here. A dedicated span could work better.
-            className={`${baseStyle} ${stateStyle} ${hoverStyle}`}
-            disabled={isSubmitted}
-            aria-pressed={isSelected}
-            whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
-            whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
-            layout // Animate layout changes smoothly
-          >
-            {/* Accent border implemented with a span */}
-            <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${isSelected ? 'bg-custom-primary' : isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : isSelected && !isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-error' : 'bg-custom-gray-3'} ${isSubmitted ? '' : 'group-hover:bg-custom-primary'}`}></span>
-
-            <div className="option-content flex items-center justify-between pl-4"> {/* Added padding left for accent border space */}
-              <div className="option-text text-base md:text-lg font-medium text-custom-gray-1">
-                <span className="option-letter inline-block w-6 font-bold text-custom-primary mr-2">{optionLetter}.</span>
-                {option.text}
-              </div>
-              {/* Show icon only in feedback state */}
-              {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
-              {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
-            </div>
-          </motion.button>
-        );
-      })}
-    </div>
-  );
-};
-
-export default SingleSelectionComponent; 
 ```
 
 ### app/question-types-demo/[type]/page.tsx
@@ -14486,8 +14592,8 @@ export default SingleSelectionComponent;
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType } from '../../types/quiz';
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
-import MultiChoiceComponent from '../../components/question-types/MultiChoiceComponent';
-import { fetchRandomQuestionByTypeAndFilters } from '../../lib/quizService'; // Import the new service function
+import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
+import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
 
 export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);
@@ -14924,7 +15030,7 @@ export default function Login() {
 
 ```
 
-### app/lib/quizService.ts
+### app/lib/supabaseQuizService.ts
 
 ```typescript
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -14934,17 +15040,26 @@ import {
   SingleSelectionQuestion, 
   MultiChoiceQuestion,
   SelectionOption,
+  DragAndDropTarget,
+  DragAndDropOption,
+  DragAndDropCorrectPair,
+  DragAndDropQuestion,
   Quiz // Will be needed for fetchQuizById
 } from '../types/quiz';
 
 // Initialize Supabase client
-// Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set in your environment
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Using hardcoded values from .env file for debugging
+const supabaseUrl = "https://rvwvnralrlsdtugtgict.supabase.co";
+const supabaseServiceRoleKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2d3ZucmFscmxzZHR1Z3RnaWN0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTQ0NzM0NCwiZXhwIjoyMDYxMDIzMzQ0fQ.hFRjn5zq24WmKEoCLbWDRUY6dUdEjlPS-c4OemCaFM4";
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error('Supabase URL or Service Role Key is not defined in environment variables.');
-}
+console.log('Supabase Environment Variables:');
+console.log('URL:', supabaseUrl ? 'Defined' : 'Undefined');
+console.log('Service Role Key:', supabaseServiceRoleKey ? 'Defined' : 'Undefined');
+
+// No need to check for undefined since we're using hardcoded values
+// if (!supabaseUrl || !supabaseServiceRoleKey) {
+//   throw new Error('Supabase URL or Service Role Key is not defined in environment variables.');
+// }
 
 const supabase: SupabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: { persistSession: false } // Recommended for server-side clients
@@ -15063,15 +15178,92 @@ export async function enrichQuestionWithDetails(
       console.error(`Unexpected error enriching multi question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
+  } else if (baseQuestion.type === 'drag_and_drop') {
+    try {
+      // Fetch targets for the drag and drop question
+      const { data: targetsData, error: targetsError } = await supabase
+        .from('drag_and_drop_targets')
+        .select('target_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (targetsError) {
+        console.error(`Error fetching targets for drag_and_drop question ${baseQuestion.id}:`, targetsError.message);
+        return null;
+      }
+
+      // Fetch options for the drag and drop question
+      const { data: optionsData, error: optionsError } = await supabase
+        .from('drag_and_drop_options')
+        .select('option_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (optionsError) {
+        console.error(`Error fetching options for drag_and_drop question ${baseQuestion.id}:`, optionsError.message);
+        return null;
+      }
+
+      // Fetch correct pairs for the drag and drop question
+      const { data: correctPairsData, error: correctPairsError } = await supabase
+        .from('drag_and_drop_correct_pairs')
+        .select('option_id, target_id')
+        .eq('question_id', baseQuestion.id);
+
+      if (correctPairsError) {
+        console.error(`Error fetching correct pairs for drag_and_drop question ${baseQuestion.id}:`, correctPairsError.message);
+        return null;
+      }
+
+      const typedTargets: DragAndDropTarget[] = (targetsData || []).map((target: any) => ({
+        target_id: target.target_id,
+        text: target.text,
+      }));
+
+      const typedOptions: DragAndDropOption[] = (optionsData || []).map((option: any) => ({
+        option_id: option.option_id,
+        text: option.text,
+      }));
+
+      const typedCorrectPairs: DragAndDropCorrectPair[] = (correctPairsData || []).map((pair: any) => ({
+        option_id: pair.option_id,
+        target_id: pair.target_id,
+      }));
+
+      // Check if we have the minimum required data
+      if (!typedTargets.length) {
+        console.warn(`No targets found for drag_and_drop question ${baseQuestion.id}`);
+        return null;
+      }
+      if (!typedOptions.length) {
+        console.warn(`No options found for drag_and_drop question ${baseQuestion.id}`);
+        return null;
+      }
+      if (!typedCorrectPairs.length) {
+        console.warn(`No correct pairs found for drag_and_drop question ${baseQuestion.id}`);
+        return null;
+      }
+
+      const dragAndDropQuestion: DragAndDropQuestion = {
+        ...baseQuestion,
+        type: 'drag_and_drop',
+        targets: typedTargets,
+        options: typedOptions,
+        correctPairs: typedCorrectPairs,
+      };
+      return dragAndDropQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching drag_and_drop question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
   } else {
     console.warn(`enrichQuestionWithDetails: Unhandled question type '${baseQuestion.type}' for Q ID ${baseQuestion.id}. Returning null.`);
     return null; 
   }
 }
 
-// Placeholder for fetchQuizById - to be implemented next
 export async function fetchQuizById(
   quizId: string,
+  questionType?: string
 ): Promise<Quiz | null> {
   try {
     // 1. Fetch quiz metadata
@@ -15094,11 +15286,19 @@ export async function fetchQuizById(
       return null;
     }
 
-    // 2. Fetch base questions for the quiz
-    const { data: baseQuestionsData, error: questionsError } = await supabase
+    // 2. Fetch base questions for the quiz, with optional type filter
+    let query = supabase
       .from('questions')
       .select('*') // Select all base question fields
       .eq('quiz_tag', quizId);
+      
+    // Apply type filter if provided
+    if (questionType) {
+      query = query.eq('type', questionType);
+    }
+    
+    // Execute the query
+    const { data: baseQuestionsData, error: questionsError } = await query;
 
     if (questionsError) {
       console.error(`Error fetching questions for quiz ${quizId}:`, questionsError.message);
@@ -15407,20 +15607,25 @@ export async function GET(req: NextRequest) {
 
 ```typescript
 import { NextResponse } from 'next/server';
-import { fetchQuizById } from '../../../lib/quizService'; // We'll keep using the server-side service for API routes
+import { fetchQuizById } from '../../../lib/supabaseQuizService'; // We'll keep using the server-side service for API routes
 
 export async function GET(
-  request: Request, // Added request parameter, though not used for query params here
+  request: Request,
   { params }: { params: { quizId: string } }
 ) {
   const quizId = params.quizId;
+  
+  // Extract questionType from URL if present
+  const url = new URL(request.url);
+  const questionType = url.searchParams.get('questionType');
 
   if (!quizId) {
     return NextResponse.json({ error: 'Quiz ID is required' }, { status: 400 });
   }
 
   try {
-    const quiz = await fetchQuizById(quizId);
+    // Pass questionType to the fetchQuizById function
+    const quiz = await fetchQuizById(quizId, questionType || undefined);
     if (!quiz) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
     }
@@ -15664,6 +15869,30 @@ export default async function QuizTestPage({ params }: { params: { quizId: strin
 
 ```
 
+### app/quiz-test/[quizId]/type-client-page.tsx
+
+```tsx
+'use client';
+
+import React from 'react';
+import { QuizProvider } from '../../../../features/quiz/context/QuizContext';
+import QuizPage from '../../../../features/quiz/pages/QuizPage';
+
+interface QuizTypeClientPageProps {
+  quizId: string;
+  questionType: string;
+}
+
+export default function QuizTypeClientPage({ quizId, questionType }: QuizTypeClientPageProps) {
+  return (
+    <QuizProvider>
+      <QuizPage quizId={quizId} questionType={questionType} />
+    </QuizProvider>
+  );
+}
+
+```
+
 ### app/quiz-test/[quizId]/page-updated.tsx
 
 ```tsx
@@ -15870,11 +16099,16 @@ import React from 'react';
 import { QuizProvider } from '../../features/quiz/context/QuizContext';
 import QuizPage from '../../features/quiz/pages/QuizPage';
 
-// This is a client component that receives the quizId as a prop
-export default function ClientQuizPage({ quizId }: { quizId: string }) {
+// This is a client component that receives the quizId and optional questionType as props
+interface ClientQuizPageProps {
+  quizId: string;
+  questionType?: string;
+}
+
+export default function ClientQuizPage({ quizId, questionType }: ClientQuizPageProps) {
   return (
     <QuizProvider>
-      <QuizPage quizId={quizId} />
+      <QuizPage quizId={quizId} questionType={questionType} />
     </QuizProvider>
   );
 }
@@ -15900,6 +16134,111 @@ const QuizTestPage: React.FC<{ params: { quizId: string } }> = ({ params }) => {
 };
 
 export default QuizTestPage;
+
+```
+
+### app/quiz-test/[quizId]/[questionType]/page.tsx
+
+```tsx
+import React from 'react';
+import ClientQuizPage from '../client-page';
+
+// This is a server component that properly handles async params in Next.js 15
+export default async function QuizTestByTypePage({ params }: { params: { quizId: string, questionType: string } }) {
+  // Using server component to access params properly
+  const { quizId, questionType } = params;
+  
+  // Pass the quizId and questionType to the client component
+  return <ClientQuizPage quizId={quizId} questionType={questionType} />;
+}
+
+```
+
+### app/quiz-test/[quizId]/questions/page.tsx
+
+```tsx
+import React from 'react';
+import Link from 'next/link';
+import { fetchQuizById } from '../../../lib/supabaseQuizService';
+
+export default async function QuestionTypesListPage({ params }: { params: { quizId: string } }) {
+  const quizId = params.quizId;
+  
+  // Fetch the quiz data to get all available question types
+  const quiz = await fetchQuizById(quizId);
+  
+  if (!quiz) {
+    return (
+      <div className="min-h-screen bg-custom-light-bg py-12 px-4">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold text-custom-dark-blue mb-6">Quiz Not Found</h1>
+          <p className="mb-6">The quiz you're looking for could not be found.</p>
+          <Link href="/" className="text-custom-primary hover:underline">
+            Return to Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
+  // Get unique question types from the quiz
+  const questionTypes = Array.from(
+    new Set(quiz.questions.map(question => question.type))
+  );
+  
+  return (
+    <div className="min-h-screen bg-custom-light-bg py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold text-custom-dark-blue mb-6">{quiz.title}</h1>
+        <p className="mb-6">Select a question type to practice:</p>
+        
+        <div className="mb-8">
+          <Link 
+            href={`/quiz-test/${quizId}`} 
+            className="inline-block bg-custom-primary text-white px-4 py-2 rounded-lg mb-4 mr-4 hover:bg-custom-primary-dark transition"
+          >
+            All Questions ({quiz.questions.length})
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {questionTypes.map(type => {
+            const count = quiz.questions.filter(q => q.type === type).length;
+            return (
+              <Link 
+                key={type} 
+                href={`/quiz-test/${quizId}/questions/${type}`}
+                className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition"
+              >
+                <h3 className="text-xl font-semibold text-custom-dark-blue mb-2">
+                  {type.replace('_', ' ').replace(/(^\w|\s\w)/g, m => m.toUpperCase())}
+                </h3>
+                <p className="text-gray-600">{count} questions</p>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+```
+
+### app/quiz-test/[quizId]/questions/[type]/page.tsx
+
+```tsx
+import React from 'react';
+import QuizTypeClientPage from '../../../type-client-page';
+
+// This is a server component that properly handles async params in Next.js
+export default async function QuizByTypeAndQuestionTypePage({ params }: { params: { quizId: string, type: string } }) {
+  // Using server component to access params properly
+  const { quizId, type } = params;
+  
+  // Pass the quizId and questionType to the client component
+  return <QuizTypeClientPage quizId={quizId} questionType={type} />;
+}
 
 ```
 
@@ -15955,9 +16294,9 @@ export default QuizTestPage;
 'use client';
 
 import React, { useState } from 'react';
-import SingleSelectionComponent from '../../components/question-types/SingleSelectionComponent';
-import MultiChoiceComponent from '../../components/question-types/MultiChoiceComponent';
-import { SingleSelectionQuestion, MultiChoiceQuestion } from '../../types/quiz';
+import SingleSelectionComponent from '../features/quiz/components/question-types/SingleSelectionComponent';
+import MultiChoiceComponent from '../features/quiz/components/question-types/MultiChoiceComponent';
+import { SingleSelectionQuestion, MultiChoiceQuestion } from '../types/quiz';
 
 // Sample questions for debugging
 const singleSelectionQuestion: SingleSelectionQuestion = {

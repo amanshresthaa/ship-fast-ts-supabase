@@ -47,8 +47,31 @@ export interface MultiChoiceQuestion extends BaseQuestion {
   correctAnswerOptionIds: string[];
 }
 
+export interface DragAndDropTarget {
+  target_id: string;
+  text: string;
+}
+
+export interface DragAndDropOption {
+  option_id: string;
+  text: string;
+}
+
+export interface DragAndDropCorrectPair {
+  option_id: string;
+  target_id: string;
+}
+
+// Drag and drop question where users match options to targets
+export interface DragAndDropQuestion extends BaseQuestion {
+  type: 'drag_and_drop';
+  targets: DragAndDropTarget[];
+  options: DragAndDropOption[];
+  correctPairs: DragAndDropCorrectPair[];
+}
+
 // AnyQuestion will be a union of all specific question types
-export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion; // | DragAndDropQuestion etc.
+export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion | DragAndDropQuestion; // Add more as implemented
 
 export interface Quiz {
   id: string; // e.g. azure-a102
@@ -62,4 +85,4 @@ export interface Quiz {
   created_at: string; // TIMESTAMPTZ
   updated_at: string; // TIMESTAMPTZ
   questions: AnyQuestion[];
-} 
+}

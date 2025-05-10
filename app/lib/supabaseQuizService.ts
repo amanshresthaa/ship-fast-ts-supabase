@@ -5,6 +5,10 @@ import {
   SingleSelectionQuestion, 
   MultiChoiceQuestion,
   SelectionOption,
+  DragAndDropTarget,
+  DragAndDropOption,
+  DragAndDropCorrectPair,
+  DragAndDropQuestion,
   Quiz // Will be needed for fetchQuizById
 } from '../types/quiz';
 
@@ -137,6 +141,83 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching multi question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'drag_and_drop') {
+    try {
+      // Fetch targets for the drag and drop question
+      const { data: targetsData, error: targetsError } = await supabase
+        .from('drag_and_drop_targets')
+        .select('target_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (targetsError) {
+        console.error(`Error fetching targets for drag_and_drop question ${baseQuestion.id}:`, targetsError.message);
+        return null;
+      }
+
+      // Fetch options for the drag and drop question
+      const { data: optionsData, error: optionsError } = await supabase
+        .from('drag_and_drop_options')
+        .select('option_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (optionsError) {
+        console.error(`Error fetching options for drag_and_drop question ${baseQuestion.id}:`, optionsError.message);
+        return null;
+      }
+
+      // Fetch correct pairs for the drag and drop question
+      const { data: correctPairsData, error: correctPairsError } = await supabase
+        .from('drag_and_drop_correct_pairs')
+        .select('option_id, target_id')
+        .eq('question_id', baseQuestion.id);
+
+      if (correctPairsError) {
+        console.error(`Error fetching correct pairs for drag_and_drop question ${baseQuestion.id}:`, correctPairsError.message);
+        return null;
+      }
+
+      const typedTargets: DragAndDropTarget[] = (targetsData || []).map((target: any) => ({
+        target_id: target.target_id,
+        text: target.text,
+      }));
+
+      const typedOptions: DragAndDropOption[] = (optionsData || []).map((option: any) => ({
+        option_id: option.option_id,
+        text: option.text,
+      }));
+
+      const typedCorrectPairs: DragAndDropCorrectPair[] = (correctPairsData || []).map((pair: any) => ({
+        option_id: pair.option_id,
+        target_id: pair.target_id,
+      }));
+
+      // Check if we have the minimum required data
+      if (!typedTargets.length) {
+        console.warn(`No targets found for drag_and_drop question ${baseQuestion.id}`);
+        return null;
+      }
+      if (!typedOptions.length) {
+        console.warn(`No options found for drag_and_drop question ${baseQuestion.id}`);
+        return null;
+      }
+      if (!typedCorrectPairs.length) {
+        console.warn(`No correct pairs found for drag_and_drop question ${baseQuestion.id}`);
+        return null;
+      }
+
+      const dragAndDropQuestion: DragAndDropQuestion = {
+        ...baseQuestion,
+        type: 'drag_and_drop',
+        targets: typedTargets,
+        options: typedOptions,
+        correctPairs: typedCorrectPairs,
+      };
+      return dragAndDropQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching drag_and_drop question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {
