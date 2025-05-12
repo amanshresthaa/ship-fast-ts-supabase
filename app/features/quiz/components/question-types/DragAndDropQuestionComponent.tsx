@@ -227,7 +227,7 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
 
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">
-      <h3 className="text-lg font-semibold mb-2">{question.question}</h3>
+      {/* <h3 className="text-lg font-semibold mb-2">{question.question}</h3> */}
       
       {/* Available Options */}
       <div className="mb-4">
