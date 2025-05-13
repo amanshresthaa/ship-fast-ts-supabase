@@ -1,8 +1,10 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
+import { MultiChoiceController } from '../../controllers/MultiChoiceController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
 
 // Icons for options
 const CorrectIcon = memo(() => (
@@ -28,39 +30,63 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
-  // Determine the correct number of answers to select
-  const correctAnswersCount = question.correctAnswerOptionIds.length;
+  // Create controller instance
+  const controller = new MultiChoiceController(question);
   
+  // Use auto-validation hook
+  const [currentSelections, setCurrentSelections, isValidating, allComplete] = useAutoValidation<
+    MultiChoiceQuestion, 
+    string[]
+  >(
+    controller,
+    selectedOptionIds,
+    onAnswerSelect,
+    true // Auto-validate when complete
+  );
+  
+  // Determine the correct number of answers to select
+  const correctAnswersCount = controller.getRequiredSelectionCount();
+  
+  // Handle option selection/deselection
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
+      let newSelectedOptions: string[];
+      
       // If option is already selected, allow deselecting it
-      if (selectedOptionIds.includes(optionId)) {
-        const newSelectedOptions = selectedOptionIds.filter(id => id !== optionId);
-        onAnswerSelect(newSelectedOptions);
+      if (currentSelections.includes(optionId)) {
+        newSelectedOptions = currentSelections.filter(id => id !== optionId);
       } 
       // If we haven't reached the limit yet, allow selecting the option
-      else if (selectedOptionIds.length < correctAnswersCount) {
-        const newSelectedOptions = [...selectedOptionIds, optionId];
-        onAnswerSelect(newSelectedOptions);
-        
-        // If we've reached the required number of selections, auto-submit
-        if (newSelectedOptions.length === correctAnswersCount) {
-          setTimeout(() => onAnswerSelect(newSelectedOptions), 150); // Small delay for better UX
-        }
+      else if (currentSelections.length < correctAnswersCount) {
+        newSelectedOptions = [...currentSelections, optionId];
       }
       // If we've reached the limit, don't allow more selections
+      else {
+        return;
+      }
+      
+      // Update selections through our hook
+      setCurrentSelections(newSelectedOptions);
     }
   };
+  
+  // Sync external selectedOptionIds with our internal state
+  useEffect(() => {
+    if (selectedOptionIds && 
+        JSON.stringify(selectedOptionIds) !== JSON.stringify(currentSelections)) {
+      setCurrentSelections(selectedOptionIds);
+    }
+  }, [selectedOptionIds]);
 
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       <p className="text-sm text-gray-500 mb-2 font-medium">
-        Select {question.correctAnswerOptionIds.length} answer{question.correctAnswerOptionIds.length > 1 ? 's' : ''} ({selectedOptionIds.length}/{question.correctAnswerOptionIds.length} selected)
+        Select {correctAnswersCount} answer{correctAnswersCount > 1 ? 's' : ''} ({currentSelections.length}/{correctAnswersCount} selected)
       </p>
       
       {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionIds.includes(option.option_id);
-        const isCorrect = question.correctAnswerOptionIds.includes(option.option_id);
+        const isSelected = currentSelections.includes(option.option_id);
+        const isCorrect = controller.isOptionCorrect(option.option_id);
         const optionLetter = String.fromCharCode(65 + index);
         
         // Determine option styles

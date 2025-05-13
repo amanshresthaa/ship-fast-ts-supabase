@@ -4,6 +4,7 @@ import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
 import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
 import DropdownSelectionComponent from './DropdownSelectionComponent'; // Import the new component
+import { createQuestionController } from '../../controllers/QuestionControllerFactory';
 
 interface QuestionTypeRendererProps {
   question: AnyQuestion;
@@ -30,6 +31,13 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
         <p className="font-semibold text-red-700">Error: Invalid question object</p>
       </div>
     );
+  }
+  
+  // Create controller using factory (this will be used in future components)
+  try {
+    createQuestionController(question);
+  } catch (err) {
+    console.log('Controller not yet available for this question type:', question.type);
   }
 
   switch (question.type) {

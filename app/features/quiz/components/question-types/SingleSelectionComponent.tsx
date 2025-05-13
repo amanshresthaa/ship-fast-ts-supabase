@@ -1,8 +1,10 @@
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SingleSelectionQuestion, SelectionOption } from '../../../../types/quiz';
+import { SingleSelectionController } from '../../controllers/SingleSelectionController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
 
 // Icons for options
 const CorrectIcon = memo(() => (
@@ -28,16 +30,38 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
+  // Create controller instance
+  const controller = new SingleSelectionController(question);
+  
+  // Use auto-validation hook
+  const [currentSelection, setCurrentSelection, isValidating, allComplete] = useAutoValidation<
+    SingleSelectionQuestion, 
+    string | null
+  >(
+    controller,
+    selectedOptionId || null,
+    onAnswerSelect,
+    true // Auto-validate when complete
+  );
+  
+  // Handle manual selection change
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
-      onAnswerSelect(optionId);
+      setCurrentSelection(optionId);
     }
   };
+  
+  // Sync external selectedOptionId with our internal state
+  useEffect(() => {
+    if (selectedOptionId !== currentSelection && selectedOptionId !== undefined) {
+      setCurrentSelection(selectedOptionId);
+    }
+  }, [selectedOptionId]);
 
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionId === option.option_id;
+        const isSelected = currentSelection === option.option_id;
         const isCorrect = question.correctAnswerOptionId === option.option_id;
         const optionLetter = String.fromCharCode(65 + index);
         

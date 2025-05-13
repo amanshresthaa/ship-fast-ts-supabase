@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { DropdownSelectionQuestion, DropdownOption } from '../../../../types/quiz';
+import { DropdownSelectionController } from '../../controllers/DropdownSelectionController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
 
 interface DropdownSelectionComponentProps {
   question: DropdownSelectionQuestion;
@@ -18,43 +20,30 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
   showCorrectAnswer = false,
   validateOnComplete = true, // Default to true for auto-validation
 }) => {
-  const [currentSelections, setCurrentSelections] = useState<Record<string, string | null>>({});
-  // State to track if all dropdowns are filled
-  const [allDropdownsFilled, setAllDropdownsFilled] = useState<boolean>(false);
-  // State to track if we're in the auto-validation mode
-  const [autoValidating, setAutoValidating] = useState<boolean>(false);
-
-  // Helper function to check if all dropdowns are filled
-  const checkAllDropdownsFilled = (selections: Record<string, string | null>): boolean => {
-    // If no selections object or no placeholder targets, nothing to fill
-    if (!selections || !question.placeholderTargets || Object.keys(question.placeholderTargets).length === 0) {
-      return false;
-    }
-    
-    // Check that every placeholder target has a non-null value selected
-    return Object.keys(question.placeholderTargets).every(key => 
-      selections[key] !== null && selections[key] !== undefined && selections[key] !== ""
-    );
-  };
-
-  // Initialize selections from selectedAnswer prop or defaults
-  useEffect(() => {
-    const initialSelections: Record<string, string | null> = {};
-    if (question.placeholderTargets) {
-      Object.keys(question.placeholderTargets).forEach(placeholderKey => {
-        initialSelections[placeholderKey] = selectedAnswer?.[placeholderKey] || null;
-      });
-    }
-    setCurrentSelections(initialSelections);
-    
-    // Check if all dropdowns are already filled
-    const allFilled = checkAllDropdownsFilled(initialSelections);
-    setAllDropdownsFilled(allFilled);
-    
-    // Reset auto-validating state when question or answer changes
-    setAutoValidating(false);
-  }, [question.placeholderTargets, selectedAnswer]);
-
+  // Create controller instance
+  const controller = new DropdownSelectionController(question);
+  
+  // Initialize selections from placeholder keys
+  const initialSelections = useMemo(() => {
+    const selections: Record<string, string | null> = {};
+    controller.getPlaceholderKeys().forEach(key => {
+      selections[key] = selectedAnswer?.[key] || null;
+    });
+    return selections;
+  }, [controller, selectedAnswer]);
+  
+  // Use auto-validation hook
+  const [currentSelections, setCurrentSelections, autoValidating, allDropdownsFilled] = useAutoValidation<
+    DropdownSelectionQuestion,
+    Record<string, string | null>
+  >(
+    controller,
+    initialSelections,
+    onAnswerSelect,
+    validateOnComplete
+  );
+  
+  // Handle selection change for a placeholder
   const handleSelectChange = (placeholderKey: string, selectedOptionText: string | null) => {
     if (isSubmitted) return; // Don't allow changes after submission shown
 
@@ -62,23 +51,16 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
       ...currentSelections,
       [placeholderKey]: selectedOptionText,
     };
+    
     setCurrentSelections(newSelections);
-    
-    // Check if all dropdowns are now filled
-    const allFilled = checkAllDropdownsFilled(newSelections);
-    setAllDropdownsFilled(allFilled);
-    
-    // If all dropdowns are filled and we're set to validate on complete,
-    // trigger the submission
-    if (validateOnComplete && allFilled && !isSubmitted) {
-      setAutoValidating(true);
-      onAnswerSelect(newSelections);
-    } else {
-      // If not all dropdowns are filled or we don't auto-validate,
-      // just update the state without triggering submission
-      setAutoValidating(false);
-    }
   };
+  
+  // Sync with external changes to selectedAnswer
+  useEffect(() => {
+    if (selectedAnswer && JSON.stringify(selectedAnswer) !== JSON.stringify(currentSelections)) {
+      setCurrentSelections({...selectedAnswer});
+    }
+  }, [selectedAnswer]);
 
   // Memoize parsed parts to avoid re-computation on every render unless question.question changes
   const parsedQuestionParts = useMemo(() => {
@@ -138,7 +120,7 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
           let borderColor = 'border-gray-300'; // Default border
 
           if (isSubmitted && showCorrectAnswer) {
-            const correctAnswerText = question.placeholderTargets[placeholderKey]?.correctOptionText;
+            const correctAnswerText = controller.getCorrectOptionForPlaceholder(placeholderKey);
             if (correctAnswerText && currentSelectedText === correctAnswerText) {
               borderColor = 'border-green-500'; // Correct
             } else {
@@ -188,9 +170,9 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
         <div className="mt-4 p-3 border rounded-md bg-gray-50">
           <h4 className="font-semibold text-md mb-2 text-custom-dark-blue">Correct Answers:</h4>
           <ul className="list-disc list-inside text-sm">
-            {Object.entries(question.placeholderTargets).map(([key, target]) => (
+            {controller.getPlaceholderKeys().map((key) => (
               <li key={key} className="mb-1">
-                <span className="font-medium">{`[${key}]`}:</span> {target.correctOptionText}
+                <span className="font-medium">{`[${key}]`}:</span> {controller.getCorrectOptionForPlaceholder(key)}
               </li>
             ))}
           </ul>
