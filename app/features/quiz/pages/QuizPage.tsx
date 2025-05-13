@@ -80,37 +80,37 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               <div className="flex flex-wrap justify-center gap-2 mb-2">
                 <Link 
                   href={`/quiz-test/${quizId}`}
-                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   All Questions
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/single_selection`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Single Selection
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/multi`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Multiple Selection
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/drag_and_drop`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Drag and Drop
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/dropdown_selection`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Dropdown
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/order`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Order
                 </Link>
@@ -168,37 +168,37 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
           <div className="mb-6 flex flex-wrap justify-center gap-2">
             <Link 
               href={`/quiz-test/${quizId}`}
-              className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               All Questions
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/single_selection`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Single Selection
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/multi`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Multiple Selection
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/drag_and_drop`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Drag and Drop
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/dropdown_selection`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Dropdown
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/order`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Order
             </Link>

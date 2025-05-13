@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType } from '../../types/quiz';
+import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion } from '../../types/quiz'; // Added DropdownSelectionQuestion
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
+import DropdownSelectionComponent from '../../features/quiz/components/question-types/DropdownSelectionComponent'; // Import DropdownSelectionComponent
 import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
 
 export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
@@ -12,6 +13,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
   const [error, setError] = useState<string | null>(null); // Added error state
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [dropdownSelections, setDropdownSelections] = useState<Record<string, string | null>>({}); // State for dropdown selections
   const [isSubmittedDemo, setIsSubmittedDemo] = useState(false);
   const [showCorrectAnswerDemo, setShowCorrectAnswerDemo] = useState(false);
 
@@ -45,6 +47,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     // Reset selections when question or filters change
     setSelectedOption(null);
     setSelectedOptions([]);
+    setDropdownSelections({}); // Reset dropdown selections
     setIsSubmittedDemo(false);
     setShowCorrectAnswerDemo(false);
   }, [loadQuestion]); // useEffect now depends on loadQuestion
@@ -58,6 +61,12 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
   const handleMultiSelect = (optionIds: string[]) => {
     if (!isSubmittedDemo) {
       setSelectedOptions(optionIds);
+    }
+  };
+
+  const handleDropdownSelect = (selections: Record<string, string | null>) => {
+    if (!isSubmittedDemo) {
+      setDropdownSelections(selections);
     }
   };
 
@@ -190,6 +199,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
           <p className="text-gray-700">
             {currentQuestion.type === 'single_selection' && 'Select the correct answer from the options below.'}
             {currentQuestion.type === 'multi' && `Select all correct answers from the options below. (Correct: ${(currentQuestion as MultiChoiceQuestion).correctAnswerOptionIds.length})`}
+            {currentQuestion.type === 'dropdown_selection' && 'Select the correct option for each placeholder in the text.'}
             {/* Add instructions for other question types as they are implemented */}
           </p>
         </div>
@@ -212,6 +222,16 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
               onAnswerSelect={handleMultiSelect}
               isSubmitted={isSubmittedDemo}
               showCorrectAnswer={showCorrectAnswerDemo}
+            />
+          )}
+          {currentQuestion.type === 'dropdown_selection' && (
+            <DropdownSelectionComponent
+              question={currentQuestion as DropdownSelectionQuestion}
+              selectedAnswer={dropdownSelections} // Pass current dropdown selections
+              onAnswerSelect={handleDropdownSelect} // Handle updates to dropdown selections
+              isSubmitted={isSubmittedDemo}
+              showCorrectAnswer={showCorrectAnswerDemo}
+              validateOnComplete={true} // Add the new prop to wait for all dropdowns to be filled
             />
           )}
           {/* Add other question type components here as needed */}
@@ -239,7 +259,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
             </div>
             {isSubmittedDemo && (
               <p className="mt-3 text-xs text-gray-600">
-                Answers are {selectedOption || selectedOptions.length > 0 ? 'locked' : 'not selected but locked'}. Toggle "Show Feedback" to see correctness.
+                Answers are {selectedOption || selectedOptions.length > 0 || Object.values(dropdownSelections).some(s => s !== null) ? 'locked' : 'not selected but locked'}. Toggle "Show Feedback" to see correctness.
               </p>
             )}
              {!isSubmittedDemo && (

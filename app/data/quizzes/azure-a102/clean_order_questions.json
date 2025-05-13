@@ -1,0 +1,777 @@
+{
+  "questions": [
+    {
+      "id": "180",
+      "type": "order",
+      "question": "You have a Language Understanding solution that runs in a Docker container. You download the Language Understanding container image from the Microsoft Container Registry (MCR). You need to deploy the container image to a host computer. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "From the Language Understanding portal, export the solution as a package file."
+        },
+        {
+          "id": "item2",
+          "text": "From the host computer, move the package file to the Docker input directory."
+        },
+        {
+          "id": "item3",
+          "text": "From the host computer, build the container and specify the output directory."
+        },
+        {
+          "id": "item4",
+          "text": "From the host computer, run the container and specify the input directory."
+        },
+        {
+          "id": "item5",
+          "text": "From the Language Understanding portal, retrain the model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item3",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! To deploy the container image, first export the container package from the Language Understanding portal (item1). Next, build the container on the host computer using the exported package (item3). Finally, run the container with the specified input configuration (item4). This sequence leverages the exported package to create and execute the container properly.",
+        "incorrect": "Incorrect. Review the process: export the container package, build the container image, then run it. Moving the package file separately or retraining the model are not required for deployment."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "178",
+      "type": "order",
+      "question": "You are building a transcription service for technical podcasts. Testing reveals that the service fails to transcribe technical terms accurately. You need to improve the accuracy of the service. Which five actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a Custom Speech project."
+        },
+        {
+          "id": "item2",
+          "text": "Create a speech-to-text model."
+        },
+        {
+          "id": "item3",
+          "text": "Upload training datasets."
+        },
+        {
+          "id": "item4",
+          "text": "Create a Speaker Recognition model."
+        },
+        {
+          "id": "item5",
+          "text": "Deploy the model."
+        },
+        {
+          "id": "item6",
+          "text": "Train the model."
+        },
+        {
+          "id": "item7",
+          "text": "Create a Conversational Language Understanding model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3",
+        "item6",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! The proper sequence is to first create a Custom Speech project (item1), then define a speech-to-text model within that project (item2). Next, upload the training datasets (item3), train the model using these datasets (item6), and finally deploy the trained model (item5). This process directly addresses the transcription accuracy issues without involving extraneous models.",
+        "incorrect": "Incorrect. Ensure you start by creating the project and model, then upload the necessary datasets, train the model, and finally deploy it. Options like Speaker Recognition or Conversational Language Understanding are not needed here."
+      },
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "4",
+      "type": "order",
+      "question": "You plan to use containerized versions of the Anomaly Detector API on local devices for testing and in on-premises datacenters. You need to ensure that the containerized deployments meet the following requirements:\n- Prevent billing and API information from being stored in the command-line histories of the devices that run the container.\n- Control access to the container images by using Azure role-based access control (Azure RBAC).\nWhich four actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a custom Dockerfile."
+        },
+        {
+          "id": "item2",
+          "text": "Pull the Anomaly Detector container image."
+        },
+        {
+          "id": "item3",
+          "text": "Distribute a docker run script."
+        },
+        {
+          "id": "item4",
+          "text": "Push the image to an Azure container registry."
+        },
+        {
+          "id": "item5",
+          "text": "Build the image."
+        },
+        {
+          "id": "item6",
+          "text": "Push the image to Docker Hub."
+        }
+      ],
+      "correctOrder": [
+        "item4",
+        "item2",
+        "item5",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! The sequence is: first, push the image to an Azure container registry (item4) to ensure centralized management and security via Azure RBAC; then pull the container image (item2), build the image locally if modifications are needed (item5), and finally distribute a docker run script (item3) to facilitate deployment.",
+        "incorrect": "Incorrect. Review the necessary steps: secure the image in an Azure container registry, then pull, build, and distribute the deployment script. Other sequences do not meet the security and operational requirements."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "22",
+      "type": "order",
+      "question": "You train a Custom Vision model to identify a company's products by using the Retail domain. You plan to deploy the model as part of an app for Android phones. You need to prepare the model for deployment. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Change the model domain."
+        },
+        {
+          "id": "item2",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item3",
+          "text": "Test the model."
+        },
+        {
+          "id": "item4",
+          "text": "Export the model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! The required steps are to change the model domain to a compact version for mobile export (item1), retrain the model to incorporate the domain change (item2), and then export the model for deployment (item4). Testing, while important, is not part of the deployment sequence.",
+        "incorrect": "Incorrect. The proper sequence is to change the domain, retrain the model, and export it. Testing the model is not a required step in the deployment process."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "81",
+      "type": "order",
+      "question": "You train a Custom Vision model to identify a company's products by using the Retail domain. You plan to deploy the model as part of an app for Android phones. You need to prepare the model for deployment. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Change the model domain."
+        },
+        {
+          "id": "item2",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item3",
+          "text": "Test the model."
+        },
+        {
+          "id": "item4",
+          "text": "Export the model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! Begin by changing the model domain to a compact version (item1), then retrain the model (item2) so the new settings take effect, and finally export the model (item4) for deployment. Testing is not required as part of this sequence.",
+        "incorrect": "Incorrect. The correct sequence is to change the domain, retrain, and export the model. Testing is not part of the deployment process."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "23",
+      "type": "order",
+      "question": "You have a Custom Vision resource named acvdev in a development environment. You have a Custom Vision resource named acvprod in a production environment. In acvdev, you build an object detection model named obj1 in a project named proj1. You need to move obj1 to acvprod. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Use the Get Projects endpoint on acvdev."
+        },
+        {
+          "id": "item2",
+          "text": "Use the ExportProject endpoint on acvdev."
+        },
+        {
+          "id": "item3",
+          "text": "Use the Import Project endpoint on acvprod."
+        },
+        {
+          "id": "item4",
+          "text": "Use the ExportIteration endpoint on acvdev."
+        },
+        {
+          "id": "item5",
+          "text": "Use the Get Iterations endpoint on acvdev."
+        },
+        {
+          "id": "item6",
+          "text": "Use the UpdateProject endpoint on acvprod."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! First, retrieve the project details from acvdev using the Get Projects endpoint (item1). Then, export the project using the ExportProject endpoint (item2), and finally import the project into acvprod using the Import Project endpoint (item3). This sequence ensures a smooth migration of the object detection model.",
+        "incorrect": "Incorrect. The correct process is to identify the project, export it from the development resource, and then import it into the production resource."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "24",
+      "type": "order",
+      "question": "You are developing an application that will recognize faults in components produced on a factory production line. The components are specific to your business. You need to use the Custom Vision API to help detect common faults. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a project."
+        },
+        {
+          "id": "item2",
+          "text": "Upload and tag images."
+        },
+        {
+          "id": "item3",
+          "text": "Train the classifier model."
+        },
+        {
+          "id": "item4",
+          "text": "Initialize the training dataset."
+        },
+        {
+          "id": "item5",
+          "text": "Train the object detection model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! Start by creating a new Custom Vision project (item1), then upload and tag your images to form a robust training dataset (item2), and finally train the classifier model (item3) to recognize faults. This sequence efficiently uses the labeled data to build the model.",
+        "incorrect": "Incorrect. The proper sequence is to create the project, prepare the training dataset by uploading and tagging images, and then train the classifier model. Other options are not directly required."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "36",
+      "type": "order",
+      "question": "You train a Custom Vision model used in a mobile app. You receive 1,000 new images that do not have any associated data. You need to use the images to retrain the model. The solution must minimize how long it takes to retrain the model. Which three actions should you perform in the Custom Vision portal? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Get suggested tags."
+        },
+        {
+          "id": "item2",
+          "text": "Upload all the images."
+        },
+        {
+          "id": "item3",
+          "text": "Group the images locally into category folders."
+        },
+        {
+          "id": "item4",
+          "text": "Upload the images by category."
+        },
+        {
+          "id": "item5",
+          "text": "Tag the images manually."
+        },
+        {
+          "id": "item6",
+          "text": "Review the suggestions and confirm the tags."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item1",
+        "item6"
+      ],
+      "feedback": {
+        "correct": "Correct! To minimize retraining time, first upload all the images (item2). Then, use Smart Labeler to generate suggested tags automatically (item1), and finally review and confirm the suggestions (item6) to ensure accuracy.",
+        "incorrect": "Incorrect. The optimal process is to upload all images, obtain automatic tag suggestions, and then verify them. Manual grouping or tagging is less efficient."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "38",
+      "type": "order",
+      "question": "You plan to use a Language Understanding application named app1 that is deployed to a container. App1 was developed by using a Language Understanding authoring resource named lu1. App1 has the versions shown in the following table.\nVersion | Trained date | Published date\n------- | ------------ | --------------\nV1.2    | None         | None\nV1.1    | 2020-10-01   | None\nV1.0    | 2020-09-01   | 2020-09-15\nYou need to create a container that uses the latest deployable version of app1. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Run a container that has version set as an environment variable."
+        },
+        {
+          "id": "item2",
+          "text": "Export the model by using the Export as JSON option."
+        },
+        {
+          "id": "item3",
+          "text": "Export the model by using the Export for containers (GZIP) option."
+        },
+        {
+          "id": "item4",
+          "text": "Select v1.1 of app1."
+        },
+        {
+          "id": "item5",
+          "text": "Run a container and mount the model file."
+        },
+        {
+          "id": "item6",
+          "text": "Select v1.0 of app1."
+        },
+        {
+          "id": "item7",
+          "text": "Select v1.2 of app1."
+        }
+      ],
+      "correctOrder": [
+        "item6",
+        "item3",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! Since V1.0 is the only version that has been fully published, first select v1.0 (item6). Then, export the model for container use with the GZIP option (item3), and finally run a container and mount the model file (item5) to deploy the correct version.",
+        "incorrect": "Incorrect. Only the published version (V1.0) is deployable. The steps must select V1.0, export the model appropriately for container use, and then run the container with the model mounted."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "66",
+      "type": "order",
+      "question": "DRAG DROP - You have a Custom Vision service project that performs object detection. The project uses the General domain for classification and contains a trained model. You need to export the model for use on a network that is disconnected from the internet. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Change the classification type."
+        },
+        {
+          "id": "item2",
+          "text": "Change Domains to General (compact)."
+        },
+        {
+          "id": "item3",
+          "text": "Export the model."
+        },
+        {
+          "id": "item4",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item5",
+          "text": "Create a new classification model."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item4",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! First, change the domain to its compact version (item2) to meet offline export requirements. Next, retrain the model (item4) so it is optimized for the new domain, and finally export the model (item3) for use on a disconnected network.",
+        "incorrect": "Incorrect. The model must be converted to a compact version, retrained, and then exported. Changing the classification type or creating a new model is not necessary."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "73",
+      "type": "order",
+      "question": "You are building an app that will scan confidential documents and use the Language service to analyze the contents. You provision an Azure Cognitive Services resource. You need to ensure that the app can make requests to the Language service endpoint. The solution must ensure that confidential documents remain on-premises. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Run the container and specify an App ID and Client Secret"
+        },
+        {
+          "id": "item2",
+          "text": "Pull an image from the Microsoft Container Registry (MCR)."
+        },
+        {
+          "id": "item3",
+          "text": "Provision an on-premises Kubernetes cluster that is isolated from the internet."
+        },
+        {
+          "id": "item4",
+          "text": "Run the container and specify an API key and the Endpoint URL of the Cognitive Services resource."
+        },
+        {
+          "id": "item5",
+          "text": "Provision an on-premises Kubernetes cluster that has internet connectivity."
+        },
+        {
+          "id": "item6",
+          "text": "Pull an image from Docker Hub."
+        },
+        {
+          "id": "item7",
+          "text": "Provision an Azure Kubernetes Service (AKS) resource."
+        }
+      ],
+      "correctOrder": [
+        "item3",
+        "item2",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! First, provision an on-premises Kubernetes cluster that is isolated from the internet (item3) to maintain data confidentiality. Next, pull the container image from MCR (item2) into your secure environment, and finally run the container using the API key and endpoint URL (item4) to connect to the Language service.",
+        "incorrect": "Incorrect. The solution requires an isolated on-premises cluster, using the image from MCR, and running the container with proper authentication\u2014not using public cloud connectivity."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "83",
+      "type": "order",
+      "question": "You have a Custom Vision resource named acvdev in a development environment. You have a Custom Vision resource named acvprod in a production environment. In acvdev, you build an object detection model named obj1 in a project named proj1. You need to move obj1 to acvprod. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Use the Get Projects endpoint on acvdev."
+        },
+        {
+          "id": "item2",
+          "text": "Use the ExportProject endpoint on acvdev."
+        },
+        {
+          "id": "item3",
+          "text": "Use the Import Project endpoint on acvprod."
+        },
+        {
+          "id": "item4",
+          "text": "Use the ExportIteration endpoint on acvdev."
+        },
+        {
+          "id": "item5",
+          "text": "Use the Get Iterations endpoint on acvdev."
+        },
+        {
+          "id": "item6",
+          "text": "Use the UpdateProject endpoint on acvprod."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! Retrieve the project details from acvdev using the Get Projects endpoint (item1), export the project with the ExportProject endpoint (item2), and then import it into acvprod using the Import Project endpoint (item3). This ensures a smooth migration of the model.",
+        "incorrect": "Incorrect. The process requires identifying the project, exporting it from the development environment, and importing it into production."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "84",
+      "type": "order",
+      "question": "You are developing an application that will recognize faults in components produced on a factory production line. The components are specific to your business. You need to use the Custom Vision API to help detect common faults. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a project."
+        },
+        {
+          "id": "item2",
+          "text": "Upload and tag images."
+        },
+        {
+          "id": "item3",
+          "text": "Train the classifier model."
+        },
+        {
+          "id": "item4",
+          "text": "Initialize the training dataset."
+        },
+        {
+          "id": "item5",
+          "text": "Train the object detection model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! The proper sequence is to create a new Custom Vision project (item1), upload and tag images to build a robust training dataset (item2), and then train the classifier model (item3) to detect faults effectively.",
+        "incorrect": "Incorrect. Ensure you create the project, prepare the dataset through uploading and tagging, and then train the classifier model. Other options do not directly contribute to fault detection."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "101",
+      "type": "order",
+      "question": "You need to analyze video content to identify any mentions of specific company names. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Sign in to the Azure Video Analyzer for Media website."
+        },
+        {
+          "id": "item2",
+          "text": "Add the specific company names to the exclude list."
+        },
+        {
+          "id": "item3",
+          "text": "Add the specific company names to the include list."
+        },
+        {
+          "id": "item4",
+          "text": "From Content model customization, select Brands."
+        },
+        {
+          "id": "item5",
+          "text": "From Content model customization, select Language."
+        },
+        {
+          "id": "item6",
+          "text": "Sign in to the Custom Vision website."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item4",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! Begin by signing in to the Azure Video Analyzer for Media website (item1) to access the video content. Next, select the Brands option in the content model customization (item4) to enable brand detection, and finally add the specific company names to the include list (item3) so they are recognized during analysis.",
+        "incorrect": "Incorrect. The proper steps are to sign in, select the Brands option, and add the company names to the include list\u2014not to use the exclude list or unrelated sites."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "114",
+      "type": "order",
+      "question": "DRAG DROP - You train a Custom Vision model used in a mobile app. You receive 1,000 new images that do not have any associated data. You need to use the images to retrain the model. The solution must minimize how long it takes to retrain the model. Which three actions should you perform in the Custom Vision portal? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Group the images locally into category folders."
+        },
+        {
+          "id": "item2",
+          "text": "Get suggested tags."
+        },
+        {
+          "id": "item3",
+          "text": "Upload the images by category."
+        },
+        {
+          "id": "item4",
+          "text": "Upload all the images."
+        },
+        {
+          "id": "item5",
+          "text": "Tag the images manually."
+        },
+        {
+          "id": "item6",
+          "text": "Review the suggestions and confirm the tags."
+        }
+      ],
+      "correctOrder": [
+        "item4",
+        "item2",
+        "item6"
+      ],
+      "feedback": {
+        "correct": "Correct! To expedite retraining, first upload all the images (item4), then use Smart Labeler to obtain suggested tags (item2), and finally review and confirm the suggested tags (item6) to ensure accuracy.",
+        "incorrect": "Incorrect. The optimal sequence is to upload all images, generate automatic tag suggestions, and then verify them, rather than manually grouping or tagging the images."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "124",
+      "type": "order",
+      "question": "DRAG DROP - You are building a retail chatbot that will use a QnA Maker service. You upload an internal support document to train the model. The document contains the following question: 'What is your warranty period?' Users report that the chatbot returns the default QnA Maker answer when they ask the following question: 'How long is the warranty coverage?' The chatbot returns the correct answer when the users ask the following question: \u2018What is your warranty period?' Both questions should return the same answer. You need to increase the accuracy of the chatbot responses. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Add a new question and answer (QnA) pair."
+        },
+        {
+          "id": "item2",
+          "text": "Add alternative phrasing to the question and answer (QnA) pair."
+        },
+        {
+          "id": "item3",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item4",
+          "text": "Add additional questions to the document."
+        },
+        {
+          "id": "item5",
+          "text": "Republish the model."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item3",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! First, add alternative phrasing to the existing QnA pair (item2) so that variations of the question are recognized. Then, retrain the model (item3) to update its understanding, and finally republish the model (item5) so that the changes take effect.",
+        "incorrect": "Incorrect. The proper process is to add alternative phrasing, retrain the model, and republish it. Other steps do not address the inconsistency in responses."
+      },
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "168",
+      "type": "order",
+      "question": "You have a collection of Microsoft Word documents and PowerPoint presentations in German. You need to create a solution to translate the files to French. The solution must meet the following requirements:\n- Preserve the original formatting of the files.\n- Support the use of a custom glossary.\nYou create a blob container for German files and a blob container for French files. You upload the original files to the container for German files. Which three actions should you perform in sequence to complete the solution? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Perform an asynchronous translation by using the list of files to be translated."
+        },
+        {
+          "id": "item2",
+          "text": "Upload a glossary file to the container for French files."
+        },
+        {
+          "id": "item3",
+          "text": "Define a document translation specification that has a French target."
+        },
+        {
+          "id": "item4",
+          "text": "Generate a list of files to be translated."
+        },
+        {
+          "id": "item5",
+          "text": "Perform an asynchronous translation by using the document translation specification."
+        },
+        {
+          "id": "item6",
+          "text": "Upload a glossary file to the container for German files."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item3",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! First, upload the custom glossary file to the French container (item2). Then, define a document translation specification targeting French (item3) that incorporates the glossary, and finally perform an asynchronous translation using this specification (item5). This process preserves formatting and applies the glossary as required.",
+        "incorrect": "Incorrect. The solution requires uploading the glossary, defining a translation specification with the French target, and then initiating the translation. Other options do not satisfy the requirements."
+      },
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "170",
+      "type": "order",
+      "question": "You have a Docker host named Host1 that contains a container base image. You have an Azure subscription that contains a custom speech-to-text model named model1. You need to run model1 on Host1. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item2",
+          "text": "Request approval to run the container."
+        },
+        {
+          "id": "item3",
+          "text": "Export model1 to Host1."
+        },
+        {
+          "id": "item4",
+          "text": "Run the container."
+        },
+        {
+          "id": "item5",
+          "text": "Configure disk logging."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item3",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! First, request approval to run the container on Host1 (item2) to ensure compliance. Then, export the custom speech-to-text model (model1) to Host1 (item3), and finally run the container (item4) to deploy the model.",
+        "incorrect": "Incorrect. The proper process is to obtain approval, export the model to the host, and then run the container, rather than retraining the model or configuring disk logging."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "172",
+      "type": "order",
+      "question": "You have a question answering project in Azure Cognitive Service for Language. You need to move the project to a Language service instance in a different Azure region. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "From the new Language service instance, train and publish the project."
+        },
+        {
+          "id": "item2",
+          "text": "From the new Language service instance, import the project file."
+        },
+        {
+          "id": "item3",
+          "text": "From the new Language service instance, enable custom text classification."
+        },
+        {
+          "id": "item4",
+          "text": "From the original Language service instance, export the existing project."
+        },
+        {
+          "id": "item5",
+          "text": "From the new Language service instance, regenerate the keys."
+        },
+        {
+          "id": "item6",
+          "text": "From the original Language service instance, train and publish the model."
+        }
+      ],
+      "correctOrder": [
+        "item4",
+        "item2",
+        "item1"
+      ],
+      "feedback": {
+        "correct": "Correct! First, export the existing project from the original Language service instance (item4). Then, import the project file into the new instance (item2), and finally, train and publish the project in the new region (item1) to complete the migration.",
+        "incorrect": "Incorrect. The proper steps are to export the project, import it into the new instance, and then train and publish it. Other actions are not necessary for a successful migration."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    }
+  ]
+}

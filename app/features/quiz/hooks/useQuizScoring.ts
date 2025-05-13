@@ -29,14 +29,23 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
       }
     };
 
-    // For single selection and multi questions, we can do client-side validation
+    // Add specific correct answer details for client-side validation
     if (question.type === 'single_selection') {
       submitPayload.payload.correctAnswerOptionId = question.correctAnswerOptionId;
     } else if (question.type === 'multi') {
-      submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
+      submitPayload.payload.correctAnswerOptionIds = question.correctAnswerOptionIds;
+    } else if (question.type === 'dropdown_selection') {
+      // For dropdown, map placeholderTargets to the expected format for client-side validation
+      const correctDropdownAnswers: Record<string, string> = {};
+      if (question.placeholderTargets) {
+        for (const key in question.placeholderTargets) {
+          correctDropdownAnswers[key] = question.placeholderTargets[key].correctOptionText;
+        }
+      }
+      submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
     }
 
-    // First update the UI immediately
+    // First update the UI immediately with client-side validation results
     dispatch(submitPayload);
 
     try {

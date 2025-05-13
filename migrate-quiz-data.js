@@ -133,7 +133,7 @@ function log(...args) {
     const baseRows = allQuestions.map(q => ({
       id:                 idMap[q.id],
       type:               q.type,
-      question:           q.question,
+      question:           q.questionText || q.question, // Use questionText if available
       points:             q.points,
       quiz_tag:           quizRow.id,
       difficulty:         q.difficulty || 'medium',

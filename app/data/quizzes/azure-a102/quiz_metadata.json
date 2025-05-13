@@ -1,0 +1,25 @@
+{
+  "metadata": {
+    "id": "azure-a102",
+    "title": "Azure AI Engineer A102 Practice Quiz",
+    "description": "Covers implementation and management of Azure AI services: language, vision, document intelligence, and solution planning.",
+    "quizType": "mixed",
+    "settings": {
+      "randomizeQuestions": false,
+      "randomizeOptions":   false,
+      "passingScore":       70,
+      "showFeedback":       true,
+      "timeLimit":          null,
+      "attemptsAllowed":    null
+    },
+    "author":    "amankumarshrestha",
+    "difficulty":"medium",
+    "tags": [
+      "Implement natural language processing solutions",
+      "Implement computer vision solutions",
+      "Plan and manage an Azure AI solution",
+      "Implement knowledge mining and document intelligence solutions"
+    ]
+  },
+  "quiz_topic": "Azure AI"
+}

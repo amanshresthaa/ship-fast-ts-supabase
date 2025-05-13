@@ -69,8 +69,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           difficulty={question.difficulty} 
         />
 
-        {/* Question Content */}
-        <QuestionContent question={question.question} />
+        {/* Question Content - Don't show standard question content for dropdown_selection type since it's shown in the component */}
+        {question.type !== 'dropdown_selection' && (
+          <QuestionContent question={question.question} />
+        )}
         
         {/* Question Type-specific Component */}
         <QuestionTypeRenderer

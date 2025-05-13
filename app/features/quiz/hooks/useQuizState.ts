@@ -35,8 +35,13 @@ export type QuizAction =
         questionId: string; 
         answer: any; 
         questionType: QuestionType; 
-        correctAnswerOptionId?: string; 
-        correctAnswerOptionIds?: string[];
+        // Optional fields for client-side validation based on question type
+        correctAnswerOptionId?: string; // For single_selection
+        correctAnswerOptionIds?: string[]; // For multi
+        // For dropdown_selection, the correct answer structure is more complex
+        // It involves a map of placeholder keys to correct option texts.
+        // We'll pass the entire question object or relevant parts for validation.
+        correctDropdownAnswers?: Record<string, string>; // For dropdown_selection, maps placeholderKey to correctOptionText
       }
     }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
@@ -79,11 +84,8 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
       if (action.payload.questionType === 'single_selection' && action.payload.correctAnswerOptionId !== undefined) {
         isClientCorrect = action.payload.answer === action.payload.correctAnswerOptionId;
       } else if (action.payload.questionType === 'multi' && action.payload.correctAnswerOptionIds !== undefined) {
-        // For multi-selection questions, check if the selected answers match the correct answers exactly
         const selectedAnswers = action.payload.answer as string[];
         const correctAnswers = action.payload.correctAnswerOptionIds;
-        
-        // Check if arrays have the same elements (regardless of order)
         isClientCorrect = 
           selectedAnswers.length === correctAnswers.length && 
           selectedAnswers.every(id => correctAnswers.includes(id)) &&
@@ -91,7 +93,26 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
       } else if (action.payload.questionType === 'drag_and_drop') {
         // For drag-and-drop, we'll rely on server validation
         console.log('Drag and drop answer submitted:', action.payload.answer);
-        // Don't set isClientCorrect here, will be updated by server response
+      } else if (action.payload.questionType === 'dropdown_selection' && action.payload.correctDropdownAnswers) {
+        const userSelections = action.payload.answer as Record<string, string | null>;
+        const correctAnswers = action.payload.correctDropdownAnswers;
+        let allCorrect = true;
+        for (const placeholderKey in correctAnswers) {
+          if (userSelections[placeholderKey] !== correctAnswers[placeholderKey]) {
+            allCorrect = false;
+            break;
+          }
+        }
+        // Also ensure the user has made a selection for all placeholders defined in correctAnswers
+        if (allCorrect) {
+          for (const placeholderKey in correctAnswers) {
+            if (userSelections[placeholderKey] === null || userSelections[placeholderKey] === undefined) {
+              allCorrect = false;
+              break;
+            }
+          }
+        }
+        isClientCorrect = allCorrect;
       }
 
       return {

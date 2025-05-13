@@ -9,6 +9,9 @@ import {
   DragAndDropOption,
   DragAndDropCorrectPair,
   DragAndDropQuestion,
+  DropdownOption, // New
+  DropdownPlaceholderTarget, // New
+  DropdownSelectionQuestion, // New
   Quiz // Will be needed for fetchQuizById
 } from '../types/quiz';
 
@@ -206,7 +209,7 @@ export async function enrichQuestionWithDetails(
         console.warn(`No correct pairs found for drag_and_drop question ${baseQuestion.id}`);
         return null;
       }
-
+      
       const dragAndDropQuestion: DragAndDropQuestion = {
         ...baseQuestion,
         type: 'drag_and_drop',
@@ -218,6 +221,65 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching drag_and_drop question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'dropdown_selection') { // New case for dropdown_selection
+    try {
+      // Fetch all available options for this dropdown question
+      const { data: optionsData, error: optionsError } = await supabase
+        .from('dropdown_selection_options')
+        .select('option_id, text, is_correct') // is_correct might be useful for some UI/logic
+        .eq('question_id', baseQuestion.id);
+
+      if (optionsError) {
+        console.error(`Error fetching options for dropdown_selection question ${baseQuestion.id}:`, optionsError.message);
+        return null;
+      }
+
+      // Fetch the placeholder-to-correct-value mappings
+      const { data: targetsData, error: targetsError } = await supabase
+        .from('dropdown_selection_targets')
+        .select('key, value') // 'key' is the placeholder, 'value' is the correct option's text
+        .eq('question_id', baseQuestion.id);
+
+      if (targetsError) {
+        console.error(`Error fetching targets for dropdown_selection question ${baseQuestion.id}:`, targetsError.message);
+        return null;
+      }
+
+      const typedOptions: DropdownOption[] = (optionsData || []).map((opt: any) => ({
+        option_id: opt.option_id,
+        text: opt.text,
+        is_correct: opt.is_correct, // Keep is_correct as it's in the table and type
+      }));
+
+      const placeholderTargets: Record<string, DropdownPlaceholderTarget> = {};
+      (targetsData || []).forEach((target: any) => {
+        placeholderTargets[target.key] = {
+          key: target.key,
+          correctOptionText: target.value,
+        };
+      });
+
+      if (!typedOptions.length) {
+        console.warn(`No options found for dropdown_selection question ${baseQuestion.id}`);
+        return null; // Critical: a dropdown question must have options
+      }
+      if (Object.keys(placeholderTargets).length === 0) {
+        console.warn(`No placeholder targets found for dropdown_selection question ${baseQuestion.id}`);
+        return null; // Critical: must have target mappings
+      }
+
+      const dropdownSelectionQuestion: DropdownSelectionQuestion = {
+        ...baseQuestion,
+        type: 'dropdown_selection',
+        options: typedOptions,
+        placeholderTargets: placeholderTargets,
+      };
+      return dropdownSelectionQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching dropdown_selection question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {

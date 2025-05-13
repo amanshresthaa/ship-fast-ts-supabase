@@ -70,8 +70,33 @@ export interface DragAndDropQuestion extends BaseQuestion {
   correctPairs: DragAndDropCorrectPair[];
 }
 
+// New types for DropdownSelectionQuestion
+export interface DropdownOption {
+  option_id: string;
+  text: string;
+  // is_correct is part of the dropdown_selection_options table schema
+  // but might not be directly exposed to the client in DropdownSelectionQuestion if not needed for rendering all options.
+  // However, the migration script keeps it, and it can be useful for client-side hints or direct display if design changes.
+  is_correct?: boolean; 
+}
+
+export interface DropdownPlaceholderTarget {
+  key: string; // The placeholder text, e.g., "option_set1"
+  correctOptionText: string; // The text of the correct option for this placeholder
+}
+
+export interface DropdownSelectionQuestion extends BaseQuestion {
+  type: 'dropdown_selection';
+  options: DropdownOption[]; // All available options for any dropdown in this question
+  placeholderTargets: Record<string, DropdownPlaceholderTarget>; // Maps placeholder key to its correct target details
+}
+
 // AnyQuestion will be a union of all specific question types
-export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion | DragAndDropQuestion; // Add more as implemented
+export type AnyQuestion = 
+  | SingleSelectionQuestion 
+  | MultiChoiceQuestion 
+  | DragAndDropQuestion
+  | DropdownSelectionQuestion; // Added DropdownSelectionQuestion
 
 export interface Quiz {
   id: string; // e.g. azure-a102

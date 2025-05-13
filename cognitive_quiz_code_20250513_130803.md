@@ -1,6 +1,6 @@
 # Cognitive Quiz Codebase
 
-Generated on: 2025-05-11 00:10:27
+Generated on: 2025-05-13 13:08:03
 
 ## Project Structure
 
@@ -11285,7 +11285,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const selectedAnswerForThisQuestion = userAnswerDetails?.answer || 
     (question.type === 'multi' ? multiChoiceSelections : undefined);
   const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
-  const showCorrectAnswerStyling = state.isQuizComplete || 
+  // Renamed from showCorrectAnswerStyling
+  const shouldApplyFeedbackStyling = state.isQuizComplete || 
     (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
     
   // Reset selections when question changes
@@ -11341,7 +11342,8 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           onAnswerSelect={handleLocalAnswerSelection}
           selectedAnswer={selectedAnswerForThisQuestion}
           isSubmitted={isSubmittedForThisQuestion}
-          showCorrectAnswer={showCorrectAnswerStyling}
+          shouldApplyFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop
+          isQuizReviewMode={state.isQuizComplete} // Pass new prop
         />
 
         {/* Explanation Box */}
@@ -11827,8 +11829,9 @@ interface DragAndDropQuestionComponentProps {
   question: DragAndDropQuestion;
   onAnswerChange: (answers: Record<string, string | null>) => void; // Maps target_id to option_id or null
   userAnswer?: Record<string, string | null>; // Previously selected answers
-  isSubmitted?: boolean; // Added
-  showCorrectAnswer?: boolean; // Added
+  isSubmitted?: boolean;
+  showFeedbackStyling?: boolean; // Renamed from showCorrectAnswer, used for styling
+  isQuizReviewMode?: boolean; // New prop for review mode
   validateOnDrop?: boolean; // Auto-validate when all targets are filled
 }
 
@@ -11837,7 +11840,8 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
   onAnswerChange, 
   userAnswer, 
   isSubmitted = false,
-  showCorrectAnswer = false,
+  showFeedbackStyling = false, // Updated prop
+  isQuizReviewMode = false, // New prop
   validateOnDrop = true // Default to true for auto-validation
 }) => {
   // State to track which option is placed in which target
@@ -11890,64 +11894,42 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
   };
 
   useEffect(() => {
-    // Always ensure we have entries for all targets
-    const initializedAnswers: Record<string, string | null> = {};
+    const initialAnswers: Record<string, string | null> = {};
     question.targets.forEach(target => {
-      initializedAnswers[target.target_id] = null;
+      initialAnswers[target.target_id] = null;
     });
 
-    // If showing correct answers, populate state with correct pairings
-    if (showCorrectAnswer) {
-      const correctAnswers: Record<string, string | null> = {};
-      question.targets.forEach(target => {
-        const correctPair = question.correctPairs.find(p => p.target_id === target.target_id);
-        correctAnswers[target.target_id] = correctPair ? correctPair.option_id : null;
-      });
-      setPlacedAnswers(correctAnswers);
+    let newPlacedAnswers = { ...initialAnswers };
+    let newAvailableOptions = [...question.options];
 
-      // Remove used options from available options
-      const usedOptionIds = Object.values(correctAnswers).filter(id => id !== null) as string[];
-      setAvailableOptions(question.options.filter(opt => !usedOptionIds.includes(opt.option_id)));
-
-      // Determine if all targets are filled (or correctly empty)
-      const correctAllFilled = question.targets.every(target => {
-        const correctPair = question.correctPairs.find(p => p.target_id === target.target_id);
-        return !correctPair || (correctAnswers[target.target_id] !== null);
+    if (isQuizReviewMode) {
+      const correctReviewAnswers: Record<string, string | null> = { ...initialAnswers };
+      question.correctPairs.forEach(pair => {
+        correctReviewAnswers[pair.target_id] = pair.option_id;
       });
-      setAllTargetsFilled(correctAllFilled);
-      setAutoValidating(false);
+      newPlacedAnswers = correctReviewAnswers;
+      const usedOptionIdsInReview = Object.values(correctReviewAnswers).filter(id => id !== null) as string[];
+      newAvailableOptions = question.options.filter(opt => !usedOptionIdsInReview.includes(opt.option_id));
+    } else if (userAnswer && Object.keys(userAnswer).length > 0) {
+      newPlacedAnswers = { ...initialAnswers, ...userAnswer };
+      const usedOptionIdsUser = Object.values(newPlacedAnswers).filter(id => id !== null) as string[];
+      newAvailableOptions = question.options.filter(opt => !usedOptionIdsUser.includes(opt.option_id));
     }
-    // Handle user answers if not showing correct answers
-    else if (userAnswer && Object.keys(userAnswer).length > 0) {
-      // Merge user answers with initialized answers to ensure all targets have entries
-      const mergedAnswers = { ...initializedAnswers, ...userAnswer };
-      setPlacedAnswers(mergedAnswers);
+    
+    setPlacedAnswers(newPlacedAnswers);
+    setAvailableOptions(newAvailableOptions);
 
-      // Only count non-null values for used options
-      const usedOptionIds = Object.values(mergedAnswers).filter(id => id !== null) as string[];
-
-      // Filter available options
-      const availableOpts = question.options.filter(opt => !usedOptionIds.includes(opt.option_id));
-      setAvailableOptions(availableOpts);
-
-      // Check if all targets are filled
-      const areAllFilled = checkAllTargetsFilled(mergedAnswers);
-      setAllTargetsFilled(areAllFilled);
-
-      // If all targets are filled and validateOnDrop is true, set autoValidating
-      if (areAllFilled && validateOnDrop && !isSubmitted && !showCorrectAnswer) {
-        setAutoValidating(true);
-      } else {
-        setAutoValidating(false);
-      }
+    const allFilledCurrent = checkAllTargetsFilled(newPlacedAnswers);
+    setAllTargetsFilled(allFilledCurrent);
+    
+    if (validateOnDrop && allFilledCurrent && !isSubmitted && !isQuizReviewMode) {
+      setAutoValidating(true);
+      // Do NOT call onAnswerChange here in useEffect for initial load based on userAnswer.
+      // Submission should only happen on explicit user action (drop) that completes all targets.
     } else {
-      // Initialize with empty answers
-      setPlacedAnswers(initializedAnswers);
-      setAvailableOptions([...question.options]);
-      setAllTargetsFilled(false);
       setAutoValidating(false);
     }
-  }, [question, userAnswer, validateOnDrop, isSubmitted, showCorrectAnswer]);
+  }, [question, userAnswer, isQuizReviewMode, isSubmitted, validateOnDrop]); // Removed onAnswerChange from here
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, optionId: string) => {
     // Store the current dragged option ID in state (fallback for browsers with dataTransfer issues)
@@ -11965,81 +11947,61 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
     e.preventDefault();
-
-    // Remove drag-over styling
     e.currentTarget.classList.remove('drag-over');
 
-    // Don't process drops if submitted or showing correct answers
-    if (isSubmitted || showCorrectAnswer) return;
+    if (isSubmitted || isQuizReviewMode) return;
 
-    // Get the optionId from dataTransfer or state
-    let optionId = null;
-
-    try {
-      optionId = e.dataTransfer.getData('text/plain');
-    } catch (err) {
-      console.warn('Error getting data from dataTransfer:', err);
-    }
-
-    // Fall back to the state variable if dataTransfer doesn't work
+    let optionId = e.dataTransfer.getData('text/plain');
     if (!optionId && currentDraggedOptionId) {
       optionId = currentDraggedOptionId;
     }
 
-    if (!optionId) {
-      console.warn('No option ID found in drop data or state');
-      return; // Early return if no option ID found
-    }
+    if (!optionId) return;
 
-    setPlacedAnswers(prev => {
-      const newAnswers = { ...prev };
-      const previousOptionInTarget = newAnswers[targetId];
+    const optionBeingMoved = question.options.find(opt => opt.option_id === optionId);
+    if (!optionBeingMoved) return;
 
-      // Remove the option from its previous target if it was placed somewhere
-      Object.keys(newAnswers).forEach(tId => {
-        if (newAnswers[tId] === optionId) {
-          newAnswers[tId] = null;
+    setPlacedAnswers(prevPlacedAnswers => {
+      let intermediateAnswers: Record<string, string | null> = { ...prevPlacedAnswers };
+      const oldOptionIdInTarget = prevPlacedAnswers[targetId];
+
+      // Clear the option from any other target it might have been in
+      for (const tId in intermediateAnswers) {
+        if (intermediateAnswers[tId] === optionId && tId !== targetId) {
+          intermediateAnswers[tId] = null;
         }
-      });
-
-      // Place the option in the new target
-      newAnswers[targetId] = optionId;
-
-      // Check if all targets are filled after this change
-      const nowAllFilled = checkAllTargetsFilled(newAnswers);
-      setAllTargetsFilled(nowAllFilled);
-
-      // Auto-validate if all targets are filled
-      if (nowAllFilled && validateOnDrop && !isSubmitted && !showCorrectAnswer) {
-        setAutoValidating(true);
-      } else if (!nowAllFilled) {
-        setAutoValidating(false);
       }
+      
+      intermediateAnswers[targetId] = optionId;
+      const newAnswers = { ...intermediateAnswers };
+
+      const currentlyAllFilled = checkAllTargetsFilled(newAnswers);
+      setAllTargetsFilled(currentlyAllFilled); 
 
       // Update available options
-      setAvailableOptions(currentOptions => {
-        let updated = [...currentOptions];
-
-        // Add back the option that was previously in this target (if any)
-        if (previousOptionInTarget) {
-          const prevOpt = question.options.find(o => o.option_id === previousOptionInTarget);
-          if (prevOpt && !updated.some(o => o.option_id === prevOpt.option_id)) {
-            updated.push(prevOpt);
+      setAvailableOptions(prevOptions => {
+        // Remove the dropped option
+        let updatedOptions = prevOptions.filter(opt => opt.option_id !== optionId);
+        // Add back the option that was previously in the target, if any, and it's not the one just dropped
+        if (oldOptionIdInTarget && oldOptionIdInTarget !== optionId) {
+          const oldOptionDetails = question.options.find(opt => opt.option_id === oldOptionIdInTarget);
+          if (oldOptionDetails && !updatedOptions.some(opt => opt.option_id === oldOptionDetails.option_id)) {
+            updatedOptions.push(oldOptionDetails);
           }
         }
-
-        // Remove the newly placed option
-        updated = updated.filter(opt => opt.option_id !== optionId);
-        return updated;
+        return updatedOptions;
       });
-
-      // Notify parent of change
-      onAnswerChange(newAnswers);
-
+      
+      if (validateOnDrop && currentlyAllFilled && !isSubmitted && !isQuizReviewMode) {
+        setAutoValidating(true);
+        onAnswerChange(newAnswers); // This will trigger submission in QuestionCard
+      } else {
+        setAutoValidating(false);
+        // If you need to inform parent about intermediate changes without submitting:
+        // onAnswerChange(newAnswers); // But be careful, as this is tied to submission logic in QuestionCard
+      }
       return newAnswers;
     });
-
-    // Clear the tracked dragged option
     setCurrentDraggedOptionId(null);
   };
 
@@ -12058,230 +12020,146 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
     e.currentTarget.classList.remove('drag-over');
   };
 
-  // Allow removing an item from a target back to the available options
   const handleRemoveFromTarget = (targetId: string) => {
-    if (isSubmitted || showCorrectAnswer) return; // Prevent removal if submitted/showing answer
+    if (isSubmitted || isQuizReviewMode) return;
     
     const optionId = placedAnswers[targetId];
-    if (!optionId) return; // Nothing to remove
+    if (!optionId) return;
     
-    // Update the answers state
-    setPlacedAnswers(prev => {
-      // Create a new answers object with the target set to null
-      const newAnswers: Record<string, string | null> = { ...prev, [targetId]: null };
-      
-      // Check if all targets are still filled after this removal
-      const stillAllFilled = checkAllTargetsFilled(newAnswers);
-      
-      // Since we're removing an item, targets are likely no longer all filled
-      setAllTargetsFilled(stillAllFilled);
-      
-      // Only turn off auto-validation if not all targets are filled
-      if (!stillAllFilled) {
-        setAutoValidating(false);
+    setPlacedAnswers(prevPlacedAnswers => {
+      const newAnswers: Record<string, string | null> = { ...prevPlacedAnswers, [targetId]: null };
+      const currentlyAllFilled = checkAllTargetsFilled(newAnswers);
+      setAllTargetsFilled(currentlyAllFilled);
+
+      const removedOptionDetails = question.options.find(opt => opt.option_id === optionId);
+      if (removedOptionDetails) {
+        setAvailableOptions(prevOptions => {
+          if (!prevOptions.some(opt => opt.option_id === removedOptionDetails.option_id)) {
+            return [...prevOptions, removedOptionDetails];
+          }
+          return prevOptions;
+        });
       }
-      
-      // Notify parent component of the change
-      onAnswerChange(newAnswers);
+
+      if (autoValidating && !currentlyAllFilled) {
+          setAutoValidating(false);
+      }
+      // Do not call onAnswerChange here, as removing an item makes the answer incomplete.
       return newAnswers;
     });
-    
-    // Add the removed option back to available options
-    const removedOption = question.options.find(opt => opt.option_id === optionId);
-    if (removedOption) {
-      setAvailableOptions(prev => {
-        // Only add if it's not already in available options
-        if (!prev.some(o => o.option_id === optionId)) {
-          return [...prev, removedOption];
-        }
-        return prev;
-      });
-    }
   };
 
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">
-      {/* Debug message (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-2 p-2 bg-gray-100 text-xs">
-          <div>All targets filled: {allTargetsFilled ? 'true' : 'false'}</div>
-          <div>Auto validating: {autoValidating ? 'true' : 'false'}</div>
-          <div>Targets filled: {Object.entries(placedAnswers).filter(([_, val]) => val !== null).length}/{question.targets.length}</div>
-        </div>
-      )}
-
-      {/* Feedback area that shows when all targets are filled during auto-validation */}
-      {autoValidating && allTargetsFilled && !showCorrectAnswer && !isSubmitted && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md animate-fade-in-up">
-          <p className="flex items-center text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-            </svg>
-            <span className="font-medium">All targets filled!</span> Showing immediate feedback below.
-          </p>
-        </div>
-      )}
+      {/* <h3 className="text-lg font-semibold mb-2">{question.question}</h3> */}
       
-      {allTargetsFilled && !autoValidating && !showCorrectAnswer && !isSubmitted && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md animate-fade-in-up">
-          <p className="flex items-center text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span className="font-medium">All targets filled!</span> Click "Submit Answer" when you're ready.
-          </p>
+      {/* Available Options */}
+      <div className="mb-4">
+        <p className="font-medium">Available Items:</p>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {availableOptions.map(option => (
+            <div
+              key={option.option_id}
+              draggable={!isSubmitted && !isQuizReviewMode}
+              onDragStart={(e) => handleDragStart(e, option.option_id)}
+              className="p-2 bg-blue-100 border border-blue-300 rounded cursor-grab"
+            >
+              {option.text}
+            </div>
+          ))}
         </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Draggable Options Area */}
-        <div className="border p-4 rounded-md bg-gray-50 min-h-[150px]">
-          <h4 className="text-md font-medium mb-2 text-gray-700">Available Items:</h4>
-          {availableOptions.length > 0 ? (
-            availableOptions.map(option => {
-              let currentOptionStyle = "p-2 mb-2 bg-blue-100 border border-blue-300 rounded shadow-sm hover:shadow-md transition-shadow";
-              let optionTitle = undefined;
-              const isInteractive = !(isSubmitted || showCorrectAnswer);
-              currentOptionStyle += isInteractive ? " cursor-grab" : " cursor-default";
+      </div>
 
-              if (showCorrectAnswer) {
-                const isCorrectForSomeTarget = question.correctPairs.find(cp => cp.option_id === option.option_id);
-                if (isCorrectForSomeTarget && !Object.values(placedAnswers).includes(option.option_id)) {
-                  // This option is correct for at least one target and is currently not placed.
-                  // Check if the target it's correct for is either empty or has a wrong item.
-                  const correctTargetInfo = question.correctPairs.find(cp => cp.option_id === option.option_id);
-                  if (correctTargetInfo) {
-                    const targetCurrentOption = placedAnswers[correctTargetInfo.target_id];
-                    if (!targetCurrentOption || targetCurrentOption !== option.option_id) {
-                      currentOptionStyle = "p-2 mb-2 bg-yellow-100 border border-yellow-400 rounded shadow-sm cursor-default"; 
-                      optionTitle = "This item could have been used correctly elsewhere.";
-                    }
-                  }
-                }
-              }
-
-              return (
-                <div
-                  key={option.option_id}
-                  draggable={isInteractive}
-                  onDragStart={(e) => isInteractive && handleDragStart(e, option.option_id)}
-                  onDragEnd={() => setCurrentDraggedOptionId(null)}
-                  className={`${currentOptionStyle} select-none touch-manipulation`} 
-                  title={optionTitle}
-                  data-option-id={option.option_id}
-                >
-                  {option.text}
-                </div>
-              );
-            })
-          ) : (
-            <p className="text-gray-500 italic">All items placed.</p>
-          )}
-        </div>
-
-        {/* Drop Targets Area */}
-        <div className="space-y-4">
+      {/* Targets */}
+      <div>
+        <p className="font-medium">Match items to the correct targets:</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
           {question.targets.map(target => {
             const placedOptionId = placedAnswers[target.target_id];
-            const isInteractive = !(isSubmitted || showCorrectAnswer);
-            
-            let dropZoneClassName = "p-3 border-2 border-dashed rounded min-h-[60px] bg-white flex items-center justify-center transition-colors";
-            let placedItemDivClassName = "p-2 rounded shadow-sm w-full text-center relative";
+            const placedOption = placedOptionId ? question.options.find(opt => opt.option_id === placedOptionId) : null;
 
-            if (showCorrectAnswer) {
-              const correctPairForThisTarget = question.correctPairs.find(p => p.target_id === target.target_id);
-              if (placedOptionId) {
-                // An item is placed in this target
-                if (correctPairForThisTarget && correctPairForThisTarget.option_id === placedOptionId) {
-                  dropZoneClassName += " border-green-500";
-                  placedItemDivClassName += " bg-green-100 border border-green-400";
-                } else {
-                  dropZoneClassName += " border-red-500";
-                  placedItemDivClassName += " bg-red-100 border border-red-400";
-                }
-              } else {
-                // This target is empty
-                if (correctPairForThisTarget) {
-                  dropZoneClassName += " border-red-500"; // Should have had an item
-                } else {
-                  dropZoneClassName += " border-gray-300"; // Correctly empty
-                }
-              }
-            } else {
-              dropZoneClassName += " border-gray-300 hover:border-blue-400";
-            }
+            let borderColor = 'border-gray-300'; // Default border
+            let hintText: string | null = null;
 
-            // Get validation result for auto-validation (only if autoValidating is true)
-            let validationClass = "";
-            let feedbackText = null;
-            
-            // Only show validation feedback if all targets are filled or showing correct answer
-            if ((autoValidating && allTargetsFilled) || showCorrectAnswer) {
-              // Find the correct pair for this target
-              const correctPair = question.correctPairs.find(p => p.target_id === target.target_id);
-              const placedOptionId = placedAnswers[target.target_id];
-              
-              // Check if placed option is correct
-              const isCorrect = correctPair && placedOptionId === correctPair.option_id;
-              
-              if (placedOptionId) {
-                if (isCorrect) {
-                  validationClass = " border-green-400 bg-green-50";
-                  feedbackText = (
-                    <div className="mt-2 text-xs text-green-600 font-medium">
-                      <span>✓ Correct</span>
-                    </div>
-                  );
+            // Determine if detailed feedback (styling, hints) should be applied to this target.
+            // This is true if global feedback styling is on, AND (it's review mode OR the user filled all targets for their attempt).
+            const applyDetailedTargetFeedback = showFeedbackStyling && (isQuizReviewMode || allTargetsFilled);
+
+            if (applyDetailedTargetFeedback) {
+              const correctPairForTarget = question.correctPairs.find(p => p.target_id === target.target_id);
+
+              if (placedOptionId) { // An option is placed in this target
+                if (correctPairForTarget && correctPairForTarget.option_id === placedOptionId) {
+                  borderColor = 'border-green-500'; // User's placement is correct
                 } else {
-                  validationClass = " border-red-400 bg-red-50";
-                  feedbackText = (
-                    <div className="mt-2 text-xs text-red-600 font-medium">
-                      <span>✗ Incorrect</span>
-                    </div>
-                  );
+                  borderColor = 'border-red-500'; // User's placement is incorrect
+                  if (correctPairForTarget) {
+                    const correctOptionDetails = question.options.find(opt => opt.option_id === correctPairForTarget.option_id);
+                    hintText = correctOptionDetails ? `(Correct: ${correctOptionDetails.text})` : '(Correct answer details not found)';
+                  } else { // Placed an option where target should be empty (no correct pair defined)
+                    hintText = '(This target should be empty)';
+                  }
+                }
+              } else { // This target is empty in placedAnswers
+                if (correctPairForTarget) { // Target should have been filled
+                  borderColor = 'border-red-500'; // Incorrectly empty
+                  const correctOptionDetails = question.options.find(opt => opt.option_id === correctPairForTarget.option_id);
+                  hintText = correctOptionDetails ? `(Correct: ${correctOptionDetails.text})` : '(Correct answer details not found)';
+                } else {
+                  // Target is correctly empty (no correctPair for it)
+                  borderColor = 'border-green-500'; // Style as correct (or neutral if preferred)
                 }
               }
             }
-            
+
             return (
-              <div key={target.target_id} className={`border p-4 rounded-md bg-gray-50${validationClass}`}>
-                <h4 className="text-md font-medium mb-2 text-gray-700">{target.text}</h4>
-                <div
-                  onDrop={isInteractive ? (e) => handleDrop(e, target.target_id) : undefined}
-                  onDragOver={isInteractive ? handleDragOver : undefined}
-                  onDragEnter={isInteractive ? handleDragEnter : undefined}
-                  onDragLeave={isInteractive ? handleDragLeave : undefined}
-                  className={`${dropZoneClassName} ${isInteractive ? 'transition-colors duration-200 ease-in-out cursor-pointer' : ''}`}
-                  data-target-id={target.target_id}
-                >
-                  {placedOptionId ? (
-                    <div className={placedItemDivClassName}>
-                      {question.options.find(opt => opt.option_id === placedOptionId)?.text}
-                      {isInteractive && (
-                        <button 
-                          onClick={() => handleRemoveFromTarget(target.target_id)}
-                          className="absolute top-0 right-0 mt-1 mr-1 text-red-500 hover:text-red-700 text-xs p-1 bg-red-100 rounded-full"
-                          title="Remove"
-                        >
-                          &#x2715; {/* Cross symbol */}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    showCorrectAnswer && question.correctPairs.find(p => p.target_id === target.target_id) ?
-                      <span className="text-xs text-green-700 italic">
-                        (Correct: {question.options.find(opt => opt.option_id === question.correctPairs.find(cp => cp.target_id === target.target_id)?.option_id)?.text || 'Item'})
-                      </span> :
-                      <span className="text-gray-400 italic">Drop here</span>
-                  )}
-                </div>
-                {/* Show feedback for auto-validation only if all targets are filled, or when showing correct answers */}
-                {((autoValidating && allTargetsFilled) || showCorrectAnswer) && placedOptionId && feedbackText}
+              <div
+                key={target.target_id}
+                onDrop={(e) => handleDrop(e, target.target_id)}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                className={`p-4 border-2 ${borderColor} rounded min-h-[80px] bg-gray-50 flex flex-col justify-between`}
+              >
+                <p className="font-semibold">{target.text}</p>
+                {placedOption && (
+                  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded flex justify-between items-center">
+                    <span>{placedOption.text}</span>
+                    {!isSubmitted && !isQuizReviewMode && (
+                      <button
+                        onClick={() => handleRemoveFromTarget(target.target_id)}
+                        className="ml-2 text-red-500 hover:text-red-700"
+                        title="Remove item"
+                      >
+                        &times;
+                      </button>
+                    )}
+                  </div>
+                )}
+                {hintText && <p className="text-xs mt-1">{hintText}</p>}
               </div>
             );
           })}
         </div>
       </div>
+
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mt-4 p-2 border rounded bg-gray-50 text-xs">
+          {/* ... existing dev info ... */}
+        </div>
+      )}
+      
+      {autoValidating && allTargetsFilled && !showFeedbackStyling && !isSubmitted && (
+        <div className="mt-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
+          <p className="text-sm text-yellow-700">All targets filled. Your answer will be submitted.</p>
+        </div>
+      )}
+      
+      {allTargetsFilled && !autoValidating && !showFeedbackStyling && !isSubmitted && (
+         <div className="mt-4 p-2 bg-green-100 border border-green-300 rounded">
+           <p className="text-sm text-green-700">All targets filled. Ready to submit.</p>
+         </div>
+      )}
     </div>
   );
 };
@@ -12411,7 +12289,8 @@ interface QuestionTypeRendererProps {
   onAnswerSelect: (answer: any) => void;
   selectedAnswer: any;
   isSubmitted: boolean;
-  showCorrectAnswer: boolean;
+  shouldApplyFeedbackStyling: boolean; // Renamed from showCorrectAnswer
+  isQuizReviewMode: boolean; // New prop
 }
 
 // Using Factory pattern to render appropriate component based on question type
@@ -12420,7 +12299,8 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
   onAnswerSelect,
   selectedAnswer,
   isSubmitted,
-  showCorrectAnswer,
+  shouldApplyFeedbackStyling, // Updated prop name
+  isQuizReviewMode, // New prop
 }) => {
   // Type guard to check if question is defined
   if (!question || !question.type) {
@@ -12439,7 +12319,7 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           onAnswerSelect={onAnswerSelect}
           selectedOptionId={selectedAnswer as string | undefined}
           isSubmitted={isSubmitted}
-          showCorrectAnswer={showCorrectAnswer}
+          showCorrectAnswer={shouldApplyFeedbackStyling} // Pass renamed prop
         />
       );
     case 'multi':
@@ -12449,7 +12329,7 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           onAnswerSelect={onAnswerSelect}
           selectedOptionIds={selectedAnswer as string[] | undefined}
           isSubmitted={isSubmitted}
-          showCorrectAnswer={showCorrectAnswer}
+          showCorrectAnswer={shouldApplyFeedbackStyling} // Pass renamed prop
         />
       );
     case 'drag_and_drop':
@@ -12459,14 +12339,15 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           onAnswerChange={onAnswerSelect}
           userAnswer={selectedAnswer as Record<string, string | null> | undefined}
           isSubmitted={isSubmitted}
-          showCorrectAnswer={showCorrectAnswer}
+          showFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop here
+          isQuizReviewMode={isQuizReviewMode} // Pass new prop here
           validateOnDrop={true} // Enable immediate feedback validation
         />
       );
     default:
       return (
         <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
-          <p className="font-semibold text-red-700">Error: Unknown question type: {question.type}</p>
+          <p className="font-semibold text-red-700">Error: Unknown question type: {(question as any).type}</p>
         </div>
       );
   }
@@ -12692,20 +12573,24 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
 
     case 'NEXT_QUESTION':
       if (state.currentQuestionIndex < state.questions.length - 1) {
+        const nextQuestionId = state.questions[state.currentQuestionIndex + 1]?.id;
+        const nextQuestionHasAnswer = nextQuestionId ? state.userAnswers[nextQuestionId] !== undefined : false;
         return {
           ...state,
           currentQuestionIndex: state.currentQuestionIndex + 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex + 1]?.id]?.isCorrect !== undefined,
+          showFeedbackForCurrentQuestion: nextQuestionHasAnswer,
         };
       }
       return { ...state, isQuizComplete: true }; 
 
     case 'PREVIOUS_QUESTION':
       if (state.currentQuestionIndex > 0) {
+        const prevQuestionId = state.questions[state.currentQuestionIndex - 1]?.id;
+        const prevQuestionHasAnswer = prevQuestionId ? state.userAnswers[prevQuestionId] !== undefined : false;
         return {
           ...state,
           currentQuestionIndex: state.currentQuestionIndex - 1,
-          showFeedbackForCurrentQuestion: !!state.userAnswers[state.questions[state.currentQuestionIndex - 1]?.id]?.isCorrect !== undefined,
+          showFeedbackForCurrentQuestion: prevQuestionHasAnswer,
         };
       }
       return state;
