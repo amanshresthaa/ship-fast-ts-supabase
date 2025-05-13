@@ -93,7 +93,7 @@ const QuestionTypesPage: React.FC = () => {
       type: 'dropdown_selection',
       name: 'Dropdown Selection',
       description: 'User selects answers from dropdown menus within text.',
-      available: true // Updated to true
+      available: false
     },
     {
       type: 'order',

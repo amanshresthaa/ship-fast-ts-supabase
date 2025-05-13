@@ -3,22 +3,14 @@
 import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
-
-// Icons for options
-const CorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
-));
-
-const IncorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>
-));
+import QuizOption from '../shared/QuizOption'; // Import the new QuizOption component
 
 interface MultiChoiceComponentProps {
   question: MultiChoiceQuestion;
   onAnswerSelect: (optionIds: string[]) => void;
   selectedOptionIds?: string[];
   isSubmitted?: boolean;
-  showCorrectAnswer?: boolean;
+  showFeedback?: boolean; // Standardized prop name
 }
 
 const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
@@ -26,7 +18,7 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   onAnswerSelect,
   selectedOptionIds = [],
   isSubmitted = false,
-  showCorrectAnswer = false,
+  showFeedback = false, // Standardized prop name
 }) => {
   // Determine the correct number of answers to select
   const correctAnswersCount = question.correctAnswerOptionIds.length;
@@ -57,69 +49,28 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
       <p className="text-sm text-gray-500 mb-2 font-medium">
         Select {question.correctAnswerOptionIds.length} answer{question.correctAnswerOptionIds.length > 1 ? 's' : ''} ({selectedOptionIds.length}/{question.correctAnswerOptionIds.length} selected)
       </p>
-      
+
       {question.options.map((option: SelectionOption, index: number) => {
         const isSelected = selectedOptionIds.includes(option.option_id);
         const isCorrect = question.correctAnswerOptionIds.includes(option.option_id);
         const optionLetter = String.fromCharCode(65 + index);
-        
-        // Determine option styles
-        let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
-        let stateStyle = "border-custom-gray-3"; 
-        let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
-        
-        // Apply feedback styling if necessary
-        if (isSubmitted || showCorrectAnswer) {
-          if (isCorrect) {
-            stateStyle = "border-custom-success bg-green-500/[.05]";
-          } else if (isSelected && !isCorrect) {
-            stateStyle = "border-custom-error bg-red-500/[.05]";
-          } else {
-            stateStyle = "border-custom-gray-3 bg-gray-50 opacity-70";
-            hoverStyle = "cursor-default";
-          }
-        } else if (isSelected) {
-          stateStyle = "border-custom-primary ring-2 ring-custom-primary shadow-shadow-2";
-        }
-        
-        return (
-          <motion.button
-            key={option.option_id}
-            type="button"
-            onClick={() => handleOptionClick(option.option_id)}
-            className={`${baseStyle} ${stateStyle} ${hoverStyle}`}
-            disabled={isSubmitted}
-            aria-pressed={isSelected}
-            whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
-            whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
-            layout
-          >
-            {/* Accent border */}
-            <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${
-              isSelected ? 'bg-custom-primary' : 
-              isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : 
-              isSelected && !isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-error' : 
-              'bg-custom-gray-3'
-            } ${isSubmitted ? '' : 'group-hover:bg-custom-primary'}`}></span>
 
-            <div className="option-content flex items-center justify-between pl-4">
-              <div className="option-text text-base md:text-lg font-medium text-custom-gray-1">
-                <span className="option-letter inline-block w-6 font-bold text-custom-primary mr-2">{optionLetter}.</span>
-                {option.text}
-              </div>
-              
-              {/* Checkbox indicator */}
-              <div className={`w-6 h-6 border-2 rounded flex items-center justify-center mr-2 ${
-                isSelected ? 'bg-custom-primary border-custom-primary' : 'border-gray-300'
-              }`}>
-                {isSelected && <span className="text-white">✓</span>}
-              </div>
-              
-              {/* Show feedback icons when appropriate */}
-              {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
-              {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
-            </div>
-          </motion.button>
+        // Determine if the option should be disabled
+        // Disable if submitted, or if max selections reached and this option is not already selected.
+        const isDisabled = isSubmitted || (selectedOptionIds.length >= correctAnswersCount && !isSelected);
+
+        return (
+          <QuizOption
+            key={option.option_id}
+            option={option}
+            optionLetter={optionLetter}
+            isSelected={isSelected}
+            isCorrect={isCorrect}
+            isSubmitted={isSubmitted}
+            showFeedback={showFeedback}
+            onClick={handleOptionClick}
+            disabled={isDisabled} // Pass calculated disabled state
+          />
         );
       })}
     </div>

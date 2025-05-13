@@ -1,16 +1,15 @@
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion } from '../../../../types/quiz'; // Added DropdownSelectionQuestion
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
 import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
-import DropdownSelectionComponent from './DropdownSelectionComponent'; // Import the new component
 
 interface QuestionTypeRendererProps {
   question: AnyQuestion;
   onAnswerSelect: (answer: any) => void;
   selectedAnswer: any;
   isSubmitted: boolean;
-  shouldApplyFeedbackStyling: boolean; // Renamed from showCorrectAnswer
+  showFeedback: boolean; // Standardized prop name (was shouldApplyFeedbackStyling)
   isQuizReviewMode: boolean; // New prop
 }
 
@@ -20,7 +19,7 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
   onAnswerSelect,
   selectedAnswer,
   isSubmitted,
-  shouldApplyFeedbackStyling, // Updated prop name
+  showFeedback, // Updated prop name
   isQuizReviewMode, // New prop
 }) => {
   // Type guard to check if question is defined
@@ -35,12 +34,12 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
   switch (question.type) {
     case 'single_selection':
       return (
-        <SingleSelectionComponent
-          question={question as SingleSelectionQuestion}
+        <SingleSelectionComponent 
+          question={question as SingleSelectionQuestion} 
           onAnswerSelect={onAnswerSelect}
           selectedOptionId={selectedAnswer as string | undefined}
           isSubmitted={isSubmitted}
-          showCorrectAnswer={shouldApplyFeedbackStyling} // Pass renamed prop
+          showFeedback={showFeedback} // Pass standardized prop
         />
       );
     case 'multi':
@@ -50,32 +49,37 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           onAnswerSelect={onAnswerSelect}
           selectedOptionIds={selectedAnswer as string[] | undefined}
           isSubmitted={isSubmitted}
-          showCorrectAnswer={shouldApplyFeedbackStyling} // Pass renamed prop
+          showFeedback={showFeedback} // Pass standardized prop
         />
       );
     case 'drag_and_drop':
       return (
         <DragAndDropQuestionComponent
           question={question as DragAndDropQuestion}
-          onAnswerChange={onAnswerSelect} // Note: prop name is onAnswerChange here
+          onAnswerChange={onAnswerSelect}
           userAnswer={selectedAnswer as Record<string, string | null> | undefined}
           isSubmitted={isSubmitted}
-          showFeedbackStyling={shouldApplyFeedbackStyling}
+<<<<<<< HEAD
+          showFeedback={showFeedback} // Pass standardized prop (was showFeedbackStyling)
           isQuizReviewMode={isQuizReviewMode}
-          validateOnDrop={true}
+          validateOnDrop={true} // Assuming this remains true, or make it configurable if needed
         />
       );
-    case 'dropdown_selection': // Add new case for dropdown_selection
+    case 'dropdown_selection':
       return (
         <DropdownSelectionComponent
           question={question as DropdownSelectionQuestion}
-          onAnswerSelect={onAnswerSelect} // Prop name is onAnswerSelect
-          selectedAnswer={selectedAnswer as Record<string, string | null> | undefined | null} // Corrected prop name to selectedAnswer
+          onAnswerSelect={onAnswerSelect}
+          selectedAnswer={selectedAnswer as Record<string, string | null> | undefined | null}
           isSubmitted={isSubmitted}
-          showCorrectAnswer={shouldApplyFeedbackStyling}
-          validateOnComplete={true} // Add the new prop to wait for all dropdowns to be filled
-          // isQuizReviewMode prop is not used by DropdownSelectionComponent, so it's removed for now.
-          // If needed later, it can be added to DropdownSelectionComponentProps.
+          showFeedback={showFeedback} // Pass standardized prop (was showCorrectAnswer)
+          validateOnComplete={true}
+          // isQuizReviewMode is not currently used by DropdownSelectionComponent
+=======
+          showFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop here
+          isQuizReviewMode={isQuizReviewMode} // Pass new prop here
+          validateOnDrop={true} // Enable immediate feedback validation
+>>>>>>> parent of 8d100cc (Added Dropdown Selection)
         />
       );
     default:

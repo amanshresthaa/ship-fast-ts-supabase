@@ -9,9 +9,6 @@ import {
   DragAndDropOption,
   DragAndDropCorrectPair,
   DragAndDropQuestion,
-  DropdownOption, // New
-  DropdownPlaceholderTarget, // New
-  DropdownSelectionQuestion, // New
   Quiz // Will be needed for fetchQuizById
 } from '../types/quiz';
 
@@ -209,7 +206,7 @@ export async function enrichQuestionWithDetails(
         console.warn(`No correct pairs found for drag_and_drop question ${baseQuestion.id}`);
         return null;
       }
-      
+
       const dragAndDropQuestion: DragAndDropQuestion = {
         ...baseQuestion,
         type: 'drag_and_drop',
@@ -223,6 +220,7 @@ export async function enrichQuestionWithDetails(
       console.error(`Unexpected error enriching drag_and_drop question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
+<<<<<<< HEAD
   } else if (baseQuestion.type === 'dropdown_selection') { // New case for dropdown_selection
     try {
       // Fetch all available options for this dropdown question
@@ -261,6 +259,12 @@ export async function enrichQuestionWithDetails(
         };
       });
 
+      // Create the correctAnswers map
+      const correctAnswers: Record<string, string> = {};
+      for (const key in placeholderTargets) {
+        correctAnswers[key] = placeholderTargets[key].correctOptionText;
+      }
+
       if (!typedOptions.length) {
         console.warn(`No options found for dropdown_selection question ${baseQuestion.id}`);
         return null; // Critical: a dropdown question must have options
@@ -274,7 +278,8 @@ export async function enrichQuestionWithDetails(
         ...baseQuestion,
         type: 'dropdown_selection',
         options: typedOptions,
-        placeholderTargets: placeholderTargets,
+        placeholderTargets: placeholderTargets, // Keep this if it's used elsewhere, or remove if redundant
+        correctAnswers: correctAnswers, // Populate the correctAnswers field
       };
       return dropdownSelectionQuestion;
 
@@ -282,6 +287,8 @@ export async function enrichQuestionWithDetails(
       console.error(`Unexpected error enriching dropdown_selection question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
+=======
+>>>>>>> parent of 8d100cc (Added Dropdown Selection)
   } else {
     console.warn(`enrichQuestionWithDetails: Unhandled question type '${baseQuestion.type}' for Q ID ${baseQuestion.id}. Returning null.`);
     return null; 

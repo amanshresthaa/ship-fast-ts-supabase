@@ -1,0 +1,40 @@
+{
+  "questions": [
+    {
+      "id": "multi-select-01",
+      "type": "multi",
+      "question": "Which of the following are Azure Cognitive Services? (Select 2)",
+      "points": 2,
+      "quiz_tag": "azure-a102",
+      "difficulty": "medium",
+      "explanation": "Azure Cognitive Services include Language, Computer Vision, Speech, and Decision services. Azure Blob Storage is a storage service, Azure Virtual Network is a networking service, and Azure Kubernetes Service is a container orchestration service.",
+      "feedback_correct": "Correct! You've identified the Azure Cognitive Services correctly.",
+      "feedback_incorrect": "Not quite. Review the Azure Cognitive Services offerings.",
+      "created_at": "2023-05-01T00:00:00Z",
+      "updated_at": "2023-05-01T00:00:00Z",
+      "options": [
+        {
+          "option_id": "A",
+          "text": "Azure Blob Storage"
+        },
+        {
+          "option_id": "B",
+          "text": "Azure Language Service"
+        },
+        {
+          "option_id": "C",
+          "text": "Azure Kubernetes Service"
+        },
+        {
+          "option_id": "D",
+          "text": "Azure Computer Vision"
+        },
+        {
+          "option_id": "E",
+          "text": "Azure Virtual Network"
+        }
+      ],
+      "correctAnswerOptionIds": ["B", "D"]
+    }
+  ]
+}

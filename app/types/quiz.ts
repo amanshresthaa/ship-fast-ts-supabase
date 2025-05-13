@@ -70,6 +70,7 @@ export interface DragAndDropQuestion extends BaseQuestion {
   correctPairs: DragAndDropCorrectPair[];
 }
 
+<<<<<<< HEAD
 // New types for DropdownSelectionQuestion
 export interface DropdownOption {
   option_id: string;
@@ -89,14 +90,13 @@ export interface DropdownSelectionQuestion extends BaseQuestion {
   type: 'dropdown_selection';
   options: DropdownOption[]; // All available options for any dropdown in this question
   placeholderTargets: Record<string, DropdownPlaceholderTarget>; // Maps placeholder key to its correct target details
+  correctAnswers: Record<string, string>; // Maps placeholder key to correct option TEXT
 }
 
+=======
+>>>>>>> parent of 8d100cc (Added Dropdown Selection)
 // AnyQuestion will be a union of all specific question types
-export type AnyQuestion = 
-  | SingleSelectionQuestion 
-  | MultiChoiceQuestion 
-  | DragAndDropQuestion
-  | DropdownSelectionQuestion; // Added DropdownSelectionQuestion
+export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion | DragAndDropQuestion; // Add more as implemented
 
 export interface Quiz {
   id: string; // e.g. azure-a102
