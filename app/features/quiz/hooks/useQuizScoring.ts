@@ -43,6 +43,9 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
         }
       }
       submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
+    } else if (question.type === 'order') {
+      // For 'order' questions, pass the correctOrder array for client-side validation
+      submitPayload.payload.correctOrder = question.correctOrder;
     }
 
     // First update the UI immediately with client-side validation results

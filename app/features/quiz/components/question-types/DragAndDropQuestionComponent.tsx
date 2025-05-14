@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo, useMemo } from 'react'; // Added useMemo
 import { DragAndDropQuestion, DragAndDropOption, DragAndDropTarget } from '@/app/types/quiz';
 import { DragAndDropController } from '../../controllers/DragAndDropController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
@@ -28,8 +28,8 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
   isQuizReviewMode = false,
   validateOnDrop = true
 }) => {
-  // Create controller instance
-  const controller = new DragAndDropController(question);
+  // Create controller instance, memoized to prevent re-creation
+  const controller = useMemo(() => new DragAndDropController(question), [question]);
   
   // Track the current dragged option ID for browsers that don't support dataTransfer properly
   const [currentDraggedOptionId, setCurrentDraggedOptionId] = useState<string | null>(null);
@@ -39,8 +39,8 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
     controller.getOptions()
   );
 
-  // Initialize with controller's initial answers
-  const initialAnswers = controller.createInitialAnswers();
+  // Initialize with controller's initial answers, memoized
+  const initialAnswers = useMemo(() => controller.createInitialAnswers(), [controller]);
   
   // Use auto-validation hook
   const [placedAnswers, setPlacedAnswers, autoValidating, allTargetsFilled] = useAutoValidation<

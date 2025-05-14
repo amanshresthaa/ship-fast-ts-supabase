@@ -9,10 +9,12 @@ import {
   DragAndDropOption,
   DragAndDropCorrectPair,
   DragAndDropQuestion,
-  DropdownOption, // New
-  DropdownPlaceholderTarget, // New
-  DropdownSelectionQuestion, // New
-  Quiz // Will be needed for fetchQuizById
+  DropdownOption,
+  DropdownPlaceholderTarget,
+  DropdownSelectionQuestion,
+  OrderQuestion,
+  OrderItem,
+  Quiz
 } from '../types/quiz';
 
 // Initialize Supabase client
@@ -280,6 +282,63 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching dropdown_selection question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'order') {
+    try {
+      // Fetch the order items
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('order_items')
+        .select('item_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (itemsError) {
+        console.error(`Error fetching items for order question ${baseQuestion.id}:`, itemsError.message);
+        return null;
+      }
+
+      // Fetch the correct order sequence
+      const { data: correctOrderData, error: correctOrderError } = await supabase
+        .from('order_correct_order')
+        .select('item_id, position')
+        .eq('question_id', baseQuestion.id)
+        .order('position', { ascending: true });
+
+      if (correctOrderError) {
+        console.error(`Error fetching correct order for question ${baseQuestion.id}:`, correctOrderError.message);
+        return null;
+      }
+
+      const items: OrderItem[] = (itemsData || []).map((item: any) => ({
+        item_id: item.item_id,
+        text: item.text,
+      }));
+
+      // Sort by position and extract just the item_ids for correctOrder
+      const correctOrder = (correctOrderData || [])
+        .sort((a: any, b: any) => a.position - b.position)
+        .map((item: any) => item.item_id);
+
+      if (!items.length) {
+        console.warn(`No items found for order question ${baseQuestion.id}`);
+        return null;
+      }
+
+      if (!correctOrder.length) {
+        console.warn(`No correct order found for order question ${baseQuestion.id}`);
+        return null;
+      }
+
+      const orderQuestion: OrderQuestion = {
+        ...baseQuestion,
+        type: 'order',
+        items: items,
+        correctOrder: correctOrder,
+      };
+      return orderQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching order question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {

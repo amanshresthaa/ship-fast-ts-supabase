@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion } from '../../../../types/quiz'; // Added DropdownSelectionQuestion
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion, OrderQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
 import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
-import DropdownSelectionComponent from './DropdownSelectionComponent'; // Import the new component
+import DropdownSelectionComponent from './DropdownSelectionComponent';
+import OrderQuestionComponent from './OrderQuestionComponent';
 import { createQuestionController } from '../../controllers/QuestionControllerFactory';
 
 interface QuestionTypeRendererProps {
@@ -84,6 +85,18 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           validateOnComplete={true} // Add the new prop to wait for all dropdowns to be filled
           // isQuizReviewMode prop is not used by DropdownSelectionComponent, so it's removed for now.
           // If needed later, it can be added to DropdownSelectionComponentProps.
+        />
+      );
+    case 'order':
+      return (
+        <OrderQuestionComponent
+          question={question as OrderQuestion}
+          onAnswerSelect={onAnswerSelect}
+          userAnswer={selectedAnswer as Record<string, string | null> | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
+          isQuizReviewMode={isQuizReviewMode}
+          validateOnComplete={true}
         />
       );
     default:

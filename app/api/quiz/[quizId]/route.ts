@@ -5,7 +5,8 @@ export async function GET(
   request: Request,
   { params }: { params: { quizId: string } }
 ) {
-  const quizId = params.quizId;
+  // Need to properly handle params in Next.js 13+
+  const quizId = (await Promise.resolve(params)).quizId;
   
   // Extract questionType from URL if present
   const url = new URL(request.url);

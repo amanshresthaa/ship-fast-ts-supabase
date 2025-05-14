@@ -1,19 +1,21 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion } from '../../types/quiz'; // Added DropdownSelectionQuestion
+import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion, OrderQuestion } from '../../types/quiz'; // Added OrderQuestion
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
 import DropdownSelectionComponent from '../../features/quiz/components/question-types/DropdownSelectionComponent'; // Import DropdownSelectionComponent
+import OrderQuestionComponent from '../../features/quiz/components/question-types/OrderQuestionComponent'; // Import OrderQuestionComponent
 import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
 
 export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Added isLoading state
   const [error, setError] = useState<string | null>(null); // Added error state
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [dropdownSelections, setDropdownSelections] = useState<Record<string, string | null>>({}); // State for dropdown selections
+  const [selectedOption, setSelectedOption] = useState<string | null>(null); // single_selection
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // multi
+  const [dropdownSelections, setDropdownSelections] = useState<Record<string, string | null>>({}); // dropdown_selection
+  const [orderedItems, setOrderedItems] = useState<string[]>([]); // order
   const [isSubmittedDemo, setIsSubmittedDemo] = useState(false);
   const [showCorrectAnswerDemo, setShowCorrectAnswerDemo] = useState(false);
 
@@ -48,6 +50,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     setSelectedOption(null);
     setSelectedOptions([]);
     setDropdownSelections({}); // Reset dropdown selections
+    setOrderedItems([]); // Reset order selections
     setIsSubmittedDemo(false);
     setShowCorrectAnswerDemo(false);
   }, [loadQuestion]); // useEffect now depends on loadQuestion
@@ -67,6 +70,12 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
   const handleDropdownSelect = (selections: Record<string, string | null>) => {
     if (!isSubmittedDemo) {
       setDropdownSelections(selections);
+    }
+  };
+  
+  const handleOrderSelect = (itemIds: string[]) => {
+    if (!isSubmittedDemo) {
+      setOrderedItems(itemIds);
     }
   };
 
@@ -232,6 +241,17 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
               isSubmitted={isSubmittedDemo}
               showCorrectAnswer={showCorrectAnswerDemo}
               validateOnComplete={true} // Add the new prop to wait for all dropdowns to be filled
+            />
+          )}
+          {currentQuestion.type === 'order' && (
+            <OrderQuestionComponent
+              question={currentQuestion as OrderQuestion}
+              onAnswerSelect={handleOrderSelect}
+              userAnswer={orderedItems}
+              isSubmitted={isSubmittedDemo}
+              showCorrectAnswer={showCorrectAnswerDemo}
+              isQuizReviewMode={false}
+              validateOnComplete={true}
             />
           )}
           {/* Add other question type components here as needed */}

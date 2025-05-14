@@ -3,12 +3,14 @@ import {
   MultiChoiceQuestion, 
   DragAndDropQuestion, 
   DropdownSelectionQuestion,
+  OrderQuestion,
   AnyQuestion 
 } from "@/app/types/quiz";
 import { SingleSelectionController } from "./SingleSelectionController";
 import { MultiChoiceController } from "./MultiChoiceController";
 import { DragAndDropController } from "./DragAndDropController";
 import { DropdownSelectionController } from "./DropdownSelectionController";
+import { OrderController } from "./OrderController";
 import { QuestionController } from "./QuestionController";
 
 /**
@@ -26,6 +28,8 @@ export function createQuestionController(question: AnyQuestion): QuestionControl
       return new DragAndDropController(question as DragAndDropQuestion);
     case 'dropdown_selection':
       return new DropdownSelectionController(question as DropdownSelectionQuestion);
+    case 'order':
+      return new OrderController(question as OrderQuestion);
     default:
       throw new Error(`No controller available for question type: ${question.type}`);
   }

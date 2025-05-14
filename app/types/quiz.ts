@@ -70,6 +70,23 @@ export interface DragAndDropQuestion extends BaseQuestion {
   correctPairs: DragAndDropCorrectPair[];
 }
 
+// New types for OrderQuestion
+export interface OrderItem {
+  item_id: string;
+  text: string;
+}
+
+// Order question where users arrange items in correct sequence
+export interface OrderQuestion extends BaseQuestion {
+  type: 'order';
+  items: OrderItem[];
+  correctOrder: string[]; // Array of item_ids in correct order
+}
+
+// Type for order question answers - maps slot names to item IDs
+// e.g. { "slot_0": "item1", "slot_1": "item2", "slot_2": null }
+export type OrderQuestionAnswer = Record<string, string | null>;
+
 // New types for DropdownSelectionQuestion
 export interface DropdownOption {
   option_id: string;
@@ -96,7 +113,8 @@ export type AnyQuestion =
   | SingleSelectionQuestion 
   | MultiChoiceQuestion 
   | DragAndDropQuestion
-  | DropdownSelectionQuestion; // Added DropdownSelectionQuestion
+  | DropdownSelectionQuestion
+  | OrderQuestion; // Added OrderQuestion
 
 export interface Quiz {
   id: string; // e.g. azure-a102

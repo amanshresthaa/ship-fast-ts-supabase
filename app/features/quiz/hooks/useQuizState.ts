@@ -38,10 +38,8 @@ export type QuizAction =
         // Optional fields for client-side validation based on question type
         correctAnswerOptionId?: string; // For single_selection
         correctAnswerOptionIds?: string[]; // For multi
-        // For dropdown_selection, the correct answer structure is more complex
-        // It involves a map of placeholder keys to correct option texts.
-        // We'll pass the entire question object or relevant parts for validation.
-        correctDropdownAnswers?: Record<string, string>; // For dropdown_selection, maps placeholderKey to correctOptionText
+        correctDropdownAnswers?: Record<string, string>; // For dropdown_selection
+        correctOrder?: string[]; // For order
       }
     }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
@@ -91,7 +89,7 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
           selectedAnswers.every(id => correctAnswers.includes(id)) &&
           correctAnswers.every(id => selectedAnswers.includes(id));
       } else if (action.payload.questionType === 'drag_and_drop') {
-        // For drag-and-drop, we'll rely on server validation
+        // For drag-and-drop, we'll rely on server validation (this seems to be a legacy or different type)
         console.log('Drag and drop answer submitted:', action.payload.answer);
       } else if (action.payload.questionType === 'dropdown_selection' && action.payload.correctDropdownAnswers) {
         const userSelections = action.payload.answer as Record<string, string | null>;
@@ -110,6 +108,36 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
               allCorrect = false;
               break;
             }
+          }
+        }
+        isClientCorrect = allCorrect;
+      } else if (action.payload.questionType === 'order' && action.payload.correctOrder) {
+        const userAnswer = action.payload.answer as Record<string, string | null>;
+        const correctOrder = action.payload.correctOrder;
+        let allCorrect = true;
+        if (Object.keys(userAnswer).length !== correctOrder.length) {
+          // This basic check might be too strict if partial completion is allowed before submission.
+          // However, for full correctness, the number of placed items should match the total correct items.
+          // For now, let's assume OrderController.isAnswerComplete handles partial states,
+          // and here we check for final correctness.
+          // A more robust check would involve the OrderValidator's getCorrectnessMap.
+          // For simplicity in client-side check, we'll compare slot by slot.
+        }
+
+        for (let i = 0; i < correctOrder.length; i++) {
+          const slotKey = `slot-${i}`; // Assuming slot keys are 'slot-0', 'slot-1', etc.
+          const expectedItemId = correctOrder[i];
+          if (userAnswer[slotKey] !== expectedItemId) {
+            allCorrect = false;
+            break;
+          }
+        }
+        // Ensure no extra items are placed in slots not part of correctOrder
+        for (const slotKey in userAnswer) {
+          const slotIndex = parseInt(slotKey.split('-')[1], 10);
+          if (slotIndex >= correctOrder.length && userAnswer[slotKey] !== null) {
+            allCorrect = false;
+            break;
           }
         }
         isClientCorrect = allCorrect;

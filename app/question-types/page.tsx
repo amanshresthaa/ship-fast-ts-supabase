@@ -99,7 +99,7 @@ const QuestionTypesPage: React.FC = () => {
       type: 'order',
       name: 'Ordering',
       description: 'User arranges items in the correct sequence.',
-      available: false
+      available: true
     },
     {
       type: 'yes_no',

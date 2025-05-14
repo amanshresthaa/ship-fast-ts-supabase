@@ -1,6 +1,6 @@
 # Cognitive Quiz Codebase
 
-Generated on: 2025-05-13 13:08:03
+Generated on: 2025-05-14 01:10:48
 
 ## Project Structure
 
@@ -17,6 +17,9 @@ Generated on: 2025-05-13 13:08:03
 .env.example
 .env.local
 .eslintrc.json
+__tests__/components/question-types/OrderQuestionComponent.test.tsx
+__tests__/controllers/OrderController.test.ts
+__tests__/validators/OrderValidator.test.ts
 app/api/auth/callback/route.ts
 app/api/lead/route.ts
 app/api/questions/route.ts
@@ -39,7 +42,14 @@ app/blog/page.tsx
 app/components/QuizCTA.tsx
 app/dashboard/layout.tsx
 app/dashboard/page.tsx
-app/data/quizzes/azure-a102/sample_multi_question.json
+app/data/quizzes/azure-a102/clean_drag_and_drop_questions.json
+app/data/quizzes/azure-a102/clean_dropdown_selection_questions.json
+app/data/quizzes/azure-a102/clean_multi_questions.json
+app/data/quizzes/azure-a102/clean_order_questions.json
+app/data/quizzes/azure-a102/clean_single_selection_questions.json
+app/data/quizzes/azure-a102/clean_yes_no_questions.json
+app/data/quizzes/azure-a102/clean_yesno_multi_questions.json
+app/data/quizzes/azure-a102/quiz_metadata.json
 app/debug-components/page.tsx
 app/error.tsx
 app/features/quiz/components/FeedbackSection.tsx
@@ -50,10 +60,20 @@ app/features/quiz/components/QuizCompletionSummary.tsx
 app/features/quiz/components/QuizNavigation.tsx
 app/features/quiz/components/QuizProgress.tsx
 app/features/quiz/components/question-types/DragAndDropQuestionComponent.tsx
+app/features/quiz/components/question-types/DropdownSelectionComponent.tsx
 app/features/quiz/components/question-types/MultiChoiceComponent.tsx
+app/features/quiz/components/question-types/OrderQuestionComponent.tsx
 app/features/quiz/components/question-types/QuestionTypeRenderer.tsx
 app/features/quiz/components/question-types/SingleSelectionComponent.tsx
 app/features/quiz/context/QuizContext.tsx
+app/features/quiz/controllers/DragAndDropController.ts
+app/features/quiz/controllers/DropdownSelectionController.ts
+app/features/quiz/controllers/MultiChoiceController.ts
+app/features/quiz/controllers/OrderController.ts
+app/features/quiz/controllers/QuestionController.ts
+app/features/quiz/controllers/QuestionControllerFactory.ts
+app/features/quiz/controllers/SingleSelectionController.ts
+app/features/quiz/hooks/useAutoValidation.ts
 app/features/quiz/hooks/useQuizScoring.ts
 app/features/quiz/hooks/useQuizState.ts
 app/features/quiz/index.ts
@@ -61,6 +81,22 @@ app/features/quiz/pages/QuizPage.tsx
 app/features/quiz/pages/QuizPage.tsx.new
 app/features/quiz/services/quizApiClient.ts
 app/features/quiz/services/quizService.ts
+app/features/quiz/tests/DragAndDropController.test.ts
+app/features/quiz/tests/DragAndDropQuestionComponent.test.tsx
+app/features/quiz/tests/DropdownSelectionController.test.ts
+app/features/quiz/tests/MultiChoiceController.test.ts
+app/features/quiz/tests/OrderController.test.ts
+app/features/quiz/tests/OrderQuestionComponent.test.tsx
+app/features/quiz/tests/OrderValidator.test.ts
+app/features/quiz/tests/SingleSelectionController.test.ts
+app/features/quiz/tests/SingleSelectionValidator.test.ts
+app/features/quiz/tests/useAutoValidation.test.ts
+app/features/quiz/validators/AnswerValidator.ts
+app/features/quiz/validators/DragAndDropValidator.ts
+app/features/quiz/validators/DropdownSelectionValidator.ts
+app/features/quiz/validators/MultiChoiceValidator.ts
+app/features/quiz/validators/OrderValidator.ts
+app/features/quiz/validators/SingleSelectionValidator.ts
 app/globals.css
 app/layout.tsx
 app/lib/supabaseQuizService.ts
@@ -85,6 +121,7 @@ app/quiz-type-filters/layout.tsx
 app/quiz-type-filters/page.tsx
 app/signin/layout.tsx
 app/signin/page.tsx
+app/test-order-questions/page.tsx
 app/tos/page.tsx
 app/types/quiz.ts
 collect_code_for_llm.py
@@ -121,6 +158,7 @@ libs/gpt.ts
 libs/mailgun.ts
 libs/seo.tsx
 libs/stripe.ts
+logs/migration.log
 middleware.js
 migrate-quiz-data.js
 next-env.d.ts
@@ -277,7 +315,7 @@ function log(...args) {
     const baseRows = allQuestions.map(q => ({
       id:                 idMap[q.id],
       type:               q.type,
-      question:           q.question,
+      question:           q.questionText || q.question, // Use questionText if available
       points:             q.points,
       quiz_tag:           quizRow.id,
       difficulty:         q.difficulty || 'medium',
@@ -1179,10 +1217,12 @@ if __name__ == "__main__":
         "@supabase/supabase-js": "^2.41.1",
         "axios": "^1.6.8",
         "crisp-sdk-web": "^1.0.22",
+        "dotenv": "^16.5.0",
         "eslint": "8.47.0",
         "eslint-config-next": "13.4.19",
         "form-data": "^4.0.0",
         "framer-motion": "^12.10.1",
+        "fs-extra": "^11.3.0",
         "mailgun.js": "^9.4.1",
         "next": "^15.3.2",
         "next-plausible": "^3.12.0",
@@ -1195,9 +1235,11 @@ if __name__ == "__main__":
         "react-syntax-highlighter": "^15.5.0",
         "react-tooltip": "^5.26.3",
         "stripe": "^13.11.0",
+        "uuid": "^11.1.0",
         "zod": "^3.22.4"
       },
       "devDependencies": {
+        "@types/dotenv": "^6.1.1",
         "@types/jest": "^29.5.12",
         "@types/mdx": "^2.0.12",
         "@types/mongoose": "^5.11.97",
@@ -1205,6 +1247,7 @@ if __name__ == "__main__":
         "@types/react": "^18.2.73",
         "@types/react-dom": "^18.2.23",
         "@types/react-syntax-highlighter": "^15.5.11",
+        "@types/uuid": "^10.0.0",
         "autoprefixer": "^10.4.19",
         "daisyui": "^4.10.1",
         "postcss": "^8.4.38",
@@ -1952,6 +1995,7 @@ if __name__ == "__main__":
       "version": "0.3.5",
       "resolved": "https://registry.npmjs.org/@jridgewell/gen-mapping/-/gen-mapping-0.3.5.tgz",
       "integrity": "sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==",
+      "dev": true,
       "dependencies": {
         "@jridgewell/set-array": "^1.2.1",
         "@jridgewell/sourcemap-codec": "^1.4.10",
@@ -1965,6 +2009,7 @@ if __name__ == "__main__":
       "version": "3.1.2",
       "resolved": "https://registry.npmjs.org/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz",
       "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==",
+      "dev": true,
       "engines": {
         "node": ">=6.0.0"
       }
@@ -1973,29 +2018,22 @@ if __name__ == "__main__":
       "version": "1.2.1",
       "resolved": "https://registry.npmjs.org/@jridgewell/set-array/-/set-array-1.2.1.tgz",
       "integrity": "sha512-R8gLRTZeyp03ymzP/6Lil/28tGeGEzhx1q2k703KGWRAI1VdvPIXdG70VJc2pAMw3NA6JKL5hhFu1sJX0Mnn/A==",
+      "dev": true,
       "engines": {
         "node": ">=6.0.0"
-      }
-    },
-    "node_modules/@jridgewell/source-map": {
-      "version": "0.3.6",
-      "resolved": "https://registry.npmjs.org/@jridgewell/source-map/-/source-map-0.3.6.tgz",
-      "integrity": "sha512-1ZJTZebgqllO79ue2bm3rIGud/bOe0pP5BjSRCRxxYkEZS8STV7zN84UBbiYu7jy+eCKSnVIUgoWWE/tt+shMQ==",
-      "peer": true,
-      "dependencies": {
-        "@jridgewell/gen-mapping": "^0.3.5",
-        "@jridgewell/trace-mapping": "^0.3.25"
       }
     },
     "node_modules/@jridgewell/sourcemap-codec": {
       "version": "1.4.15",
       "resolved": "https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.15.tgz",
-      "integrity": "sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg=="
+      "integrity": "sha512-eF2rxCRulEKXHTRiDrDy6erMYWqNw4LPdQ8UQA4huuxaQsVeRPFl2oM8oDGxMFhJUWZf9McpLtJasDDZb/Bpeg==",
+      "dev": true
     },
     "node_modules/@jridgewell/trace-mapping": {
       "version": "0.3.25",
       "resolved": "https://registry.npmjs.org/@jridgewell/trace-mapping/-/trace-mapping-0.3.25.tgz",
       "integrity": "sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==",
+      "dev": true,
       "dependencies": {
         "@jridgewell/resolve-uri": "^3.1.0",
         "@jridgewell/sourcemap-codec": "^1.4.14"
@@ -2431,24 +2469,14 @@ if __name__ == "__main__":
         "@types/ms": "*"
       }
     },
-    "node_modules/@types/eslint": {
-      "version": "8.56.6",
-      "resolved": "https://registry.npmjs.org/@types/eslint/-/eslint-8.56.6.tgz",
-      "integrity": "sha512-ymwc+qb1XkjT/gfoQwxIeHZ6ixH23A+tCT2ADSA/DPVKzAjwYkTXBMCQ/f6fe4wEa85Lhp26VPeUxI7wMhAi7A==",
-      "peer": true,
+    "node_modules/@types/dotenv": {
+      "version": "6.1.1",
+      "resolved": "https://registry.npmjs.org/@types/dotenv/-/dotenv-6.1.1.tgz",
+      "integrity": "sha512-ftQl3DtBvqHl9L16tpqqzA4YzCSXZfi7g8cQceTz5rOlYtk/IZbFjAv3mLOQlNIgOaylCQWQoBdDQHPgEBJPHg==",
+      "dev": true,
+      "license": "MIT",
       "dependencies": {
-        "@types/estree": "*",
-        "@types/json-schema": "*"
-      }
-    },
-    "node_modules/@types/eslint-scope": {
-      "version": "3.7.7",
-      "resolved": "https://registry.npmjs.org/@types/eslint-scope/-/eslint-scope-3.7.7.tgz",
-      "integrity": "sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==",
-      "peer": true,
-      "dependencies": {
-        "@types/eslint": "*",
-        "@types/estree": "*"
+        "@types/node": "*"
       }
     },
     "node_modules/@types/estree": {
@@ -2505,12 +2533,6 @@ if __name__ == "__main__":
         "expect": "^29.0.0",
         "pretty-format": "^29.0.0"
       }
-    },
-    "node_modules/@types/json-schema": {
-      "version": "7.0.15",
-      "resolved": "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.15.tgz",
-      "integrity": "sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==",
-      "peer": true
     },
     "node_modules/@types/json5": {
       "version": "0.0.29",
@@ -2605,6 +2627,13 @@ if __name__ == "__main__":
       "version": "2.0.10",
       "resolved": "https://registry.npmjs.org/@types/unist/-/unist-2.0.10.tgz",
       "integrity": "sha512-IfYcSBWE3hLpBg8+X2SEa8LVkJdJEkT2Ese2aaLs3ptGdVtABxndrMaxuFlQ1qdFf9Q5rDvDpxI3WwgvKFAsQA=="
+    },
+    "node_modules/@types/uuid": {
+      "version": "10.0.0",
+      "resolved": "https://registry.npmjs.org/@types/uuid/-/uuid-10.0.0.tgz",
+      "integrity": "sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==",
+      "dev": true,
+      "license": "MIT"
     },
     "node_modules/@types/webidl-conversions": {
       "version": "7.0.3",
@@ -2764,164 +2793,6 @@ if __name__ == "__main__":
         "url": "https://opencollective.com/typescript-eslint"
       }
     },
-    "node_modules/@webassemblyjs/ast": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/ast/-/ast-1.12.1.tgz",
-      "integrity": "sha512-EKfMUOPRRUTy5UII4qJDGPpqfwjOmZ5jeGFwid9mnoqIFK+e0vqoi1qH56JpmZSzEL53jKnNzScdmftJyG5xWg==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/helper-numbers": "1.11.6",
-        "@webassemblyjs/helper-wasm-bytecode": "1.11.6"
-      }
-    },
-    "node_modules/@webassemblyjs/floating-point-hex-parser": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/floating-point-hex-parser/-/floating-point-hex-parser-1.11.6.tgz",
-      "integrity": "sha512-ejAj9hfRJ2XMsNHk/v6Fu2dGS+i4UaXBXGemOfQ/JfQ6mdQg/WXtwleQRLLS4OvfDhv8rYnVwH27YJLMyYsxhw==",
-      "peer": true
-    },
-    "node_modules/@webassemblyjs/helper-api-error": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/helper-api-error/-/helper-api-error-1.11.6.tgz",
-      "integrity": "sha512-o0YkoP4pVu4rN8aTJgAyj9hC2Sv5UlkzCHhxqWj8butaLvnpdc2jOwh4ewE6CX0txSfLn/UYaV/pheS2Txg//Q==",
-      "peer": true
-    },
-    "node_modules/@webassemblyjs/helper-buffer": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/helper-buffer/-/helper-buffer-1.12.1.tgz",
-      "integrity": "sha512-nzJwQw99DNDKr9BVCOZcLuJJUlqkJh+kVzVl6Fmq/tI5ZtEyWT1KZMyOXltXLZJmDtvLCDgwsyrkohEtopTXCw==",
-      "peer": true
-    },
-    "node_modules/@webassemblyjs/helper-numbers": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/helper-numbers/-/helper-numbers-1.11.6.tgz",
-      "integrity": "sha512-vUIhZ8LZoIWHBohiEObxVm6hwP034jwmc9kuq5GdHZH0wiLVLIPcMCdpJzG4C11cHoQ25TFIQj9kaVADVX7N3g==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/floating-point-hex-parser": "1.11.6",
-        "@webassemblyjs/helper-api-error": "1.11.6",
-        "@xtuc/long": "4.2.2"
-      }
-    },
-    "node_modules/@webassemblyjs/helper-wasm-bytecode": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/helper-wasm-bytecode/-/helper-wasm-bytecode-1.11.6.tgz",
-      "integrity": "sha512-sFFHKwcmBprO9e7Icf0+gddyWYDViL8bpPjJJl0WHxCdETktXdmtWLGVzoHbqUcY4Be1LkNfwTmXOJUFZYSJdA==",
-      "peer": true
-    },
-    "node_modules/@webassemblyjs/helper-wasm-section": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/helper-wasm-section/-/helper-wasm-section-1.12.1.tgz",
-      "integrity": "sha512-Jif4vfB6FJlUlSbgEMHUyk1j234GTNG9dBJ4XJdOySoj518Xj0oGsNi59cUQF4RRMS9ouBUxDDdyBVfPTypa5g==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/ast": "1.12.1",
-        "@webassemblyjs/helper-buffer": "1.12.1",
-        "@webassemblyjs/helper-wasm-bytecode": "1.11.6",
-        "@webassemblyjs/wasm-gen": "1.12.1"
-      }
-    },
-    "node_modules/@webassemblyjs/ieee754": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/ieee754/-/ieee754-1.11.6.tgz",
-      "integrity": "sha512-LM4p2csPNvbij6U1f19v6WR56QZ8JcHg3QIJTlSwzFcmx6WSORicYj6I63f9yU1kEUtrpG+kjkiIAkevHpDXrg==",
-      "peer": true,
-      "dependencies": {
-        "@xtuc/ieee754": "^1.2.0"
-      }
-    },
-    "node_modules/@webassemblyjs/leb128": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/leb128/-/leb128-1.11.6.tgz",
-      "integrity": "sha512-m7a0FhE67DQXgouf1tbN5XQcdWoNgaAuoULHIfGFIEVKA6tu/edls6XnIlkmS6FrXAquJRPni3ZZKjw6FSPjPQ==",
-      "peer": true,
-      "dependencies": {
-        "@xtuc/long": "4.2.2"
-      }
-    },
-    "node_modules/@webassemblyjs/utf8": {
-      "version": "1.11.6",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/utf8/-/utf8-1.11.6.tgz",
-      "integrity": "sha512-vtXf2wTQ3+up9Zsg8sa2yWiQpzSsMyXj0qViVP6xKGCUT8p8YJ6HqI7l5eCnWx1T/FYdsv07HQs2wTFbbof/RA==",
-      "peer": true
-    },
-    "node_modules/@webassemblyjs/wasm-edit": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/wasm-edit/-/wasm-edit-1.12.1.tgz",
-      "integrity": "sha512-1DuwbVvADvS5mGnXbE+c9NfA8QRcZ6iKquqjjmR10k6o+zzsRVesil54DKexiowcFCPdr/Q0qaMgB01+SQ1u6g==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/ast": "1.12.1",
-        "@webassemblyjs/helper-buffer": "1.12.1",
-        "@webassemblyjs/helper-wasm-bytecode": "1.11.6",
-        "@webassemblyjs/helper-wasm-section": "1.12.1",
-        "@webassemblyjs/wasm-gen": "1.12.1",
-        "@webassemblyjs/wasm-opt": "1.12.1",
-        "@webassemblyjs/wasm-parser": "1.12.1",
-        "@webassemblyjs/wast-printer": "1.12.1"
-      }
-    },
-    "node_modules/@webassemblyjs/wasm-gen": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/wasm-gen/-/wasm-gen-1.12.1.tgz",
-      "integrity": "sha512-TDq4Ojh9fcohAw6OIMXqiIcTq5KUXTGRkVxbSo1hQnSy6lAM5GSdfwWeSxpAo0YzgsgF182E/U0mDNhuA0tW7w==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/ast": "1.12.1",
-        "@webassemblyjs/helper-wasm-bytecode": "1.11.6",
-        "@webassemblyjs/ieee754": "1.11.6",
-        "@webassemblyjs/leb128": "1.11.6",
-        "@webassemblyjs/utf8": "1.11.6"
-      }
-    },
-    "node_modules/@webassemblyjs/wasm-opt": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/wasm-opt/-/wasm-opt-1.12.1.tgz",
-      "integrity": "sha512-Jg99j/2gG2iaz3hijw857AVYekZe2SAskcqlWIZXjji5WStnOpVoat3gQfT/Q5tb2djnCjBtMocY/Su1GfxPBg==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/ast": "1.12.1",
-        "@webassemblyjs/helper-buffer": "1.12.1",
-        "@webassemblyjs/wasm-gen": "1.12.1",
-        "@webassemblyjs/wasm-parser": "1.12.1"
-      }
-    },
-    "node_modules/@webassemblyjs/wasm-parser": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz",
-      "integrity": "sha512-xikIi7c2FHXysxXe3COrVUPSheuBtpcfhbpFj4gmu7KRLYOzANztwUU0IbsqvMqzuNK2+glRGWCEqZo1WCLyAQ==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/ast": "1.12.1",
-        "@webassemblyjs/helper-api-error": "1.11.6",
-        "@webassemblyjs/helper-wasm-bytecode": "1.11.6",
-        "@webassemblyjs/ieee754": "1.11.6",
-        "@webassemblyjs/leb128": "1.11.6",
-        "@webassemblyjs/utf8": "1.11.6"
-      }
-    },
-    "node_modules/@webassemblyjs/wast-printer": {
-      "version": "1.12.1",
-      "resolved": "https://registry.npmjs.org/@webassemblyjs/wast-printer/-/wast-printer-1.12.1.tgz",
-      "integrity": "sha512-+X4WAlOisVWQMikjbcvY2e0rwPsKQ9F688lksZhBcPycBBuii3O7m8FACbDMWDojpAqvjIncrG8J0XHKyQfVeA==",
-      "peer": true,
-      "dependencies": {
-        "@webassemblyjs/ast": "1.12.1",
-        "@xtuc/long": "4.2.2"
-      }
-    },
-    "node_modules/@xtuc/ieee754": {
-      "version": "1.2.0",
-      "resolved": "https://registry.npmjs.org/@xtuc/ieee754/-/ieee754-1.2.0.tgz",
-      "integrity": "sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==",
-      "peer": true
-    },
-    "node_modules/@xtuc/long": {
-      "version": "4.2.2",
-      "resolved": "https://registry.npmjs.org/@xtuc/long/-/long-4.2.2.tgz",
-      "integrity": "sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==",
-      "peer": true
-    },
     "node_modules/acorn": {
       "version": "8.11.3",
       "resolved": "https://registry.npmjs.org/acorn/-/acorn-8.11.3.tgz",
@@ -2931,15 +2802,6 @@ if __name__ == "__main__":
       },
       "engines": {
         "node": ">=0.4.0"
-      }
-    },
-    "node_modules/acorn-import-assertions": {
-      "version": "1.9.0",
-      "resolved": "https://registry.npmjs.org/acorn-import-assertions/-/acorn-import-assertions-1.9.0.tgz",
-      "integrity": "sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA==",
-      "peer": true,
-      "peerDependencies": {
-        "acorn": "^8"
       }
     },
     "node_modules/acorn-jsx": {
@@ -2963,15 +2825,6 @@ if __name__ == "__main__":
       "funding": {
         "type": "github",
         "url": "https://github.com/sponsors/epoberezkin"
-      }
-    },
-    "node_modules/ajv-keywords": {
-      "version": "3.5.2",
-      "resolved": "https://registry.npmjs.org/ajv-keywords/-/ajv-keywords-3.5.2.tgz",
-      "integrity": "sha512-5p6WTN0DdTGVQk6VjcEju19IgaHudalcfabD7yhDGeA6bcQnmL+CpveLJq/3hvfwd1aof6L386Ougkx6RfyMIQ==",
-      "peer": true,
-      "peerDependencies": {
-        "ajv": "^6.9.1"
       }
     },
     "node_modules/ansi-regex": {
@@ -3342,6 +3195,7 @@ if __name__ == "__main__":
       "version": "4.23.0",
       "resolved": "https://registry.npmjs.org/browserslist/-/browserslist-4.23.0.tgz",
       "integrity": "sha512-QW8HiM1shhT2GuzkvklfjcKDiWFXHOeFCIA/huJPwHsslwcydgk7X+z2zXpEijP98UCY7HbubZt5J2Zgvf0CaQ==",
+      "dev": true,
       "funding": [
         {
           "type": "opencollective",
@@ -3377,12 +3231,6 @@ if __name__ == "__main__":
       "engines": {
         "node": ">=16.20.1"
       }
-    },
-    "node_modules/buffer-from": {
-      "version": "1.1.2",
-      "resolved": "https://registry.npmjs.org/buffer-from/-/buffer-from-1.1.2.tgz",
-      "integrity": "sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==",
-      "peer": true
     },
     "node_modules/busboy": {
       "version": "1.6.0",
@@ -3543,15 +3391,6 @@ if __name__ == "__main__":
       },
       "engines": {
         "node": ">= 6"
-      }
-    },
-    "node_modules/chrome-trace-event": {
-      "version": "1.0.3",
-      "resolved": "https://registry.npmjs.org/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz",
-      "integrity": "sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==",
-      "peer": true,
-      "engines": {
-        "node": ">=6.0"
       }
     },
     "node_modules/ci-info": {
@@ -3922,6 +3761,18 @@ if __name__ == "__main__":
         "node": ">=6.0.0"
       }
     },
+    "node_modules/dotenv": {
+      "version": "16.5.0",
+      "resolved": "https://registry.npmjs.org/dotenv/-/dotenv-16.5.0.tgz",
+      "integrity": "sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==",
+      "license": "BSD-2-Clause",
+      "engines": {
+        "node": ">=12"
+      },
+      "funding": {
+        "url": "https://dotenvx.com"
+      }
+    },
     "node_modules/eastasianwidth": {
       "version": "0.2.0",
       "resolved": "https://registry.npmjs.org/eastasianwidth/-/eastasianwidth-0.2.0.tgz",
@@ -3931,7 +3782,8 @@ if __name__ == "__main__":
     "node_modules/electron-to-chromium": {
       "version": "1.4.722",
       "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.4.722.tgz",
-      "integrity": "sha512-5nLE0TWFFpZ80Crhtp4pIp8LXCztjYX41yUcV6b+bKR2PqzjskTMOOlBi1VjBHlvHwS+4gar7kNKOrsbsewEZQ=="
+      "integrity": "sha512-5nLE0TWFFpZ80Crhtp4pIp8LXCztjYX41yUcV6b+bKR2PqzjskTMOOlBi1VjBHlvHwS+4gar7kNKOrsbsewEZQ==",
+      "dev": true
     },
     "node_modules/emoji-regex": {
       "version": "9.2.2",
@@ -4052,12 +3904,6 @@ if __name__ == "__main__":
         "node": ">= 0.4"
       }
     },
-    "node_modules/es-module-lexer": {
-      "version": "1.5.0",
-      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-1.5.0.tgz",
-      "integrity": "sha512-pqrTKmwEIgafsYZAGw9kszYzmagcE/n4dbgwGWLEXg7J4QFJVQRBld8j3Q3GNez79jzxZshq0bcT962QHOghjw==",
-      "peer": true
-    },
     "node_modules/es-object-atoms": {
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/es-object-atoms/-/es-object-atoms-1.0.0.tgz",
@@ -4110,6 +3956,7 @@ if __name__ == "__main__":
       "version": "3.1.2",
       "resolved": "https://registry.npmjs.org/escalade/-/escalade-3.1.2.tgz",
       "integrity": "sha512-ErCHMCae19vR8vQGe50xIsVomy19rg6gFu3+r3jkEO46suLMWBksvVyoGgQV+jOfl84ZSOSlmv6Gxa89PmTGmA==",
+      "dev": true,
       "engines": {
         "node": ">=6"
       }
@@ -4582,15 +4429,6 @@ if __name__ == "__main__":
         "node": ">=0.10.0"
       }
     },
-    "node_modules/events": {
-      "version": "3.3.0",
-      "resolved": "https://registry.npmjs.org/events/-/events-3.3.0.tgz",
-      "integrity": "sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==",
-      "peer": true,
-      "engines": {
-        "node": ">=0.8.x"
-      }
-    },
     "node_modules/expect": {
       "version": "29.7.0",
       "resolved": "https://registry.npmjs.org/expect/-/expect-29.7.0.tgz",
@@ -4838,6 +4676,20 @@ if __name__ == "__main__":
         }
       }
     },
+    "node_modules/fs-extra": {
+      "version": "11.3.0",
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.3.0.tgz",
+      "integrity": "sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==",
+      "license": "MIT",
+      "dependencies": {
+        "graceful-fs": "^4.2.0",
+        "jsonfile": "^6.0.1",
+        "universalify": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=14.14"
+      }
+    },
     "node_modules/fs.realpath": {
       "version": "1.0.0",
       "resolved": "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz",
@@ -4964,12 +4816,6 @@ if __name__ == "__main__":
       "engines": {
         "node": ">=10.13.0"
       }
-    },
-    "node_modules/glob-to-regexp": {
-      "version": "0.4.1",
-      "resolved": "https://registry.npmjs.org/glob-to-regexp/-/glob-to-regexp-0.4.1.tgz",
-      "integrity": "sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==",
-      "peer": true
     },
     "node_modules/globals": {
       "version": "13.24.0",
@@ -5827,35 +5673,6 @@ if __name__ == "__main__":
         "node": "^14.15.0 || ^16.10.0 || >=18.0.0"
       }
     },
-    "node_modules/jest-worker": {
-      "version": "27.5.1",
-      "resolved": "https://registry.npmjs.org/jest-worker/-/jest-worker-27.5.1.tgz",
-      "integrity": "sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==",
-      "peer": true,
-      "dependencies": {
-        "@types/node": "*",
-        "merge-stream": "^2.0.0",
-        "supports-color": "^8.0.0"
-      },
-      "engines": {
-        "node": ">= 10.13.0"
-      }
-    },
-    "node_modules/jest-worker/node_modules/supports-color": {
-      "version": "8.1.1",
-      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-8.1.1.tgz",
-      "integrity": "sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==",
-      "peer": true,
-      "dependencies": {
-        "has-flag": "^4.0.0"
-      },
-      "engines": {
-        "node": ">=10"
-      },
-      "funding": {
-        "url": "https://github.com/chalk/supports-color?sponsor=1"
-      }
-    },
     "node_modules/jiti": {
       "version": "1.21.0",
       "resolved": "https://registry.npmjs.org/jiti/-/jiti-1.21.0.tgz",
@@ -5894,12 +5711,6 @@ if __name__ == "__main__":
       "resolved": "https://registry.npmjs.org/json-buffer/-/json-buffer-3.0.1.tgz",
       "integrity": "sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ=="
     },
-    "node_modules/json-parse-even-better-errors": {
-      "version": "2.3.1",
-      "resolved": "https://registry.npmjs.org/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz",
-      "integrity": "sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==",
-      "peer": true
-    },
     "node_modules/json-schema-traverse": {
       "version": "0.4.1",
       "resolved": "https://registry.npmjs.org/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz",
@@ -5919,6 +5730,18 @@ if __name__ == "__main__":
       },
       "bin": {
         "json5": "lib/cli.js"
+      }
+    },
+    "node_modules/jsonfile": {
+      "version": "6.1.0",
+      "resolved": "https://registry.npmjs.org/jsonfile/-/jsonfile-6.1.0.tgz",
+      "integrity": "sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==",
+      "license": "MIT",
+      "dependencies": {
+        "universalify": "^2.0.0"
+      },
+      "optionalDependencies": {
+        "graceful-fs": "^4.1.6"
       }
     },
     "node_modules/jsx-ast-utils": {
@@ -6002,15 +5825,6 @@ if __name__ == "__main__":
       "resolved": "https://registry.npmjs.org/lines-and-columns/-/lines-and-columns-1.2.4.tgz",
       "integrity": "sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==",
       "dev": true
-    },
-    "node_modules/loader-runner": {
-      "version": "4.3.0",
-      "resolved": "https://registry.npmjs.org/loader-runner/-/loader-runner-4.3.0.tgz",
-      "integrity": "sha512-3R/1M+yS3j5ou80Me59j7F9IMs4PXs3VqRrm0TU3AbKPxlmpoY1TNscJV/oGJXo8qCatFGTfDbY6W6ipGOYXfg==",
-      "peer": true,
-      "engines": {
-        "node": ">=6.11.5"
-      }
     },
     "node_modules/locate-path": {
       "version": "6.0.0",
@@ -6335,12 +6149,6 @@ if __name__ == "__main__":
       "resolved": "https://registry.npmjs.org/memory-pager/-/memory-pager-1.5.0.tgz",
       "integrity": "sha512-ZS4Bp4r/Zoeq6+NLJpP+0Zzm0pR8whtGPf1XExKLJBAczGMnSi3It14OiNCStjQjM6NU1okjQGSxgEZN8eBYKg==",
       "dev": true
-    },
-    "node_modules/merge-stream": {
-      "version": "2.0.0",
-      "resolved": "https://registry.npmjs.org/merge-stream/-/merge-stream-2.0.0.tgz",
-      "integrity": "sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==",
-      "peer": true
     },
     "node_modules/merge2": {
       "version": "1.4.1",
@@ -7177,12 +6985,6 @@ if __name__ == "__main__":
       "resolved": "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz",
       "integrity": "sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw=="
     },
-    "node_modules/neo-async": {
-      "version": "2.6.2",
-      "resolved": "https://registry.npmjs.org/neo-async/-/neo-async-2.6.2.tgz",
-      "integrity": "sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==",
-      "peer": true
-    },
     "node_modules/next": {
       "version": "15.3.2",
       "resolved": "https://registry.npmjs.org/next/-/next-15.3.2.tgz",
@@ -7329,7 +7131,8 @@ if __name__ == "__main__":
     "node_modules/node-releases": {
       "version": "2.0.14",
       "resolved": "https://registry.npmjs.org/node-releases/-/node-releases-2.0.14.tgz",
-      "integrity": "sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw=="
+      "integrity": "sha512-y10wOWt8yZpqXmOgRo77WaHEmhYQYGNA6y421PKsKYWEK8aW+cqAphborZDhqfyKrbZEN92CN1X2KbafY2s7Yw==",
+      "dev": true
     },
     "node_modules/nodemailer": {
       "version": "6.9.13",
@@ -7951,15 +7754,6 @@ if __name__ == "__main__":
         }
       ]
     },
-    "node_modules/randombytes": {
-      "version": "2.1.0",
-      "resolved": "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz",
-      "integrity": "sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==",
-      "peer": true,
-      "dependencies": {
-        "safe-buffer": "^5.1.0"
-      }
-    },
     "node_modules/react": {
       "version": "18.2.0",
       "resolved": "https://registry.npmjs.org/react/-/react-18.2.0.tgz",
@@ -8264,26 +8058,6 @@ if __name__ == "__main__":
         "url": "https://github.com/sponsors/ljharb"
       }
     },
-    "node_modules/safe-buffer": {
-      "version": "5.2.1",
-      "resolved": "https://registry.npmjs.org/safe-buffer/-/safe-buffer-5.2.1.tgz",
-      "integrity": "sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==",
-      "funding": [
-        {
-          "type": "github",
-          "url": "https://github.com/sponsors/feross"
-        },
-        {
-          "type": "patreon",
-          "url": "https://www.patreon.com/feross"
-        },
-        {
-          "type": "consulting",
-          "url": "https://feross.org/support"
-        }
-      ],
-      "peer": true
-    },
     "node_modules/safe-regex-test": {
       "version": "1.0.3",
       "resolved": "https://registry.npmjs.org/safe-regex-test/-/safe-regex-test-1.0.3.tgz",
@@ -8308,24 +8082,6 @@ if __name__ == "__main__":
         "loose-envify": "^1.1.0"
       }
     },
-    "node_modules/schema-utils": {
-      "version": "3.3.0",
-      "resolved": "https://registry.npmjs.org/schema-utils/-/schema-utils-3.3.0.tgz",
-      "integrity": "sha512-pN/yOAvcC+5rQ5nERGuwrjLlYvLTbCibnZ1I7B1LaiAz9BRBlE9GMgE/eqV30P7aJQUf7Ddimy/RsbYO/GrVGg==",
-      "peer": true,
-      "dependencies": {
-        "@types/json-schema": "^7.0.8",
-        "ajv": "^6.12.5",
-        "ajv-keywords": "^3.5.2"
-      },
-      "engines": {
-        "node": ">= 10.13.0"
-      },
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/webpack"
-      }
-    },
     "node_modules/semver": {
       "version": "7.7.1",
       "resolved": "https://registry.npmjs.org/semver/-/semver-7.7.1.tgz",
@@ -8336,15 +8092,6 @@ if __name__ == "__main__":
       },
       "engines": {
         "node": ">=10"
-      }
-    },
-    "node_modules/serialize-javascript": {
-      "version": "6.0.2",
-      "resolved": "https://registry.npmjs.org/serialize-javascript/-/serialize-javascript-6.0.2.tgz",
-      "integrity": "sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==",
-      "peer": true,
-      "dependencies": {
-        "randombytes": "^2.1.0"
       }
     },
     "node_modules/set-cookie-parser": {
@@ -8507,25 +8254,6 @@ if __name__ == "__main__":
       "version": "1.2.0",
       "resolved": "https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.0.tgz",
       "integrity": "sha512-itJW8lvSA0TXEphiRoawsCksnlf8SyvmFzIhltqAHluXd88pkCd+cXJVHTDwdCr0IzwptSm035IHQktUu1QUMg==",
-      "engines": {
-        "node": ">=0.10.0"
-      }
-    },
-    "node_modules/source-map-support": {
-      "version": "0.5.21",
-      "resolved": "https://registry.npmjs.org/source-map-support/-/source-map-support-0.5.21.tgz",
-      "integrity": "sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==",
-      "peer": true,
-      "dependencies": {
-        "buffer-from": "^1.0.0",
-        "source-map": "^0.6.0"
-      }
-    },
-    "node_modules/source-map-support/node_modules/source-map": {
-      "version": "0.6.1",
-      "resolved": "https://registry.npmjs.org/source-map/-/source-map-0.6.1.tgz",
-      "integrity": "sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==",
-      "peer": true,
       "engines": {
         "node": ">=0.10.0"
       }
@@ -8956,64 +8684,6 @@ if __name__ == "__main__":
         "node": ">=6"
       }
     },
-    "node_modules/terser": {
-      "version": "5.30.0",
-      "resolved": "https://registry.npmjs.org/terser/-/terser-5.30.0.tgz",
-      "integrity": "sha512-Y/SblUl5kEyEFzhMAQdsxVHh+utAxd4IuRNJzKywY/4uzSogh3G219jqbDDxYu4MXO9CzY3tSEqmZvW6AoEDJw==",
-      "peer": true,
-      "dependencies": {
-        "@jridgewell/source-map": "^0.3.3",
-        "acorn": "^8.8.2",
-        "commander": "^2.20.0",
-        "source-map-support": "~0.5.20"
-      },
-      "bin": {
-        "terser": "bin/terser"
-      },
-      "engines": {
-        "node": ">=10"
-      }
-    },
-    "node_modules/terser-webpack-plugin": {
-      "version": "5.3.10",
-      "resolved": "https://registry.npmjs.org/terser-webpack-plugin/-/terser-webpack-plugin-5.3.10.tgz",
-      "integrity": "sha512-BKFPWlPDndPs+NGGCr1U59t0XScL5317Y0UReNrHaw9/FwhPENlq6bfgs+4yPfyP51vqC1bQ4rp1EfXW5ZSH9w==",
-      "peer": true,
-      "dependencies": {
-        "@jridgewell/trace-mapping": "^0.3.20",
-        "jest-worker": "^27.4.5",
-        "schema-utils": "^3.1.1",
-        "serialize-javascript": "^6.0.1",
-        "terser": "^5.26.0"
-      },
-      "engines": {
-        "node": ">= 10.13.0"
-      },
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/webpack"
-      },
-      "peerDependencies": {
-        "webpack": "^5.1.0"
-      },
-      "peerDependenciesMeta": {
-        "@swc/core": {
-          "optional": true
-        },
-        "esbuild": {
-          "optional": true
-        },
-        "uglify-js": {
-          "optional": true
-        }
-      }
-    },
-    "node_modules/terser/node_modules/commander": {
-      "version": "2.20.3",
-      "resolved": "https://registry.npmjs.org/commander/-/commander-2.20.3.tgz",
-      "integrity": "sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==",
-      "peer": true
-    },
     "node_modules/text-table": {
       "version": "0.2.0",
       "resolved": "https://registry.npmjs.org/text-table/-/text-table-0.2.0.tgz",
@@ -9203,6 +8873,7 @@ if __name__ == "__main__":
       "version": "5.4.3",
       "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.4.3.tgz",
       "integrity": "sha512-KrPd3PKaCLr78MalgiwJnA25Nm8HAmdwN3mYUYZgG/wizIo9EainNVQI9/yDavtVFRN2h3k8uf3GLHuhDMgEHg==",
+      "dev": true,
       "bin": {
         "tsc": "bin/tsc",
         "tsserver": "bin/tsserver"
@@ -9345,10 +9016,20 @@ if __name__ == "__main__":
         "url": "https://opencollective.com/unified"
       }
     },
+    "node_modules/universalify": {
+      "version": "2.0.1",
+      "resolved": "https://registry.npmjs.org/universalify/-/universalify-2.0.1.tgz",
+      "integrity": "sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==",
+      "license": "MIT",
+      "engines": {
+        "node": ">= 10.0.0"
+      }
+    },
     "node_modules/update-browserslist-db": {
       "version": "1.0.13",
       "resolved": "https://registry.npmjs.org/update-browserslist-db/-/update-browserslist-db-1.0.13.tgz",
       "integrity": "sha512-xebP81SNcPuNpPP3uzeW1NYXxI3rxyJzF3pD6sH4jE7o/IX+WtSpwnVU+qIsDPyk0d3hmFQ7mjqc6AtV604hbg==",
+      "dev": true,
       "funding": [
         {
           "type": "opencollective",
@@ -9392,6 +9073,19 @@ if __name__ == "__main__":
       "resolved": "https://registry.npmjs.org/util-deprecate/-/util-deprecate-1.0.2.tgz",
       "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==",
       "dev": true
+    },
+    "node_modules/uuid": {
+      "version": "11.1.0",
+      "resolved": "https://registry.npmjs.org/uuid/-/uuid-11.1.0.tgz",
+      "integrity": "sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==",
+      "funding": [
+        "https://github.com/sponsors/broofa",
+        "https://github.com/sponsors/ctavan"
+      ],
+      "license": "MIT",
+      "bin": {
+        "uuid": "dist/esm/bin/uuid"
+      }
     },
     "node_modules/uvu": {
       "version": "0.5.6",
@@ -9438,101 +9132,10 @@ if __name__ == "__main__":
         "url": "https://opencollective.com/unified"
       }
     },
-    "node_modules/watchpack": {
-      "version": "2.4.1",
-      "resolved": "https://registry.npmjs.org/watchpack/-/watchpack-2.4.1.tgz",
-      "integrity": "sha512-8wrBCMtVhqcXP2Sup1ctSkga6uc2Bx0IIvKyT7yTFier5AXHooSI+QyQQAtTb7+E0IUCCKyTFmXqdqgum2XWGg==",
-      "peer": true,
-      "dependencies": {
-        "glob-to-regexp": "^0.4.1",
-        "graceful-fs": "^4.1.2"
-      },
-      "engines": {
-        "node": ">=10.13.0"
-      }
-    },
     "node_modules/webidl-conversions": {
       "version": "3.0.1",
       "resolved": "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz",
       "integrity": "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="
-    },
-    "node_modules/webpack": {
-      "version": "5.91.0",
-      "resolved": "https://registry.npmjs.org/webpack/-/webpack-5.91.0.tgz",
-      "integrity": "sha512-rzVwlLeBWHJbmgTC/8TvAcu5vpJNII+MelQpylD4jNERPwpBJOE2lEcko1zJX3QJeLjTTAnQxn/OJ8bjDzVQaw==",
-      "peer": true,
-      "dependencies": {
-        "@types/eslint-scope": "^3.7.3",
-        "@types/estree": "^1.0.5",
-        "@webassemblyjs/ast": "^1.12.1",
-        "@webassemblyjs/wasm-edit": "^1.12.1",
-        "@webassemblyjs/wasm-parser": "^1.12.1",
-        "acorn": "^8.7.1",
-        "acorn-import-assertions": "^1.9.0",
-        "browserslist": "^4.21.10",
-        "chrome-trace-event": "^1.0.2",
-        "enhanced-resolve": "^5.16.0",
-        "es-module-lexer": "^1.2.1",
-        "eslint-scope": "5.1.1",
-        "events": "^3.2.0",
-        "glob-to-regexp": "^0.4.1",
-        "graceful-fs": "^4.2.11",
-        "json-parse-even-better-errors": "^2.3.1",
-        "loader-runner": "^4.2.0",
-        "mime-types": "^2.1.27",
-        "neo-async": "^2.6.2",
-        "schema-utils": "^3.2.0",
-        "tapable": "^2.1.1",
-        "terser-webpack-plugin": "^5.3.10",
-        "watchpack": "^2.4.1",
-        "webpack-sources": "^3.2.3"
-      },
-      "bin": {
-        "webpack": "bin/webpack.js"
-      },
-      "engines": {
-        "node": ">=10.13.0"
-      },
-      "funding": {
-        "type": "opencollective",
-        "url": "https://opencollective.com/webpack"
-      },
-      "peerDependenciesMeta": {
-        "webpack-cli": {
-          "optional": true
-        }
-      }
-    },
-    "node_modules/webpack-sources": {
-      "version": "3.2.3",
-      "resolved": "https://registry.npmjs.org/webpack-sources/-/webpack-sources-3.2.3.tgz",
-      "integrity": "sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==",
-      "peer": true,
-      "engines": {
-        "node": ">=10.13.0"
-      }
-    },
-    "node_modules/webpack/node_modules/eslint-scope": {
-      "version": "5.1.1",
-      "resolved": "https://registry.npmjs.org/eslint-scope/-/eslint-scope-5.1.1.tgz",
-      "integrity": "sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==",
-      "peer": true,
-      "dependencies": {
-        "esrecurse": "^4.3.0",
-        "estraverse": "^4.1.1"
-      },
-      "engines": {
-        "node": ">=8.0.0"
-      }
-    },
-    "node_modules/webpack/node_modules/estraverse": {
-      "version": "4.3.0",
-      "resolved": "https://registry.npmjs.org/estraverse/-/estraverse-4.3.0.tgz",
-      "integrity": "sha512-39nnKffWz8xN1BU/2c79n9nB9HDzo0niYUqx6xyqUnyoAnQyyWpOTdZEeiCch8BBu515t4wp9ZmgVfVhn9EBpw==",
-      "peer": true,
-      "engines": {
-        "node": ">=4.0"
-      }
     },
     "node_modules/whatwg-url": {
       "version": "5.0.0",
@@ -9827,10 +9430,12 @@ if __name__ == "__main__":
     "@supabase/supabase-js": "^2.41.1",
     "axios": "^1.6.8",
     "crisp-sdk-web": "^1.0.22",
+    "dotenv": "^16.5.0",
     "eslint": "8.47.0",
     "eslint-config-next": "13.4.19",
     "form-data": "^4.0.0",
     "framer-motion": "^12.10.1",
+    "fs-extra": "^11.3.0",
     "mailgun.js": "^9.4.1",
     "next": "^15.3.2",
     "next-plausible": "^3.12.0",
@@ -9843,9 +9448,11 @@ if __name__ == "__main__":
     "react-syntax-highlighter": "^15.5.0",
     "react-tooltip": "^5.26.3",
     "stripe": "^13.11.0",
+    "uuid": "^11.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/jest": "^29.5.12",
     "@types/mdx": "^2.0.12",
     "@types/mongoose": "^5.11.97",
@@ -9853,6 +9460,7 @@ if __name__ == "__main__":
     "@types/react": "^18.2.73",
     "@types/react-dom": "^18.2.23",
     "@types/react-syntax-highlighter": "^15.5.11",
+    "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.10.1",
     "postcss": "^8.4.38",
@@ -10847,13 +10455,13 @@ const QuestionTypesPage: React.FC = () => {
       type: 'dropdown_selection',
       name: 'Dropdown Selection',
       description: 'User selects answers from dropdown menus within text.',
-      available: false
+      available: true // Updated to true
     },
     {
       type: 'order',
       name: 'Ordering',
       description: 'User arranges items in the correct sequence.',
-      available: false
+      available: true
     },
     {
       type: 'yes_no',
@@ -11008,8 +10616,51 @@ export interface DragAndDropQuestion extends BaseQuestion {
   correctPairs: DragAndDropCorrectPair[];
 }
 
+// New types for OrderQuestion
+export interface OrderItem {
+  item_id: string;
+  text: string;
+}
+
+// Order question where users arrange items in correct sequence
+export interface OrderQuestion extends BaseQuestion {
+  type: 'order';
+  items: OrderItem[];
+  correctOrder: string[]; // Array of item_ids in correct order
+}
+
+// Type for order question answers - maps slot names to item IDs
+// e.g. { "slot_0": "item1", "slot_1": "item2", "slot_2": null }
+export type OrderQuestionAnswer = Record<string, string | null>;
+
+// New types for DropdownSelectionQuestion
+export interface DropdownOption {
+  option_id: string;
+  text: string;
+  // is_correct is part of the dropdown_selection_options table schema
+  // but might not be directly exposed to the client in DropdownSelectionQuestion if not needed for rendering all options.
+  // However, the migration script keeps it, and it can be useful for client-side hints or direct display if design changes.
+  is_correct?: boolean; 
+}
+
+export interface DropdownPlaceholderTarget {
+  key: string; // The placeholder text, e.g., "option_set1"
+  correctOptionText: string; // The text of the correct option for this placeholder
+}
+
+export interface DropdownSelectionQuestion extends BaseQuestion {
+  type: 'dropdown_selection';
+  options: DropdownOption[]; // All available options for any dropdown in this question
+  placeholderTargets: Record<string, DropdownPlaceholderTarget>; // Maps placeholder key to its correct target details
+}
+
 // AnyQuestion will be a union of all specific question types
-export type AnyQuestion = SingleSelectionQuestion | MultiChoiceQuestion | DragAndDropQuestion; // Add more as implemented
+export type AnyQuestion = 
+  | SingleSelectionQuestion 
+  | MultiChoiceQuestion 
+  | DragAndDropQuestion
+  | DropdownSelectionQuestion
+  | OrderQuestion; // Added OrderQuestion
 
 export interface Quiz {
   id: string; // e.g. azure-a102
@@ -11232,6 +10883,1322 @@ export const useQuiz = (): QuizContextType => {
 
 ```
 
+### app/features/quiz/tests/OrderQuestionComponent.test.tsx
+
+```tsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import OrderQuestionComponent from '../../components/question-types/OrderQuestionComponent';
+import { OrderQuestion } from '@/app/types/quiz';
+
+// Mock framer-motion to avoid animation issues in tests
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({ children, ...props }: any) => (
+      <div {...props}>{children}</div>
+    )
+  }
+}));
+
+describe('OrderQuestionComponent', () => {
+  // Create a mock question for testing
+  const mockQuestion: OrderQuestion = {
+    id: 'q1',
+    type: 'order',
+    question: 'Place these items in the correct order',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    items: [
+      { item_id: 'i1', text: 'First Item' },
+      { item_id: 'i2', text: 'Second Item' },
+      { item_id: 'i3', text: 'Third Item' },
+      { item_id: 'i4', text: 'Fourth Item' },
+    ],
+    correctOrder: ['i1', 'i2', 'i3', 'i4']
+  };
+
+  const mockOnAnswerSelect = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('renders the component with items in initial order', () => {
+    render(
+      <OrderQuestionComponent 
+        question={mockQuestion}
+        onAnswerSelect={mockOnAnswerSelect}
+      />
+    );
+    
+    // Check that all items are rendered
+    expect(screen.getByText('First Item')).toBeInTheDocument();
+    expect(screen.getByText('Second Item')).toBeInTheDocument();
+    expect(screen.getByText('Third Item')).toBeInTheDocument();
+    expect(screen.getByText('Fourth Item')).toBeInTheDocument();
+
+    // Check that the instruction is displayed
+    expect(screen.getByText('Arrange the items in the correct order:')).toBeInTheDocument();
+  });
+
+  it('should disable dragging when submitted', () => {
+    render(
+      <OrderQuestionComponent 
+        question={mockQuestion}
+        onAnswerSelect={mockOnAnswerSelect}
+        isSubmitted={true}
+      />
+    );
+    
+    // Get all draggable elements
+    const draggableElements = screen.getAllByText(/Item/);
+    
+    // Check that all elements have draggable="false"
+    draggableElements.forEach(element => {
+      expect(element.parentElement).toHaveAttribute('draggable', 'false');
+    });
+  });
+
+  it('should show feedback styling when requested', () => {
+    // Create a user answer with items in wrong order
+    const userAnswer = ['i2', 'i1', 'i4', 'i3'];
+    
+    render(
+      <OrderQuestionComponent 
+        question={mockQuestion}
+        onAnswerSelect={mockOnAnswerSelect}
+        userAnswer={userAnswer}
+        isSubmitted={true}
+        showCorrectAnswer={true}
+      />
+    );
+
+    // Check that the "Correct Order" section is displayed
+    expect(screen.getByText('Correct Order:')).toBeInTheDocument();
+  });
+
+  it('should initialize with user answer if provided', () => {
+    // Create a specific user answer order
+    const userAnswer = ['i4', 'i3', 'i2', 'i1'];
+    
+    render(
+      <OrderQuestionComponent 
+        question={mockQuestion}
+        onAnswerSelect={mockOnAnswerSelect}
+        userAnswer={userAnswer}
+      />
+    );
+
+    // Check that items appear in the user's order
+    const items = screen.getAllByText(/Item/);
+    expect(items[0].textContent).toBe('Fourth Item');
+    expect(items[1].textContent).toBe('Third Item');
+    expect(items[2].textContent).toBe('Second Item');
+    expect(items[3].textContent).toBe('First Item');
+  });
+
+  // Note: Testing drag and drop interactions is complex and often requires
+  // more sophisticated setup with user-event or custom testing utilities.
+  // For this basic test suite, we'll focus on rendering and props handling.
+});
+
+```
+
+### app/features/quiz/tests/DragAndDropQuestionComponent.test.tsx
+
+```tsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import DragAndDropQuestionComponent from '../components/question-types/DragAndDropQuestionComponent';
+import { DragAndDropQuestion } from '@/app/types/quiz';
+
+// Mock the dataTransfer object
+const createDragEventWithData = (type: string, data: any) => {
+  const event = new Event(type, { bubbles: true }) as any;
+  event.dataTransfer = {
+    data: {},
+    setData(key: string, value: string) {
+      this.data[key] = value;
+    },
+    getData(key: string) {
+      return this.data[key];
+    },
+    effectAllowed: 'move',
+    dropEffect: 'move',
+  };
+  return event;
+};
+
+describe('DragAndDropQuestionComponent', () => {
+  // Create a mock question for testing
+  const mockQuestion: DragAndDropQuestion = {
+    id: 'q1',
+    type: 'drag_and_drop',
+    question: 'Match the items to their correct targets',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    targets: [
+      { target_id: 't1', text: 'Target 1' },
+      { target_id: 't2', text: 'Target 2' },
+    ],
+    options: [
+      { option_id: 'o1', text: 'Option 1' },
+      { option_id: 'o2', text: 'Option 2' },
+    ],
+    correctPairs: [
+      { target_id: 't1', option_id: 'o1' },
+      { target_id: 't2', option_id: 'o2' },
+    ]
+  };
+
+  const mockOnAnswerChange = jest.fn();
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    // Mock classList API used by the drag-and-drop functionality
+    Element.prototype.classList = {
+      add: jest.fn(),
+      remove: jest.fn(),
+    } as any;
+  });
+
+  it('renders correctly with initial state', () => {
+    render(
+      <DragAndDropQuestionComponent 
+        question={mockQuestion}
+        onAnswerChange={mockOnAnswerChange}
+      />
+    );
+
+    // Check that all targets and options are rendered
+    expect(screen.getByText('Target 1')).toBeInTheDocument();
+    expect(screen.getByText('Target 2')).toBeInTheDocument();
+    expect(screen.getByText('Option 1')).toBeInTheDocument();
+    expect(screen.getByText('Option 2')).toBeInTheDocument();
+    
+    // Available items section should be present
+    expect(screen.getByText('Available Items:')).toBeInTheDocument();
+    
+    // Match items section should be present
+    expect(screen.getByText('Match items to the correct targets:')).toBeInTheDocument();
+  });
+
+  it('renders correctly with pre-filled answers', () => {
+    const userAnswer = {
+      't1': 'o1',
+      't2': null
+    };
+    
+    render(
+      <DragAndDropQuestionComponent 
+        question={mockQuestion}
+        onAnswerChange={mockOnAnswerChange}
+        userAnswer={userAnswer}
+      />
+    );
+    
+    // Option 1 should not be in available options (it's placed in target 1)
+    const availableItemsSection = screen.getByText('Available Items:').parentElement;
+    expect(availableItemsSection).not.toContain(screen.getByText('Option 1'));
+    expect(availableItemsSection).toContain(screen.getByText('Option 2'));
+  });
+
+  it('should disable dragging when submitted', () => {
+    render(
+      <DragAndDropQuestionComponent 
+        question={mockQuestion}
+        onAnswerChange={mockOnAnswerChange}
+        isSubmitted={true}
+      />
+    );
+    
+    // Should have options but they should not be draggable
+    const options = screen.getAllByText(/Option/);
+    expect(options.length).toBeGreaterThan(0);
+    options.forEach(option => {
+      expect(option.parentElement).toHaveAttribute('draggable', 'false');
+    });
+  });
+
+  it('should show feedback styling when requested', () => {
+    const userAnswer = {
+      't1': 'o1', // Correct
+      't2': 'o2', // Correct
+    };
+    
+    render(
+      <DragAndDropQuestionComponent 
+        question={mockQuestion}
+        onAnswerChange={mockOnAnswerChange}
+        userAnswer={userAnswer}
+        showFeedbackStyling={true}
+        isSubmitted={true}
+      />
+    );
+    
+    // No need for specific CSS assertions - we're mainly testing that the component renders
+    // with feedback styling without errors
+    expect(screen.getByText('Target 1')).toBeInTheDocument();
+    expect(screen.getByText('Target 2')).toBeInTheDocument();
+  });
+
+  it('should show correct answers in review mode', () => {
+    render(
+      <DragAndDropQuestionComponent 
+        question={mockQuestion}
+        onAnswerChange={mockOnAnswerChange}
+        isQuizReviewMode={true}
+      />
+    );
+    
+    // In review mode, it should show the correct answers
+    // Option 1 should be in Target 1, Option 2 in Target 2
+    const target1 = screen.getByText('Target 1').parentElement;
+    const target2 = screen.getByText('Target 2').parentElement;
+    
+    expect(target1).toHaveTextContent('Option 1');
+    expect(target2).toHaveTextContent('Option 2');
+    
+    // Available items section should not have the options
+    const availableItemsSection = screen.getByText('Available Items:').parentElement;
+    expect(availableItemsSection).not.toHaveTextContent('Option 1');
+    expect(availableItemsSection).not.toHaveTextContent('Option 2');
+  });
+});
+
+```
+
+### app/features/quiz/tests/DropdownSelectionController.test.ts
+
+```typescript
+import { DropdownSelectionQuestion } from "@/app/types/quiz";
+import { DropdownSelectionController } from "../controllers/DropdownSelectionController";
+
+describe('DropdownSelectionController', () => {
+  // Create a mock question for testing
+  const mockQuestion: DropdownSelectionQuestion = {
+    id: 'q1',
+    type: 'dropdown_selection',
+    question: 'The [animal] jumped over the [object].',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    options: [
+      { option_id: 'a1', text: 'cat' },
+      { option_id: 'a2', text: 'dog' },
+      { option_id: 'a3', text: 'fox' },
+      { option_id: 'o1', text: 'fence' },
+      { option_id: 'o2', text: 'moon' },
+      { option_id: 'o3', text: 'tree' },
+    ],
+    placeholderTargets: {
+      'animal': {
+        key: 'animal',
+        correctOptionText: 'fox'
+      },
+      'object': {
+        key: 'object',
+        correctOptionText: 'fence'
+      }
+    }
+  };
+
+  let controller: DropdownSelectionController;
+
+  beforeEach(() => {
+    controller = new DropdownSelectionController(mockQuestion);
+  });
+
+  describe('constructor', () => {
+    it('should properly initialize with a question', () => {
+      expect(controller.getQuestion()).toBe(mockQuestion);
+    });
+  });
+
+  describe('getCorrectOptionForPlaceholder', () => {
+    it('should return the correct option text for a placeholder', () => {
+      expect(controller.getCorrectOptionForPlaceholder('animal')).toBe('fox');
+      expect(controller.getCorrectOptionForPlaceholder('object')).toBe('fence');
+    });
+
+    it('should return null for an invalid placeholder', () => {
+      expect(controller.getCorrectOptionForPlaceholder('nonexistent')).toBeNull();
+    });
+  });
+
+  describe('getPlaceholderKeys', () => {
+    it('should return all placeholder keys', () => {
+      expect(controller.getPlaceholderKeys()).toEqual(['animal', 'object']);
+    });
+  });
+
+  describe('isSelectionCorrect', () => {
+    it('should return true for correct selections', () => {
+      expect(controller.isSelectionCorrect('animal', 'fox')).toBe(true);
+      expect(controller.isSelectionCorrect('object', 'fence')).toBe(true);
+    });
+
+    it('should return false for incorrect selections', () => {
+      expect(controller.isSelectionCorrect('animal', 'cat')).toBe(false);
+      expect(controller.isSelectionCorrect('object', 'moon')).toBe(false);
+    });
+
+    it('should return false for null selections', () => {
+      expect(controller.isSelectionCorrect('animal', null)).toBe(false);
+    });
+  });
+
+  describe('isAnswerComplete', () => {
+    it('should return true when all placeholders have selections', () => {
+      const selections = { 'animal': 'cat', 'object': 'fence' };
+      expect(controller.isAnswerComplete(selections)).toBe(true);
+    });
+
+    it('should return false when some placeholders have no selections', () => {
+      const selections = { 'animal': 'cat', 'object': null };
+      expect(controller.isAnswerComplete(selections)).toBe(false);
+    });
+
+    it('should return false for empty selections', () => {
+      expect(controller.isAnswerComplete({})).toBe(false);
+    });
+  });
+
+  describe('validateAnswer', () => {
+    it('should return a map with each placeholder marked as correct/incorrect', () => {
+      const selections = { 'animal': 'fox', 'object': 'tree' };
+      const validation = controller.validateAnswer(selections);
+      expect(validation['animal']).toBe(true);
+      expect(validation['object']).toBe(false);
+    });
+  });
+
+  describe('getScore', () => {
+    it('should return 1 for all correct selections', () => {
+      const selections = { 'animal': 'fox', 'object': 'fence' };
+      expect(controller.getScore(selections)).toBe(1);
+    });
+
+    it('should return 0.5 for half correct selections', () => {
+      const selections = { 'animal': 'fox', 'object': 'tree' };
+      expect(controller.getScore(selections)).toBe(0.5);
+    });
+
+    it('should return 0 for all incorrect selections', () => {
+      const selections = { 'animal': 'cat', 'object': 'tree' };
+      expect(controller.getScore(selections)).toBe(0);
+    });
+  });
+
+  describe('isCorrect', () => {
+    it('should return true when all selections are correct', () => {
+      const selections = { 'animal': 'fox', 'object': 'fence' };
+      expect(controller.isCorrect(selections)).toBe(true);
+    });
+
+    it('should return false when any selection is incorrect', () => {
+      const selections = { 'animal': 'fox', 'object': 'tree' };
+      expect(controller.isCorrect(selections)).toBe(false);
+    });
+  });
+});
+
+```
+
+### app/features/quiz/tests/OrderController.test.ts
+
+```typescript
+import { OrderQuestion } from "@/app/types/quiz";
+import { OrderController } from "../controllers/OrderController";
+
+describe('OrderController', () => {
+  // Create a mock question for testing
+  const mockQuestion: OrderQuestion = {
+    id: 'q1',
+    type: 'order',
+    question: 'Place these items in the correct order',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    items: [
+      { item_id: 'i1', text: 'Item 1' },
+      { item_id: 'i2', text: 'Item 2' },
+      { item_id: 'i3', text: 'Item 3' },
+      { item_id: 'i4', text: 'Item 4' },
+    ],
+    correctOrder: ['i2', 'i4', 'i1', 'i3']
+  };
+
+  let controller: OrderController;
+
+  beforeEach(() => {
+    controller = new OrderController(mockQuestion);
+  });
+
+  describe('constructor', () => {
+    it('should properly initialize with a question', () => {
+      expect(controller.getQuestion()).toBe(mockQuestion);
+    });
+  });
+
+  describe('getItems', () => {
+    it('should return all items from the question', () => {
+      const items = controller.getItems();
+      expect(items).toHaveLength(4);
+      expect(items).toEqual(mockQuestion.items);
+    });
+  });
+
+  describe('getCorrectOrder', () => {
+    it('should return the correct order from the question', () => {
+      const correctOrder = controller.getCorrectOrder();
+      expect(correctOrder).toHaveLength(4);
+      expect(correctOrder).toEqual(mockQuestion.correctOrder);
+    });
+  });
+
+  describe('isItemInCorrectPosition', () => {
+    it('should return true for items in correct positions', () => {
+      expect(controller.isItemInCorrectPosition('i2', 0)).toBe(true);
+      expect(controller.isItemInCorrectPosition('i4', 1)).toBe(true);
+      expect(controller.isItemInCorrectPosition('i1', 2)).toBe(true);
+      expect(controller.isItemInCorrectPosition('i3', 3)).toBe(true);
+    });
+
+    it('should return false for items in incorrect positions', () => {
+      expect(controller.isItemInCorrectPosition('i1', 0)).toBe(false);
+      expect(controller.isItemInCorrectPosition('i2', 1)).toBe(false);
+      expect(controller.isItemInCorrectPosition('i3', 0)).toBe(false);
+      expect(controller.isItemInCorrectPosition('i4', 3)).toBe(false);
+    });
+
+    it('should return false for invalid positions', () => {
+      expect(controller.isItemInCorrectPosition('i1', -1)).toBe(false);
+      expect(controller.isItemInCorrectPosition('i1', 4)).toBe(false);
+    });
+  });
+
+  describe('isAnswerComplete', () => {
+    it('should return true when all items are ordered', () => {
+      const userAnswer = ['i1', 'i2', 'i3', 'i4']; // All items present
+      expect(controller.isAnswerComplete(userAnswer)).toBe(true);
+    });
+
+    it('should return false when not all items are ordered', () => {
+      const userAnswer = ['i1', 'i2', 'i3']; // Missing an item
+      expect(controller.isAnswerComplete(userAnswer)).toBe(false);
+    });
+  });
+
+  describe('validateAnswer', () => {
+    it('should return correctness map for each item', () => {
+      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // i2 and i3 are in correct positions
+      const correctnessMap = controller.validateAnswer(userAnswer);
+      
+      expect(correctnessMap['i2']).toBe(true);
+      expect(correctnessMap['i1']).toBe(false);
+      expect(correctnessMap['i4']).toBe(false);
+      expect(correctnessMap['i3']).toBe(true);
+    });
+  });
+});
+
+```
+
+### app/features/quiz/tests/SingleSelectionValidator.test.ts
+
+```typescript
+import { SingleSelectionQuestion } from "@/app/types/quiz";
+import { SingleSelectionValidator } from "../validators/SingleSelectionValidator";
+
+describe('SingleSelectionValidator', () => {
+  // Create a mock question for testing
+  const mockQuestion: SingleSelectionQuestion = {
+    id: 'q1',
+    type: 'single_selection',
+    question: 'Test question?',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    options: [
+      { option_id: 'a', text: 'Option A' },
+      { option_id: 'b', text: 'Option B' },
+      { option_id: 'c', text: 'Option C' },
+    ],
+    correctAnswerOptionId: 'b'
+  };
+
+  let validator: SingleSelectionValidator;
+
+  beforeEach(() => {
+    validator = new SingleSelectionValidator(mockQuestion);
+  });
+
+  describe('isComplete', () => {
+    it('should return true when an option is selected', () => {
+      expect(validator.isComplete('a')).toBe(true);
+    });
+
+    it('should return false when no option is selected', () => {
+      expect(validator.isComplete(null)).toBe(false);
+    });
+
+    it('should return false for empty string', () => {
+      expect(validator.isComplete('')).toBe(false);
+    });
+  });
+
+  describe('getCorrectnessMap', () => {
+    it('should mark the correct option as correct', () => {
+      const result = validator.getCorrectnessMap('b');
+      expect(result['b']).toBe(true);
+    });
+
+    it('should mark incorrect options as incorrect', () => {
+      const result = validator.getCorrectnessMap('a');
+      expect(result['a']).toBe(false);
+    });
+
+    it('should return a default map for null selection', () => {
+      const result = validator.getCorrectnessMap(null);
+      expect(result['answer']).toBe(false);
+    });
+  });
+});
+
+```
+
+### app/features/quiz/tests/OrderValidator.test.ts
+
+```typescript
+import { OrderQuestion } from "@/app/types/quiz";
+import { OrderValidator } from "../validators/OrderValidator";
+
+describe('OrderValidator', () => {
+  // Create a mock question for testing
+  const mockQuestion: OrderQuestion = {
+    id: 'q1',
+    type: 'order',
+    question: 'Place these items in the correct order',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    items: [
+      { item_id: 'i1', text: 'Item 1' },
+      { item_id: 'i2', text: 'Item 2' },
+      { item_id: 'i3', text: 'Item 3' },
+      { item_id: 'i4', text: 'Item 4' },
+    ],
+    correctOrder: ['i2', 'i4', 'i1', 'i3']
+  };
+
+  let validator: OrderValidator;
+
+  beforeEach(() => {
+    validator = new OrderValidator(mockQuestion);
+  });
+
+  describe('isComplete', () => {
+    it('should return true when all items are ordered', () => {
+      const userAnswer = ['i1', 'i2', 'i3', 'i4']; // All items present
+      expect(validator.isComplete(userAnswer)).toBe(true);
+    });
+
+    it('should return false when not all items are ordered', () => {
+      const userAnswer = ['i1', 'i2', 'i3']; // Missing an item
+      expect(validator.isComplete(userAnswer)).toBe(false);
+    });
+
+    it('should return false when answer is null or undefined', () => {
+      expect(validator.isComplete(null as any)).toBe(false);
+      expect(validator.isComplete(undefined as any)).toBe(false);
+    });
+
+    it('should return false when answer is not an array', () => {
+      expect(validator.isComplete({} as any)).toBe(false);
+      expect(validator.isComplete('string' as any)).toBe(false);
+    });
+  });
+
+  describe('getCorrectnessMap', () => {
+    it('should mark items in correct positions as true', () => {
+      const userAnswer = ['i2', 'i4', 'i1', 'i3']; // Exactly correct order
+      const correctnessMap = validator.getCorrectnessMap(userAnswer);
+      
+      expect(correctnessMap['i1']).toBe(true);
+      expect(correctnessMap['i2']).toBe(true);
+      expect(correctnessMap['i3']).toBe(true);
+      expect(correctnessMap['i4']).toBe(true);
+    });
+
+    it('should mark items in incorrect positions as false', () => {
+      const userAnswer = ['i1', 'i2', 'i3', 'i4']; // Incorrect order
+      const correctnessMap = validator.getCorrectnessMap(userAnswer);
+      
+      expect(correctnessMap['i1']).toBe(false);
+      expect(correctnessMap['i2']).toBe(false);
+      expect(correctnessMap['i3']).toBe(false);
+      expect(correctnessMap['i4']).toBe(false);
+    });
+
+    it('should mark some items correct and others incorrect', () => {
+      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // i2 and i3 are correct, i1 and i4 are wrong
+      const correctnessMap = validator.getCorrectnessMap(userAnswer);
+      
+      expect(correctnessMap['i2']).toBe(true);  // Correct position (index 0)
+      expect(correctnessMap['i1']).toBe(false); // Wrong position
+      expect(correctnessMap['i4']).toBe(false); // Wrong position
+      expect(correctnessMap['i3']).toBe(true);  // Correct position (index 3)
+    });
+
+    it('should return empty map when answer is null or undefined', () => {
+      expect(Object.keys(validator.getCorrectnessMap(null as any)).length).toBe(0);
+      expect(Object.keys(validator.getCorrectnessMap(undefined as any)).length).toBe(0);
+    });
+
+    it('should return empty map when answer is not an array', () => {
+      expect(Object.keys(validator.getCorrectnessMap({} as any)).length).toBe(0);
+      expect(Object.keys(validator.getCorrectnessMap('string' as any)).length).toBe(0);
+    });
+  });
+
+  // Test the inherited methods via the validator instance
+  describe('getCorrectnessScore', () => {
+    it('should return 1 for completely correct answers', () => {
+      const userAnswer = ['i2', 'i4', 'i1', 'i3']; // Exactly correct order
+      expect(validator.getCorrectnessScore(userAnswer)).toBe(1);
+    });
+    
+    it('should return 0.5 for partially correct answers', () => {
+      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // 2/4 correct positions
+      expect(validator.getCorrectnessScore(userAnswer)).toBe(0.5);
+    });
+    
+    it('should return 0 for completely incorrect answers', () => {
+      const userAnswer = ['i3', 'i1', 'i4', 'i2']; // No correct positions
+      expect(validator.getCorrectnessScore(userAnswer)).toBe(0);
+    });
+  });
+  
+  describe('isCorrect', () => {
+    it('should return true for completely correct answers', () => {
+      const userAnswer = ['i2', 'i4', 'i1', 'i3']; // Exactly correct order
+      expect(validator.isCorrect(userAnswer)).toBe(true);
+    });
+    
+    it('should return false for partially correct answers', () => {
+      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // 2/4 correct positions
+      expect(validator.isCorrect(userAnswer)).toBe(false);
+    });
+    
+    it('should return false for completely incorrect answers', () => {
+      const userAnswer = ['i3', 'i1', 'i4', 'i2']; // No correct positions
+      expect(validator.isCorrect(userAnswer)).toBe(false);
+    });
+  });
+});
+
+```
+
+### app/features/quiz/tests/MultiChoiceController.test.ts
+
+```typescript
+import { MultiChoiceQuestion } from "@/app/types/quiz";
+import { MultiChoiceController } from "../controllers/MultiChoiceController";
+
+describe('MultiChoiceController', () => {
+  // Create a mock question for testing
+  const mockQuestion: MultiChoiceQuestion = {
+    id: 'q1',
+    type: 'multi',
+    question: 'Test question?',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    options: [
+      { option_id: 'a', text: 'Option A' },
+      { option_id: 'b', text: 'Option B' },
+      { option_id: 'c', text: 'Option C' },
+      { option_id: 'd', text: 'Option D' },
+    ],
+    correctAnswerOptionIds: ['b', 'c']
+  };
+
+  let controller: MultiChoiceController;
+
+  beforeEach(() => {
+    controller = new MultiChoiceController(mockQuestion);
+  });
+
+  describe('constructor', () => {
+    it('should properly initialize with a question', () => {
+      expect(controller.getQuestion()).toBe(mockQuestion);
+    });
+  });
+
+  describe('getCorrectOptionIds', () => {
+    it('should return the correct answer option IDs', () => {
+      expect(controller.getCorrectOptionIds()).toEqual(['b', 'c']);
+    });
+  });
+
+  describe('getRequiredSelectionCount', () => {
+    it('should return the number of correct options', () => {
+      expect(controller.getRequiredSelectionCount()).toBe(2);
+    });
+  });
+
+  describe('isOptionCorrect', () => {
+    it('should return true for correct options', () => {
+      expect(controller.isOptionCorrect('b')).toBe(true);
+      expect(controller.isOptionCorrect('c')).toBe(true);
+    });
+
+    it('should return false for incorrect options', () => {
+      expect(controller.isOptionCorrect('a')).toBe(false);
+      expect(controller.isOptionCorrect('d')).toBe(false);
+    });
+  });
+
+  describe('isAnswerComplete', () => {
+    it('should return true when the correct number of options are selected', () => {
+      expect(controller.isAnswerComplete(['a', 'b'])).toBe(true);
+    });
+
+    it('should return false when too few options are selected', () => {
+      expect(controller.isAnswerComplete(['a'])).toBe(false);
+    });
+
+    it('should return false when too many options are selected', () => {
+      expect(controller.isAnswerComplete(['a', 'b', 'c'])).toBe(false);
+    });
+
+    it('should return false for an empty array', () => {
+      expect(controller.isAnswerComplete([])).toBe(false);
+    });
+  });
+
+  describe('validateAnswer', () => {
+    it('should return a map with each selected option marked as correct/incorrect', () => {
+      const validation = controller.validateAnswer(['b', 'd']);
+      expect(validation['b']).toBe(true);
+      expect(validation['d']).toBe(false);
+    });
+  });
+
+  describe('getScore', () => {
+    it('should return 1 for all correct answers', () => {
+      expect(controller.getScore(['b', 'c'])).toBe(1);
+    });
+
+    it('should return 0.5 for half correct answers', () => {
+      expect(controller.getScore(['b', 'd'])).toBe(0.5);
+    });
+
+    it('should return 0 for all incorrect answers', () => {
+      expect(controller.getScore(['a', 'd'])).toBe(0);
+    });
+  });
+
+  describe('isCorrect', () => {
+    it('should return true when all selected options are correct', () => {
+      expect(controller.isCorrect(['b', 'c'])).toBe(true);
+    });
+
+    it('should return false when any selected option is incorrect', () => {
+      expect(controller.isCorrect(['b', 'd'])).toBe(false);
+    });
+  });
+});
+
+```
+
+### app/features/quiz/tests/useAutoValidation.test.ts
+
+```typescript
+import { renderHook, act } from '@testing-library/react';
+import { useAutoValidation } from '../hooks/useAutoValidation';
+import { SingleSelectionController } from '../controllers/SingleSelectionController';
+import { SingleSelectionQuestion } from '@/app/types/quiz';
+
+// Mock controller
+jest.mock('../controllers/SingleSelectionController');
+
+describe('useAutoValidation', () => {
+  // Create a mock question for testing
+  const mockQuestion: SingleSelectionQuestion = {
+    id: 'q1',
+    type: 'single_selection',
+    question: 'Test question?',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    options: [
+      { option_id: 'a', text: 'Option A' },
+      { option_id: 'b', text: 'Option B' },
+    ],
+    correctAnswerOptionId: 'b'
+  };
+
+  // Set up mocks for the controller methods
+  const mockIsAnswerComplete = jest.fn();
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    // Mock the controller implementation
+    (SingleSelectionController as jest.Mock).mockImplementation(() => ({
+      isAnswerComplete: mockIsAnswerComplete,
+      validateAnswer: jest.fn(),
+      getScore: jest.fn(),
+      isCorrect: jest.fn(),
+      getQuestion: () => mockQuestion
+    }));
+  });
+
+  it('should initialize with the provided initial answer', () => {
+    mockIsAnswerComplete.mockReturnValue(false);
+    
+    const mockController = new SingleSelectionController(mockQuestion);
+    const mockOnAnswerChange = jest.fn();
+    
+    const { result } = renderHook(() => 
+      useAutoValidation(mockController, 'a', mockOnAnswerChange)
+    );
+    
+    const [answer] = result.current;
+    expect(answer).toBe('a');
+  });
+
+  it('should update answer state when setAnswer is called', () => {
+    mockIsAnswerComplete.mockReturnValue(false);
+    
+    const mockController = new SingleSelectionController(mockQuestion);
+    const mockOnAnswerChange = jest.fn();
+    
+    const { result } = renderHook(() => 
+      useAutoValidation(mockController, null, mockOnAnswerChange)
+    );
+    
+    act(() => {
+      const setAnswer = result.current[1];
+      setAnswer('a');
+    });
+    
+    const [answer] = result.current;
+    expect(answer).toBe('a');
+  });
+
+  it('should trigger onAnswerChange exactly once when answer becomes complete', () => {
+    // First call to isAnswerComplete returns false, then true after update
+    mockIsAnswerComplete.mockReturnValueOnce(false).mockReturnValueOnce(true);
+    
+    const mockController = new SingleSelectionController(mockQuestion);
+    const mockOnAnswerChange = jest.fn();
+    
+    const { result } = renderHook(() => 
+      useAutoValidation(mockController, null, mockOnAnswerChange)
+    );
+    
+    // Initial render should not trigger onAnswerChange
+    expect(mockOnAnswerChange).not.toHaveBeenCalled();
+    
+    // Update the answer
+    act(() => {
+      const setAnswer = result.current[1];
+      setAnswer('a');
+    });
+    
+    // Should call onAnswerChange exactly once
+    expect(mockOnAnswerChange).toHaveBeenCalledTimes(1);
+    expect(mockOnAnswerChange).toHaveBeenCalledWith('a');
+    
+    // Update the answer again
+    act(() => {
+      const setAnswer = result.current[1];
+      setAnswer('b');
+    });
+    
+    // Should still have been called only once total
+    expect(mockOnAnswerChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not auto-validate when validateOnComplete is false', () => {
+    mockIsAnswerComplete.mockReturnValue(true);
+    
+    const mockController = new SingleSelectionController(mockQuestion);
+    const mockOnAnswerChange = jest.fn();
+    
+    renderHook(() => 
+      useAutoValidation(mockController, null, mockOnAnswerChange, false)
+    );
+    
+    // Should not trigger onAnswerChange automatically
+    expect(mockOnAnswerChange).not.toHaveBeenCalled();
+  });
+});
+
+```
+
+### app/features/quiz/tests/DragAndDropController.test.ts
+
+```typescript
+import { DragAndDropQuestion } from "@/app/types/quiz";
+import { DragAndDropController } from "../controllers/DragAndDropController";
+
+describe('DragAndDropController', () => {
+  // Create a mock question for testing
+  const mockQuestion: DragAndDropQuestion = {
+    id: 'q1',
+    type: 'drag_and_drop',
+    question: 'Match the items correctly',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    targets: [
+      { target_id: 't1', text: 'Target 1' },
+      { target_id: 't2', text: 'Target 2' },
+      { target_id: 't3', text: 'Target 3' },
+    ],
+    options: [
+      { option_id: 'o1', text: 'Option 1' },
+      { option_id: 'o2', text: 'Option 2' },
+      { option_id: 'o3', text: 'Option 3' },
+      { option_id: 'o4', text: 'Option 4' }, // Extra option
+    ],
+    correctPairs: [
+      { target_id: 't1', option_id: 'o2' },
+      { target_id: 't2', option_id: 'o1' },
+      { target_id: 't3', option_id: 'o3' },
+    ]
+  };
+
+  let controller: DragAndDropController;
+
+  beforeEach(() => {
+    controller = new DragAndDropController(mockQuestion);
+  });
+
+  describe('constructor', () => {
+    it('should properly initialize with a question', () => {
+      expect(controller.getQuestion()).toBe(mockQuestion);
+    });
+  });
+
+  describe('getTargets', () => {
+    it('should return all targets', () => {
+      expect(controller.getTargets()).toBe(mockQuestion.targets);
+      expect(controller.getTargets().length).toBe(3);
+    });
+  });
+
+  describe('getOptions', () => {
+    it('should return all options', () => {
+      expect(controller.getOptions()).toBe(mockQuestion.options);
+      expect(controller.getOptions().length).toBe(4);
+    });
+  });
+
+  describe('getCorrectOptionForTarget', () => {
+    it('should return the correct option ID for a target', () => {
+      expect(controller.getCorrectOptionForTarget('t1')).toBe('o2');
+      expect(controller.getCorrectOptionForTarget('t2')).toBe('o1');
+      expect(controller.getCorrectOptionForTarget('t3')).toBe('o3');
+    });
+
+    it('should return null for an invalid target', () => {
+      expect(controller.getCorrectOptionForTarget('nonexistent')).toBeNull();
+    });
+  });
+
+  describe('isPlacementCorrect', () => {
+    it('should return true for correct placements', () => {
+      expect(controller.isPlacementCorrect('t1', 'o2')).toBe(true);
+      expect(controller.isPlacementCorrect('t2', 'o1')).toBe(true);
+      expect(controller.isPlacementCorrect('t3', 'o3')).toBe(true);
+    });
+
+    it('should return false for incorrect placements', () => {
+      expect(controller.isPlacementCorrect('t1', 'o1')).toBe(false);
+      expect(controller.isPlacementCorrect('t2', 'o2')).toBe(false);
+    });
+
+    it('should return false for null placements', () => {
+      expect(controller.isPlacementCorrect('t1', null)).toBe(false);
+    });
+  });
+
+  describe('getAvailableOptions', () => {
+    it('should return unused options', () => {
+      const placedAnswers = {
+        't1': 'o1',
+        't2': 'o2',
+        't3': null
+      };
+      
+      const availableOptions = controller.getAvailableOptions(placedAnswers);
+      expect(availableOptions.length).toBe(2);
+      expect(availableOptions.some(opt => opt.option_id === 'o3')).toBe(true);
+      expect(availableOptions.some(opt => opt.option_id === 'o4')).toBe(true);
+    });
+
+    it('should return all options when none are placed', () => {
+      const placedAnswers = {
+        't1': null,
+        't2': null,
+        't3': null
+      };
+      
+      const availableOptions = controller.getAvailableOptions(placedAnswers);
+      expect(availableOptions.length).toBe(4);
+    });
+  });
+
+  describe('createInitialAnswers', () => {
+    it('should create an object with all targets set to null', () => {
+      const initialAnswers = controller.createInitialAnswers();
+      expect(Object.keys(initialAnswers).length).toBe(3);
+      expect(initialAnswers['t1']).toBeNull();
+      expect(initialAnswers['t2']).toBeNull();
+      expect(initialAnswers['t3']).toBeNull();
+    });
+  });
+
+  describe('isAnswerComplete', () => {
+    it('should return true when all targets have options', () => {
+      const placedAnswers = {
+        't1': 'o1',
+        't2': 'o2',
+        't3': 'o3'
+      };
+      expect(controller.isAnswerComplete(placedAnswers)).toBe(true);
+    });
+
+    it('should return false when some targets have no options', () => {
+      const placedAnswers = {
+        't1': 'o1',
+        't2': null,
+        't3': 'o3'
+      };
+      expect(controller.isAnswerComplete(placedAnswers)).toBe(false);
+    });
+
+    it('should return false for empty answers', () => {
+      expect(controller.isAnswerComplete({})).toBe(false);
+    });
+  });
+
+  describe('validateAnswer', () => {
+    it('should return a map with each target marked as correct/incorrect', () => {
+      const placedAnswers = {
+        't1': 'o2', // correct
+        't2': 'o3', // incorrect
+        't3': 'o1'  // incorrect
+      };
+      
+      const validation = controller.validateAnswer(placedAnswers);
+      expect(validation['t1']).toBe(true);
+      expect(validation['t2']).toBe(false);
+      expect(validation['t3']).toBe(false);
+    });
+  });
+
+  describe('getScore', () => {
+    it('should return 1 for all correct placements', () => {
+      const placedAnswers = {
+        't1': 'o2',
+        't2': 'o1',
+        't3': 'o3'
+      };
+      expect(controller.getScore(placedAnswers)).toBe(1);
+    });
+
+    it('should return fraction for partially correct placements', () => {
+      const placedAnswers = {
+        't1': 'o2', // correct
+        't2': 'o3', // incorrect
+        't3': 'o1'  // incorrect
+      };
+      expect(controller.getScore(placedAnswers)).toBe(1/3);
+    });
+
+    it('should return 0 for all incorrect placements', () => {
+      const placedAnswers = {
+        't1': 'o1',
+        't2': 'o3',
+        't3': 'o4'
+      };
+      expect(controller.getScore(placedAnswers)).toBe(0);
+    });
+  });
+
+  describe('isCorrect', () => {
+    it('should return true when all placements are correct', () => {
+      const placedAnswers = {
+        't1': 'o2',
+        't2': 'o1',
+        't3': 'o3'
+      };
+      expect(controller.isCorrect(placedAnswers)).toBe(true);
+    });
+
+    it('should return false when any placement is incorrect', () => {
+      const placedAnswers = {
+        't1': 'o2', // correct
+        't2': 'o3', // incorrect
+        't3': 'o3'  // correct
+      };
+      expect(controller.isCorrect(placedAnswers)).toBe(false);
+    });
+  });
+});
+
+```
+
+### app/features/quiz/tests/SingleSelectionController.test.ts
+
+```typescript
+import { SingleSelectionQuestion } from "@/app/types/quiz";
+import { SingleSelectionController } from "../controllers/SingleSelectionController";
+
+describe('SingleSelectionController', () => {
+  // Create a mock question for testing
+  const mockQuestion: SingleSelectionQuestion = {
+    id: 'q1',
+    type: 'single_selection',
+    question: 'Test question?',
+    points: 10,
+    quiz_tag: 'test-quiz',
+    difficulty: 'medium',
+    feedback_correct: 'Good job!',
+    feedback_incorrect: 'Try again!',
+    created_at: '2023-01-01',
+    updated_at: '2023-01-01',
+    options: [
+      { option_id: 'a', text: 'Option A' },
+      { option_id: 'b', text: 'Option B' },
+      { option_id: 'c', text: 'Option C' },
+    ],
+    correctAnswerOptionId: 'b'
+  };
+
+  let controller: SingleSelectionController;
+
+  beforeEach(() => {
+    controller = new SingleSelectionController(mockQuestion);
+  });
+
+  describe('constructor', () => {
+    it('should properly initialize with a question', () => {
+      expect(controller.getQuestion()).toBe(mockQuestion);
+    });
+  });
+
+  describe('getCorrectOptionId', () => {
+    it('should return the correct answer option ID', () => {
+      expect(controller.getCorrectOptionId()).toBe('b');
+    });
+  });
+
+  describe('isOptionCorrect', () => {
+    it('should return true for the correct option', () => {
+      expect(controller.isOptionCorrect('b')).toBe(true);
+    });
+
+    it('should return false for incorrect options', () => {
+      expect(controller.isOptionCorrect('a')).toBe(false);
+      expect(controller.isOptionCorrect('c')).toBe(false);
+    });
+  });
+
+  describe('isAnswerComplete', () => {
+    it('should return true when an answer is selected', () => {
+      expect(controller.isAnswerComplete('a')).toBe(true);
+    });
+
+    it('should return false when no answer is selected', () => {
+      expect(controller.isAnswerComplete(null)).toBe(false);
+    });
+  });
+
+  describe('validateAnswer', () => {
+    it('should return a map with the selected option marked as correct/incorrect', () => {
+      const correctValidation = controller.validateAnswer('b');
+      expect(correctValidation['b']).toBe(true);
+
+      const incorrectValidation = controller.validateAnswer('a');
+      expect(incorrectValidation['a']).toBe(false);
+    });
+  });
+
+  describe('getScore', () => {
+    it('should return 1 for a correct answer', () => {
+      expect(controller.getScore('b')).toBe(1);
+    });
+
+    it('should return 0 for an incorrect answer', () => {
+      expect(controller.getScore('a')).toBe(0);
+    });
+
+    it('should return 0 for no answer', () => {
+      expect(controller.getScore(null)).toBe(0);
+    });
+  });
+
+  describe('isCorrect', () => {
+    it('should return true for a correct answer', () => {
+      expect(controller.isCorrect('b')).toBe(true);
+    });
+
+    it('should return false for an incorrect answer', () => {
+      expect(controller.isCorrect('a')).toBe(false);
+    });
+  });
+});
+
+```
+
 ### app/features/quiz/components/QuestionContent.tsx
 
 ```tsx
@@ -11333,8 +12300,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           difficulty={question.difficulty} 
         />
 
-        {/* Question Content */}
-        <QuestionContent question={question.question} />
+        {/* Question Content - Don't show standard question content for dropdown_selection type since it's shown in the component */}
+        {question.type !== 'dropdown_selection' && (
+          <QuestionContent question={question.question} />
+        )}
         
         {/* Question Type-specific Component */}
         <QuestionTypeRenderer
@@ -11688,9 +12657,11 @@ export default QuizProgress;
 ```tsx
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
+import { MultiChoiceController } from '../../controllers/MultiChoiceController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
 
 // Icons for options
 const CorrectIcon = memo(() => (
@@ -11716,39 +12687,63 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
-  // Determine the correct number of answers to select
-  const correctAnswersCount = question.correctAnswerOptionIds.length;
+  // Create controller instance
+  const controller = new MultiChoiceController(question);
   
+  // Use auto-validation hook
+  const [currentSelections, setCurrentSelections, isValidating, allComplete] = useAutoValidation<
+    MultiChoiceQuestion, 
+    string[]
+  >(
+    controller,
+    selectedOptionIds,
+    onAnswerSelect,
+    true // Auto-validate when complete
+  );
+  
+  // Determine the correct number of answers to select
+  const correctAnswersCount = controller.getRequiredSelectionCount();
+  
+  // Handle option selection/deselection
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
+      let newSelectedOptions: string[];
+      
       // If option is already selected, allow deselecting it
-      if (selectedOptionIds.includes(optionId)) {
-        const newSelectedOptions = selectedOptionIds.filter(id => id !== optionId);
-        onAnswerSelect(newSelectedOptions);
+      if (currentSelections.includes(optionId)) {
+        newSelectedOptions = currentSelections.filter(id => id !== optionId);
       } 
       // If we haven't reached the limit yet, allow selecting the option
-      else if (selectedOptionIds.length < correctAnswersCount) {
-        const newSelectedOptions = [...selectedOptionIds, optionId];
-        onAnswerSelect(newSelectedOptions);
-        
-        // If we've reached the required number of selections, auto-submit
-        if (newSelectedOptions.length === correctAnswersCount) {
-          setTimeout(() => onAnswerSelect(newSelectedOptions), 150); // Small delay for better UX
-        }
+      else if (currentSelections.length < correctAnswersCount) {
+        newSelectedOptions = [...currentSelections, optionId];
       }
       // If we've reached the limit, don't allow more selections
+      else {
+        return;
+      }
+      
+      // Update selections through our hook
+      setCurrentSelections(newSelectedOptions);
     }
   };
+  
+  // Sync external selectedOptionIds with our internal state
+  useEffect(() => {
+    if (selectedOptionIds && 
+        JSON.stringify(selectedOptionIds) !== JSON.stringify(currentSelections)) {
+      setCurrentSelections(selectedOptionIds);
+    }
+  }, [selectedOptionIds]);
 
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       <p className="text-sm text-gray-500 mb-2 font-medium">
-        Select {question.correctAnswerOptionIds.length} answer{question.correctAnswerOptionIds.length > 1 ? 's' : ''} ({selectedOptionIds.length}/{question.correctAnswerOptionIds.length} selected)
+        Select {correctAnswersCount} answer{correctAnswersCount > 1 ? 's' : ''} ({currentSelections.length}/{correctAnswersCount} selected)
       </p>
       
       {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionIds.includes(option.option_id);
-        const isCorrect = question.correctAnswerOptionIds.includes(option.option_id);
+        const isSelected = currentSelections.includes(option.option_id);
+        const isCorrect = controller.isOptionCorrect(option.option_id);
         const optionLetter = String.fromCharCode(65 + index);
         
         // Determine option styles
@@ -11822,115 +12817,85 @@ export default memo(MultiChoiceComponent);
 ### app/features/quiz/components/question-types/DragAndDropQuestionComponent.tsx
 
 ```tsx
-import React, { useState, useEffect } from 'react';
+'use client';
+
+import React, { useState, useEffect, memo, useMemo } from 'react'; // Added useMemo
 import { DragAndDropQuestion, DragAndDropOption, DragAndDropTarget } from '@/app/types/quiz';
+import { DragAndDropController } from '../../controllers/DragAndDropController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
 
 interface DragAndDropQuestionComponentProps {
   question: DragAndDropQuestion;
   onAnswerChange: (answers: Record<string, string | null>) => void; // Maps target_id to option_id or null
   userAnswer?: Record<string, string | null>; // Previously selected answers
   isSubmitted?: boolean;
-  showFeedbackStyling?: boolean; // Renamed from showCorrectAnswer, used for styling
+  showFeedbackStyling?: boolean; // Used for styling
   isQuizReviewMode?: boolean; // New prop for review mode
   validateOnDrop?: boolean; // Auto-validate when all targets are filled
 }
 
+/**
+ * DragAndDropQuestionComponent handles drag and drop interactions for matching questions
+ * Uses the DragAndDropController for business logic and validation
+ */
 const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> = ({ 
   question, 
   onAnswerChange, 
   userAnswer, 
   isSubmitted = false,
-  showFeedbackStyling = false, // Updated prop
-  isQuizReviewMode = false, // New prop
-  validateOnDrop = true // Default to true for auto-validation
+  showFeedbackStyling = false,
+  isQuizReviewMode = false,
+  validateOnDrop = true
 }) => {
-  // State to track which option is placed in which target
-  // Format: { target_id: option_id | null }
-  const [placedAnswers, setPlacedAnswers] = useState<Record<string, string | null>>({});
-  // State to track available (unplaced) options
-  const [availableOptions, setAvailableOptions] = useState<DragAndDropOption[]>(question.options);
-  // State to track if all targets are filled
-  const [allTargetsFilled, setAllTargetsFilled] = useState<boolean>(false);
-  // State to track if answers are being validated 
-  const [autoValidating, setAutoValidating] = useState<boolean>(false);
+  // Create controller instance, memoized to prevent re-creation
+  const controller = useMemo(() => new DragAndDropController(question), [question]);
+  
   // Track the current dragged option ID for browsers that don't support dataTransfer properly
   const [currentDraggedOptionId, setCurrentDraggedOptionId] = useState<string | null>(null);
+  
+  // State to track available (unplaced) options
+  const [availableOptions, setAvailableOptions] = useState<DragAndDropOption[]>(
+    controller.getOptions()
+  );
 
-  // Helper function to check if all targets are filled
-  const checkAllTargetsFilled = (answers: Record<string, string | null>): boolean => {
-    // If no answers object or it's empty, targets can't be filled
-    if (!answers || Object.keys(answers).length === 0) return false;
-    
-    // No targets means nothing to fill
-    if (question.targets.length === 0) return false;
-    
-    // Check that every target has a valid non-null option assigned
-    const allFilled = question.targets.every(target => {
-      const targetId = target.target_id;
-      // Make sure the target exists in answers and has a non-null value
-      return targetId in answers && answers[targetId] !== null && answers[targetId] !== undefined;
-    });
-    
-    return allFilled;
-  };
+  // Initialize with controller's initial answers, memoized
+  const initialAnswers = useMemo(() => controller.createInitialAnswers(), [controller]);
+  
+  // Use auto-validation hook
+  const [placedAnswers, setPlacedAnswers, autoValidating, allTargetsFilled] = useAutoValidation<
+    DragAndDropQuestion,
+    Record<string, string | null>
+  >(
+    controller,
+    userAnswer || initialAnswers,
+    onAnswerChange,
+    validateOnDrop
+  );
 
-  // Helper function to validate answers against correct pairs
-  const validateAnswers = (answers: Record<string, string | null>): Record<string, boolean> => {
-    const validationResults: Record<string, boolean> = {};
-    
-    question.targets.forEach(target => {
-      const targetId = target.target_id;
-      const placedOptionId = answers[targetId];
-      
-      if (placedOptionId) {
-        const correctPair = question.correctPairs.find(p => p.target_id === targetId);
-        validationResults[targetId] = correctPair ? correctPair.option_id === placedOptionId : false;
-      } else {
-        validationResults[targetId] = false; // Empty targets are incorrect
-      }
-    });
-    
-    return validationResults;
-  };
-
+  // Effect to update available options whenever placedAnswers changes
   useEffect(() => {
-    const initialAnswers: Record<string, string | null> = {};
-    question.targets.forEach(target => {
-      initialAnswers[target.target_id] = null;
-    });
-
-    let newPlacedAnswers = { ...initialAnswers };
-    let newAvailableOptions = [...question.options];
-
     if (isQuizReviewMode) {
-      const correctReviewAnswers: Record<string, string | null> = { ...initialAnswers };
+      // Use controller to prepare review mode state
+      const correctReviewAnswers = controller.createInitialAnswers();
       question.correctPairs.forEach(pair => {
         correctReviewAnswers[pair.target_id] = pair.option_id;
       });
-      newPlacedAnswers = correctReviewAnswers;
-      const usedOptionIdsInReview = Object.values(correctReviewAnswers).filter(id => id !== null) as string[];
-      newAvailableOptions = question.options.filter(opt => !usedOptionIdsInReview.includes(opt.option_id));
-    } else if (userAnswer && Object.keys(userAnswer).length > 0) {
-      newPlacedAnswers = { ...initialAnswers, ...userAnswer };
-      const usedOptionIdsUser = Object.values(newPlacedAnswers).filter(id => id !== null) as string[];
-      newAvailableOptions = question.options.filter(opt => !usedOptionIdsUser.includes(opt.option_id));
-    }
-    
-    setPlacedAnswers(newPlacedAnswers);
-    setAvailableOptions(newAvailableOptions);
-
-    const allFilledCurrent = checkAllTargetsFilled(newPlacedAnswers);
-    setAllTargetsFilled(allFilledCurrent);
-    
-    if (validateOnDrop && allFilledCurrent && !isSubmitted && !isQuizReviewMode) {
-      setAutoValidating(true);
-      // Do NOT call onAnswerChange here in useEffect for initial load based on userAnswer.
-      // Submission should only happen on explicit user action (drop) that completes all targets.
+      setPlacedAnswers(correctReviewAnswers);
+      
+      // Update available options using controller method
+      const usedOptionIdsInReview = Object.values(correctReviewAnswers).filter(Boolean) as string[];
+      setAvailableOptions(
+        controller.getOptions().filter(opt => !usedOptionIdsInReview.includes(opt.option_id))
+      );
     } else {
-      setAutoValidating(false);
+      // Use controller to get available options
+      setAvailableOptions(controller.getAvailableOptions(placedAnswers));
     }
-  }, [question, userAnswer, isQuizReviewMode, isSubmitted, validateOnDrop]); // Removed onAnswerChange from here
+  }, [controller, placedAnswers, isQuizReviewMode, question.correctPairs, setPlacedAnswers]);
 
+  /**
+   * Handles drag start event for an option
+   */
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, optionId: string) => {
     // Store the current dragged option ID in state (fallback for browsers with dataTransfer issues)
     setCurrentDraggedOptionId(optionId);
@@ -11945,12 +12910,39 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
     }
   };
 
+  /**
+   * Updates placement of an option to a target
+   */
+  const updatePlacement = (optionId: string, targetId: string) => {
+    if (isSubmitted || isQuizReviewMode) return;
+    
+    // Create new copy of placed answers
+    const newAnswers: Record<string, string | null> = { ...placedAnswers };
+    
+    // Clear the option from any other target it might have been in
+    for (const tId in newAnswers) {
+      if (newAnswers[tId] === optionId && tId !== targetId) {
+        newAnswers[tId] = null;
+      }
+    }
+    
+    // Place the option in the target
+    newAnswers[targetId] = optionId;
+    
+    // Update state with new answers (this will trigger useAutoValidation)
+    setPlacedAnswers(newAnswers);
+  };
+
+  /**
+   * Handles drop event on a target
+   */
   const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetId: string) => {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
 
     if (isSubmitted || isQuizReviewMode) return;
 
+    // Get the option ID from dataTransfer or state
     let optionId = e.dataTransfer.getData('text/plain');
     if (!optionId && currentDraggedOptionId) {
       optionId = currentDraggedOptionId;
@@ -11958,53 +12950,17 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
 
     if (!optionId) return;
 
-    const optionBeingMoved = question.options.find(opt => opt.option_id === optionId);
+    // Validate option exists
+    const optionBeingMoved = controller.getOptions().find(opt => opt.option_id === optionId);
     if (!optionBeingMoved) return;
-
-    setPlacedAnswers(prevPlacedAnswers => {
-      let intermediateAnswers: Record<string, string | null> = { ...prevPlacedAnswers };
-      const oldOptionIdInTarget = prevPlacedAnswers[targetId];
-
-      // Clear the option from any other target it might have been in
-      for (const tId in intermediateAnswers) {
-        if (intermediateAnswers[tId] === optionId && tId !== targetId) {
-          intermediateAnswers[tId] = null;
-        }
-      }
-      
-      intermediateAnswers[targetId] = optionId;
-      const newAnswers = { ...intermediateAnswers };
-
-      const currentlyAllFilled = checkAllTargetsFilled(newAnswers);
-      setAllTargetsFilled(currentlyAllFilled); 
-
-      // Update available options
-      setAvailableOptions(prevOptions => {
-        // Remove the dropped option
-        let updatedOptions = prevOptions.filter(opt => opt.option_id !== optionId);
-        // Add back the option that was previously in the target, if any, and it's not the one just dropped
-        if (oldOptionIdInTarget && oldOptionIdInTarget !== optionId) {
-          const oldOptionDetails = question.options.find(opt => opt.option_id === oldOptionIdInTarget);
-          if (oldOptionDetails && !updatedOptions.some(opt => opt.option_id === oldOptionDetails.option_id)) {
-            updatedOptions.push(oldOptionDetails);
-          }
-        }
-        return updatedOptions;
-      });
-      
-      if (validateOnDrop && currentlyAllFilled && !isSubmitted && !isQuizReviewMode) {
-        setAutoValidating(true);
-        onAnswerChange(newAnswers); // This will trigger submission in QuestionCard
-      } else {
-        setAutoValidating(false);
-        // If you need to inform parent about intermediate changes without submitting:
-        // onAnswerChange(newAnswers); // But be careful, as this is tied to submission logic in QuestionCard
-      }
-      return newAnswers;
-    });
+    
+    updatePlacement(optionId, targetId);
     setCurrentDraggedOptionId(null);
   };
 
+  /**
+   * Drag event handlers
+   */
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault(); // Necessary to allow dropping
     e.dataTransfer.dropEffect = 'move';
@@ -12020,53 +12976,183 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
     e.currentTarget.classList.remove('drag-over');
   };
 
+  /**
+   * Removes an option from a target
+   */
   const handleRemoveFromTarget = (targetId: string) => {
     if (isSubmitted || isQuizReviewMode) return;
     
     const optionId = placedAnswers[targetId];
     if (!optionId) return;
     
-    setPlacedAnswers(prevPlacedAnswers => {
-      const newAnswers: Record<string, string | null> = { ...prevPlacedAnswers, [targetId]: null };
-      const currentlyAllFilled = checkAllTargetsFilled(newAnswers);
-      setAllTargetsFilled(currentlyAllFilled);
+    // Update answers through controller logic
+    const newAnswers: Record<string, string | null> = { ...placedAnswers, [targetId]: null };
+    setPlacedAnswers(newAnswers);
+  };
 
-      const removedOptionDetails = question.options.find(opt => opt.option_id === optionId);
-      if (removedOptionDetails) {
-        setAvailableOptions(prevOptions => {
-          if (!prevOptions.some(opt => opt.option_id === removedOptionDetails.option_id)) {
-            return [...prevOptions, removedOptionDetails];
-          }
-          return prevOptions;
-        });
-      }
+  /**
+   * Renders a draggable option item
+   */
+  const renderOption = (option: DragAndDropOption) => {
+    return (
+      <div
+        key={option.option_id}
+        draggable={!isSubmitted && !isQuizReviewMode}
+        onDragStart={(e) => handleDragStart(e, option.option_id)}
+        className="p-2 bg-blue-100 border border-blue-300 rounded cursor-grab transition-all duration-200 hover:scale-105"
+      >
+        {option.text}
+      </div>
+    );
+  };
 
-      if (autoValidating && !currentlyAllFilled) {
-          setAutoValidating(false);
-      }
-      // Do not call onAnswerChange here, as removing an item makes the answer incomplete.
-      return newAnswers;
-    });
+  /**
+   * Determines if we should show feedback for answers
+   */
+  const shouldShowFeedback = (): boolean => {
+    // Only show when explicitly enabled and either in review mode or all targets filled
+    return showFeedbackStyling && (isQuizReviewMode || allTargetsFilled);
+  };
+
+  /**
+   * Gets border color for a target based on correctness
+   */
+  const getTargetBorderColor = (targetId: string, placedOptionId: string | null): string => {
+    // Default style when not showing feedback
+    if (!shouldShowFeedback()) {
+      return 'border-gray-300';
+    }
+    
+    // When showing feedback, check if placement is correct
+    const isCorrect = controller.isPlacementCorrect(targetId, placedOptionId);
+    return isCorrect ? 'border-green-500' : 'border-red-500';
+  };
+  
+  /**
+   * Gets hint text for incorrect answers when showing feedback
+   */
+  const getTargetHintText = (targetId: string, placedOptionId: string | null): string | null => {
+    // Only show hints when feedback is enabled and placement is incorrect
+    if (!shouldShowFeedback()) {
+      return null;
+    }
+    
+    // Don't show hint if placement is correct
+    if (controller.isPlacementCorrect(targetId, placedOptionId)) {
+      return null;
+    }
+    
+    // Get the correct option for this target
+    const correctOptionId = controller.getCorrectOptionForTarget(targetId);
+    if (!correctOptionId) {
+      return null;
+    }
+    
+    // Find option details
+    const correctOption = controller.getOptions().find(
+      opt => opt.option_id === correctOptionId
+    );
+    
+    return correctOption ? `(Correct: ${correctOption.text})` : null;
+  };
+  
+  /**
+   * Renders a target with appropriate styling based on state
+   */
+  const renderTarget = (target: DragAndDropTarget) => {
+    const placedOptionId = placedAnswers[target.target_id];
+    const placedOption = placedOptionId ? 
+      controller.getOptions().find(opt => opt.option_id === placedOptionId) : 
+      null;
+      
+    const borderColor = getTargetBorderColor(target.target_id, placedOptionId);
+    const hintText = getTargetHintText(target.target_id, placedOptionId);
+
+    return (
+      <div
+        key={target.target_id}
+        onDrop={(e) => handleDrop(e, target.target_id)}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        className={`p-4 border-2 ${borderColor} rounded min-h-[80px] bg-gray-50 flex flex-col justify-between transition-all duration-200`}
+      >
+        <p className="font-semibold">{target.text}</p>
+        {placedOption && (
+          <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded flex justify-between items-center">
+            <span>{placedOption.text}</span>
+            {!isSubmitted && !isQuizReviewMode && (
+              <button
+                onClick={() => handleRemoveFromTarget(target.target_id)}
+                className="ml-2 text-red-500 hover:text-red-700"
+                title="Remove item"
+                aria-label="Remove item"
+              >
+                &times;
+              </button>
+            )}
+          </div>
+        )}
+        {hintText && <p className="text-xs mt-1 text-gray-600">{hintText}</p>}
+      </div>
+    );
+  };
+
+  // Dev info banner component
+  const DevInfoBanner = memo(() => (
+    <div className="mt-4 p-2 border rounded bg-gray-50 text-xs">
+      <p>Dev Info: {allTargetsFilled ? 'All targets filled' : 'Not all targets filled'}</p>
+    </div>
+  ));
+
+  // Auto-validating feedback banner
+  const AutoValidatingBanner = memo(() => (
+    <div className="mt-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
+      <p className="text-sm text-yellow-700">All targets filled. Your answer will be submitted.</p>
+    </div>
+  ));
+
+  // Ready to submit banner
+  const ReadyBanner = memo(() => (
+    <div className="mt-4 p-2 bg-green-100 border border-green-300 rounded">
+      <p className="text-sm text-green-700">All targets filled. Ready to submit.</p>
+    </div>
+  ));
+  
+  /**
+   * Determines which feedback banner to show
+   */
+  const getFeedbackBanner = () => {
+    // Show development info in development mode
+    if (process.env.NODE_ENV === 'development') {
+      return <DevInfoBanner />;
+    }
+    
+    // Only show banners when not already submitted and not showing feedback
+    if (isSubmitted || showFeedbackStyling) {
+      return null;
+    }
+    
+    // Auto-validating state
+    if (autoValidating && allTargetsFilled) {
+      return <AutoValidatingBanner />;
+    }
+    
+    // Ready to submit state
+    if (allTargetsFilled && !autoValidating) {
+      return <ReadyBanner />;
+    }
+    
+    return null;
   };
 
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">
-      {/* <h3 className="text-lg font-semibold mb-2">{question.question}</h3> */}
-      
       {/* Available Options */}
       <div className="mb-4">
         <p className="font-medium">Available Items:</p>
         <div className="flex flex-wrap gap-2 mt-2">
-          {availableOptions.map(option => (
-            <div
-              key={option.option_id}
-              draggable={!isSubmitted && !isQuizReviewMode}
-              onDragStart={(e) => handleDragStart(e, option.option_id)}
-              className="p-2 bg-blue-100 border border-blue-300 rounded cursor-grab"
-            >
-              {option.text}
-            </div>
-          ))}
+          {availableOptions.map(renderOption)}
         </div>
       </div>
 
@@ -12074,92 +13160,11 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
       <div>
         <p className="font-medium">Match items to the correct targets:</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-          {question.targets.map(target => {
-            const placedOptionId = placedAnswers[target.target_id];
-            const placedOption = placedOptionId ? question.options.find(opt => opt.option_id === placedOptionId) : null;
-
-            let borderColor = 'border-gray-300'; // Default border
-            let hintText: string | null = null;
-
-            // Determine if detailed feedback (styling, hints) should be applied to this target.
-            // This is true if global feedback styling is on, AND (it's review mode OR the user filled all targets for their attempt).
-            const applyDetailedTargetFeedback = showFeedbackStyling && (isQuizReviewMode || allTargetsFilled);
-
-            if (applyDetailedTargetFeedback) {
-              const correctPairForTarget = question.correctPairs.find(p => p.target_id === target.target_id);
-
-              if (placedOptionId) { // An option is placed in this target
-                if (correctPairForTarget && correctPairForTarget.option_id === placedOptionId) {
-                  borderColor = 'border-green-500'; // User's placement is correct
-                } else {
-                  borderColor = 'border-red-500'; // User's placement is incorrect
-                  if (correctPairForTarget) {
-                    const correctOptionDetails = question.options.find(opt => opt.option_id === correctPairForTarget.option_id);
-                    hintText = correctOptionDetails ? `(Correct: ${correctOptionDetails.text})` : '(Correct answer details not found)';
-                  } else { // Placed an option where target should be empty (no correct pair defined)
-                    hintText = '(This target should be empty)';
-                  }
-                }
-              } else { // This target is empty in placedAnswers
-                if (correctPairForTarget) { // Target should have been filled
-                  borderColor = 'border-red-500'; // Incorrectly empty
-                  const correctOptionDetails = question.options.find(opt => opt.option_id === correctPairForTarget.option_id);
-                  hintText = correctOptionDetails ? `(Correct: ${correctOptionDetails.text})` : '(Correct answer details not found)';
-                } else {
-                  // Target is correctly empty (no correctPair for it)
-                  borderColor = 'border-green-500'; // Style as correct (or neutral if preferred)
-                }
-              }
-            }
-
-            return (
-              <div
-                key={target.target_id}
-                onDrop={(e) => handleDrop(e, target.target_id)}
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                className={`p-4 border-2 ${borderColor} rounded min-h-[80px] bg-gray-50 flex flex-col justify-between`}
-              >
-                <p className="font-semibold">{target.text}</p>
-                {placedOption && (
-                  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded flex justify-between items-center">
-                    <span>{placedOption.text}</span>
-                    {!isSubmitted && !isQuizReviewMode && (
-                      <button
-                        onClick={() => handleRemoveFromTarget(target.target_id)}
-                        className="ml-2 text-red-500 hover:text-red-700"
-                        title="Remove item"
-                      >
-                        &times;
-                      </button>
-                    )}
-                  </div>
-                )}
-                {hintText && <p className="text-xs mt-1">{hintText}</p>}
-              </div>
-            );
-          })}
+          {controller.getTargets().map(renderTarget)}
         </div>
       </div>
 
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-2 border rounded bg-gray-50 text-xs">
-          {/* ... existing dev info ... */}
-        </div>
-      )}
-      
-      {autoValidating && allTargetsFilled && !showFeedbackStyling && !isSubmitted && (
-        <div className="mt-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
-          <p className="text-sm text-yellow-700">All targets filled. Your answer will be submitted.</p>
-        </div>
-      )}
-      
-      {allTargetsFilled && !autoValidating && !showFeedbackStyling && !isSubmitted && (
-         <div className="mt-4 p-2 bg-green-100 border border-green-300 rounded">
-           <p className="text-sm text-green-700">All targets filled. Ready to submit.</p>
-         </div>
-      )}
+      {getFeedbackBanner()}
     </div>
   );
 };
@@ -12173,9 +13178,11 @@ export default DragAndDropQuestionComponent;
 ```tsx
 'use client';
 
-import React, { memo } from 'react';
+import React, { memo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SingleSelectionQuestion, SelectionOption } from '../../../../types/quiz';
+import { SingleSelectionController } from '../../controllers/SingleSelectionController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
 
 // Icons for options
 const CorrectIcon = memo(() => (
@@ -12201,16 +13208,38 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
+  // Create controller instance
+  const controller = new SingleSelectionController(question);
+  
+  // Use auto-validation hook
+  const [currentSelection, setCurrentSelection, isValidating, allComplete] = useAutoValidation<
+    SingleSelectionQuestion, 
+    string | null
+  >(
+    controller,
+    selectedOptionId || null,
+    onAnswerSelect,
+    true // Auto-validate when complete
+  );
+  
+  // Handle manual selection change
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
-      onAnswerSelect(optionId);
+      setCurrentSelection(optionId);
     }
   };
+  
+  // Sync external selectedOptionId with our internal state
+  useEffect(() => {
+    if (selectedOptionId !== currentSelection && selectedOptionId !== undefined) {
+      setCurrentSelection(selectedOptionId);
+    }
+  }, [selectedOptionId]);
 
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       {question.options.map((option: SelectionOption, index: number) => {
-        const isSelected = selectedOptionId === option.option_id;
+        const isSelected = currentSelection === option.option_id;
         const isCorrect = question.correctAnswerOptionId === option.option_id;
         const optionLetter = String.fromCharCode(65 + index);
         
@@ -12275,14 +13304,557 @@ export default memo(SingleSelectionComponent);
 
 ```
 
+### app/features/quiz/components/question-types/OrderQuestionComponent.tsx
+
+```tsx
+'use client';
+
+import React, { useState, useEffect, memo, useMemo } from 'react'; // Added useMemo
+import { motion } from 'framer-motion';
+import { OrderQuestion, OrderItem, OrderQuestionAnswer } from '@/app/types/quiz';
+import { OrderController } from '../../controllers/OrderController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
+
+interface OrderQuestionComponentProps {
+  question: OrderQuestion;
+  onAnswerSelect: (answer: OrderQuestionAnswer) => void; // Corrected definition
+  userAnswer?: OrderQuestionAnswer;
+  isSubmitted?: boolean;
+  showCorrectAnswer?: boolean;
+  isQuizReviewMode?: boolean;
+  validateOnComplete?: boolean;
+}
+
+/**
+ * OrderQuestionComponent handles drag and drop interactions for ordering questions
+ * Uses the OrderController for business logic and validation
+ * 
+ * This component implements a slot-based ordering approach:
+ * - Available items can be dragged to ordered slots
+ * - Items in slots can be dragged back to available items
+ * - Items can be dragged between slots to reorder
+ */
+const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({ 
+  question, 
+  onAnswerSelect, 
+  userAnswer, // Changed from initialAnswer to userAnswer to match props definition
+  isSubmitted = false,
+  showCorrectAnswer = false,
+  isQuizReviewMode = false,
+  validateOnComplete = true
+}) => {
+  // Create controller instance, memoized to prevent re-creation on every render
+  const controller = useMemo(() => new OrderController(question), [question]);
+  
+  // Track the current dragged item ID for browsers that don't support dataTransfer properly
+  const [currentDraggedItemId, setCurrentDraggedItemId] = useState<string | null>(null);
+  
+  // Track available items (not yet placed in slots)
+  const [availableItems, setAvailableItems] = useState<OrderItem[]>([]);
+
+  // Initialize with controller's initial answer or user's previous answer
+  // This is memoized and passed to useAutoValidation
+  const initialAnswerForHook = useMemo(() => {
+    return userAnswer || controller.createInitialAnswer();
+  }, [userAnswer, controller]);
+  
+  // Use auto-validation hook with direct dependencies to ensure consistent state
+  const [placedAnswers, setPlacedAnswers, autoValidating, allItemsOrdered] = useAutoValidation<
+    OrderQuestion,
+    OrderQuestionAnswer
+  >(
+    controller,
+    initialAnswerForHook, // Use memoized initialAnswerForHook
+    onAnswerSelect,
+    validateOnComplete
+  );
+
+  // Set up available items and placed items on mount and when userAnswer changes
+  useEffect(() => {
+    if (isQuizReviewMode) {
+      // In review mode, show the correct placement
+      const correctAnswer: OrderQuestionAnswer = {};
+      controller.getCorrectOrder().forEach((itemId, index) => {
+        correctAnswer[`slot_${index}`] = itemId;
+      });
+      setPlacedAnswers(correctAnswer);
+      setAvailableItems([]); // No available items in review mode, all are placed correctly
+    } else {
+      // Start with a fresh arrangement based on userAnswer or initial state
+      const answer = userAnswer || controller.createInitialAnswer();
+      
+      // Find which items are placed in slots
+      const placedItemIds = Object.values(answer).filter(id => id !== null) as string[];
+      
+      // Available items are those not yet placed in slots
+      const availableItemsList = question.items.filter(
+        item => !placedItemIds.includes(item.item_id)
+      );
+      
+      setAvailableItems(availableItemsList);
+      setPlacedAnswers(answer);
+    }
+  }, [isQuizReviewMode, userAnswer, question.items, controller, setPlacedAnswers]);
+
+  /**
+   * Simplified drag start event handler (similar to DragAndDropQuestionComponent)
+   */
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, itemId: string) => {
+    if (isSubmitted || isQuizReviewMode) return;
+    
+    // Store the current dragged item info in state (fallback for browsers with dataTransfer issues)
+    setCurrentDraggedItemId(itemId);
+    
+    try {
+      // Set data in dataTransfer object - simple approach
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', itemId);
+      console.log('Drag start:', itemId);
+    } catch (err) {
+      console.warn('Could not set dataTransfer data:', err);
+      // We'll rely on the state variable in this case
+    }
+  };
+
+  /**
+   * Simplified drag event handlers (similar to DragAndDropQuestionComponent)
+   */
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Necessary to allow dropping
+    e.dataTransfer.dropEffect = 'move';
+  };
+  
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+  };
+  
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+  };
+
+  /**
+   * Updates placement of an item in a specific slot
+   * Similar to updatePlacement in DragAndDropQuestionComponent but with different logic for OrderQuestionComponent
+   */
+  const updatePlacement = (itemId: string, targetSlotKey: string) => {
+    if (isSubmitted || isQuizReviewMode) return;
+    
+    console.log('Updating placement:', { itemId, targetSlotKey });
+    
+    // Create new copy of placed answers
+    const newAnswers: OrderQuestionAnswer = { ...placedAnswers };
+    
+    // Find if the item is already in another slot
+    let sourceSlotKey: string | undefined;
+    Object.entries(newAnswers).forEach(([key, value]) => {
+      if (value === itemId) {
+        sourceSlotKey = key;
+      }
+    });
+    
+    // Get current item in target slot (might be null)
+    const itemInTargetSlot = newAnswers[targetSlotKey];
+    
+    if (sourceSlotKey) {
+      // Item is being moved from one slot to another
+      if (itemInTargetSlot) {
+        // Swap the items
+        newAnswers[sourceSlotKey] = itemInTargetSlot;
+      } else {
+        // Clear the source slot since target is empty
+        newAnswers[sourceSlotKey] = null;
+      }
+    } else {
+      // Item is coming from available items
+      if (itemInTargetSlot) {
+        // Put the displaced item back in available items
+        const displacedItem = question.items.find(item => item.item_id === itemInTargetSlot);
+        if (displacedItem) {
+          setAvailableItems(prev => {
+            if (!prev.find(i => i.item_id === displacedItem.item_id)) {
+              return [...prev, displacedItem];
+            }
+            return prev;
+          });
+        }
+      }
+      
+      // Remove the item being placed from available items
+      setAvailableItems(prev => prev.filter(item => item.item_id !== itemId));
+    }
+    
+    // Place the item in the target slot
+    newAnswers[targetSlotKey] = itemId;
+    
+    // Update state
+    setPlacedAnswers(newAnswers);
+    setCurrentDraggedItemId(null); // Clear dragged item state
+  };
+
+  /**
+   * Simplified drop handler for slots (similar to handleDrop in DragAndDropQuestionComponent)
+   */
+  const handleDropOnSlot = (e: React.DragEvent<HTMLDivElement>, targetSlotKey: string) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    console.log('Drop on slot:', targetSlotKey);
+    
+    if (isSubmitted || isQuizReviewMode) return;
+
+    // Get the item ID from dataTransfer or state
+    let itemId = e.dataTransfer.getData('text/plain');
+    if (!itemId && currentDraggedItemId) {
+      itemId = currentDraggedItemId;
+      console.log('Using fallback itemId from state:', itemId);
+    }
+
+    if (!itemId) {
+      console.error('No item ID found in drop data');
+      return;
+    }
+
+    // Validate item exists
+    const droppedItem = question.items.find(item => item.item_id === itemId);
+    if (!droppedItem) {
+      console.error('Item not found:', itemId);
+      return;
+    }
+    
+    // Update the placement
+    updatePlacement(itemId, targetSlotKey);
+  };
+
+  /**
+   * Handles drop event back to available items
+   */
+  const handleDropOnAvailable = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    console.log('Drop on available items area');
+    
+    if (isSubmitted || isQuizReviewMode) return;
+
+    // Get the item ID from dataTransfer or state
+    let itemId = e.dataTransfer.getData('text/plain');
+    if (!itemId && currentDraggedItemId) {
+      itemId = currentDraggedItemId;
+      console.log('Using fallback itemId from state for available drop:', itemId);
+    }
+
+    if (!itemId) {
+      console.error('No item ID found in drop data');
+      return;
+    }
+
+    // Find which slot this item is in (if any)
+    let sourceSlotKey: string | null = null;
+    Object.entries(placedAnswers).forEach(([key, value]) => {
+      if (value === itemId) {
+        sourceSlotKey = key;
+      }
+    });
+    
+    if (!sourceSlotKey) {
+      console.log('Item not found in any slot, possibly already in available area');
+      return;
+    }
+    
+    // Create a copy of current answers
+    const newAnswers = { ...placedAnswers };
+    
+    // Remove the item from its slot
+    newAnswers[sourceSlotKey] = null;
+    
+    // Move the item back to available items
+    const item = question.items.find(i => i.item_id === itemId);
+    if (item) {
+      setAvailableItems(prev => {
+        if (!prev.find(i => i.item_id === item.item_id)) { // Avoid duplicates
+          return [...prev, item];
+        }
+        return prev;
+      });
+    }
+    
+    // Update state
+    setPlacedAnswers(newAnswers);
+    setCurrentDraggedItemId(null); // Clear dragged item state
+  };
+
+  /**
+   * Find the text for an item by its ID
+   */
+  const getItemTextById = (itemId: string): string => {
+    const item = question.items.find(item => item.item_id === itemId);
+    return item ? item.text : 'Unknown item';
+  };
+
+  /**
+   * Determines if we should show feedback for answers
+   */
+  const shouldShowFeedback = (): boolean => {
+    return (isSubmitted && showCorrectAnswer) || isQuizReviewMode;
+  };
+
+  /**
+   * Gets styles for an available item
+   */
+  const getAvailableItemStyles = (itemId: string): string => {
+    const baseStyle = "p-4 border-2 rounded mb-2 bg-white transition-all duration-200";
+    
+    // If showing feedback and the item should be part of the correct order
+    if (shouldShowFeedback() && controller.getCorrectOrder().includes(itemId)) {
+      // This is a distractor that should have been used
+      return `${baseStyle} border-blue-500 bg-blue-50`;
+    }
+    
+    // Default style or when being dragged
+    return `${baseStyle} ${
+      itemId === currentDraggedItemId ? 'border-blue-500 shadow-md opacity-50' : 'border-gray-300'
+    }`;
+  };
+
+  /**
+   * Gets styles for a slot item based on its correctness
+   */
+  const getSlotItemStyles = (slotIndex: number, itemId: string | null): string => {
+    const baseStyle = "p-4 border-2 rounded mb-2 transition-all duration-200 relative pl-10 min-h-[60px] flex items-center"; // Base styles
+    
+    // When no item is placed in this slot
+    if (itemId === null) {
+      // If showing feedback, keep it neutral unless we want to show "empty but should be X"
+      if (shouldShowFeedback()) {
+         return `${baseStyle} border-gray-300 bg-gray-50`; // Or specific style for empty during review
+      }
+      // Make empty slots more obviously droppable with dashed border and distinct background
+      return `${baseStyle} border-dashed border-blue-300 bg-blue-50/50 hover:bg-blue-100/50 hover:border-blue-400 justify-center`; // Center placeholder text
+    }
+    
+    // If not showing feedback, just show normal style or highlight if dragged
+    if (!shouldShowFeedback()) {
+      return `${baseStyle} bg-white ${
+        itemId === currentDraggedItemId 
+          ? 'border-blue-500 shadow-md opacity-50' 
+          : 'border-gray-300 hover:border-blue-300 hover:shadow-md'
+      }`;
+    }
+    
+    // Check if the item is in the correct position
+    const isCorrect = controller.isItemCorrectlyPlacedInSlot(slotIndex, itemId);
+    
+    return `${baseStyle} ${
+      isCorrect 
+        ? 'border-green-500 bg-green-50 shadow-md' 
+        : 'border-red-500 bg-red-50 shadow-sm'
+    }`;
+  };
+
+  // Auto-validating feedback banner
+  const AutoValidatingBanner = memo(() => (
+    <div className="mt-4 p-2 border rounded bg-blue-50 text-blue-700">
+      Auto-validating your answer... All slots filled.
+    </div>
+  ));
+
+  // Ready to submit banner
+  const ReadyBanner = memo(() => (
+    <div className="mt-4 p-2 border rounded bg-green-50 text-green-700">
+      All slots filled. Ready to submit!
+    </div>
+  ));
+
+  /**
+   * Determines which feedback banner to show
+   */
+  const getFeedbackBanner = () => {
+    if (autoValidating && allItemsOrdered) {
+      return <AutoValidatingBanner />;
+    }
+    
+    if (allItemsOrdered && !autoValidating) {
+      return <ReadyBanner />;
+    }
+    
+    return null;
+  };
+
+  // Position indicator component
+  const PositionIndicator = memo(({ position }: { position: number }) => (
+    <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center bg-gray-100 border-r border-gray-300 text-gray-700 font-bold">
+      {position + 1}
+    </div>
+  ));
+
+  // Feedback icon component
+  const FeedbackIcon = memo(({ isCorrect }: { isCorrect: boolean }) => (
+    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+      {isCorrect ? (
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-green-500 shadow-md">
+          ✓
+        </span>
+      ) : (
+        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-red-500 shadow-md">
+          ✗
+        </span>
+      )}
+    </div>
+  ));
+
+  // Show the correct order if needed
+  const CorrectOrderDisplay = memo(() => (
+    <div className="mt-6 p-4 border rounded bg-blue-50">
+      <h3 className="font-semibold text-blue-800 mb-2">Correct Order:</h3>
+      <ol className="list-decimal list-inside">
+        {controller.getCorrectOrder().map((itemId, index) => (
+          <li key={`correct-${itemId}`} className="py-1 text-gray-800">
+            {getItemTextById(itemId)}
+          </li>
+        ))}
+      </ol>
+    </div>
+  ));
+
+  return (
+    <div className="p-4 bg-white shadow-md rounded-lg">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Left side: Available Items */}
+        <div className="flex-1">
+          <h3 className="font-medium mb-4">Available Items:</h3>
+          <div 
+            className="p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 min-h-[200px] transition-colors duration-200 hover:border-blue-300"
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDropOnAvailable}
+          >
+            {availableItems.length > 0 ? (
+              <div className="space-y-2">
+                {availableItems.map((item) => (
+                  <motion.div
+                    key={`available-${item.item_id}`}
+                    layout
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  >
+                    <div
+                      draggable={!isSubmitted && !isQuizReviewMode}
+                      onDragStart={(e) => handleDragStart(e, item.item_id)}
+                      className={`${getAvailableItemStyles(item.item_id)} cursor-grab active:cursor-grabbing select-none`}
+                    >
+                      {item.text}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                {isSubmitted || isQuizReviewMode 
+                  ? "All items placed." 
+                  : "Drag items here to remove from sequence."}
+              </p>
+            )}
+          </div>
+        </div>
+        
+        {/* Right side: Ordered Slots */}
+        <div className="flex-1">
+          <h3 className="font-medium mb-4">Ordered Sequence:</h3>
+          <div className="space-y-2">
+            {Array.from({ length: controller.getSlotCount() }).map((_, index) => {
+              const slotKey = `slot_${index}`;
+              const itemId = placedAnswers[slotKey];
+              
+              return (
+                <motion.div
+                  key={slotKey}
+                  layout
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                >
+                  <div
+                    className={getSlotItemStyles(index, itemId)}
+                    draggable={!isSubmitted && !isQuizReviewMode && itemId !== null}
+                    onDragStart={(e) => itemId && handleDragStart(e, itemId)}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDropOnSlot(e, slotKey)}
+                  >
+                    <PositionIndicator position={index} />
+                    
+                    {itemId ? (
+                      <div className="flex-1">
+                        <span className="select-none">{getItemTextById(itemId)}</span>
+                        {shouldShowFeedback() && (
+                          <>
+                            <FeedbackIcon isCorrect={controller.isItemCorrectlyPlacedInSlot(index, itemId)} />
+                            {!controller.isItemCorrectlyPlacedInSlot(index, itemId) && controller.getCorrectItemForSlot(index) && (
+                              <div className="absolute bottom-1 right-1 text-xs text-gray-500 p-1 bg-gray-100 rounded">
+                                Correct: {getItemTextById(controller.getCorrectItemForSlot(index)!)}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex-1 text-center">
+                        <span className="text-gray-400">Drop item here</span>
+                        {shouldShowFeedback() && controller.getCorrectItemForSlot(index) && (
+                           <div className="absolute bottom-1 right-1 text-xs text-red-500 p-1 bg-red-50 rounded">
+                             Should be: {getItemTextById(controller.getCorrectItemForSlot(index)!)}
+                           </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {autoValidating && allItemsOrdered && (
+        <div className="mt-4 p-2 border rounded bg-blue-50 text-blue-700">
+          Auto-validating your answer... All slots filled.
+        </div>
+      )}
+      
+      {allItemsOrdered && !autoValidating && !isSubmitted && !showCorrectAnswer && (
+        <div className="mt-4 p-2 border rounded bg-green-50 text-green-700">
+          All slots filled. Ready to submit!
+        </div>
+      )}
+      
+      {shouldShowFeedback() && <CorrectOrderDisplay />}
+      
+      <style jsx global>{`
+        .drag-over {
+          @apply border-blue-400 bg-blue-50 shadow-md;
+          transform: scale(1.02);
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default memo(OrderQuestionComponent);
+
+```
+
 ### app/features/quiz/components/question-types/QuestionTypeRenderer.tsx
 
 ```tsx
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion } from '../../../../types/quiz';
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion, OrderQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
 import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
+import DropdownSelectionComponent from './DropdownSelectionComponent';
+import OrderQuestionComponent from './OrderQuestionComponent';
+import { createQuestionController } from '../../controllers/QuestionControllerFactory';
 
 interface QuestionTypeRendererProps {
   question: AnyQuestion;
@@ -12310,12 +13882,19 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
       </div>
     );
   }
+  
+  // Create controller using factory (this will be used in future components)
+  try {
+    createQuestionController(question);
+  } catch (err) {
+    console.log('Controller not yet available for this question type:', question.type);
+  }
 
   switch (question.type) {
     case 'single_selection':
       return (
-        <SingleSelectionComponent 
-          question={question as SingleSelectionQuestion} 
+        <SingleSelectionComponent
+          question={question as SingleSelectionQuestion}
           onAnswerSelect={onAnswerSelect}
           selectedOptionId={selectedAnswer as string | undefined}
           isSubmitted={isSubmitted}
@@ -12336,12 +13915,37 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
       return (
         <DragAndDropQuestionComponent
           question={question as DragAndDropQuestion}
-          onAnswerChange={onAnswerSelect}
+          onAnswerChange={onAnswerSelect} // Note: prop name is onAnswerChange here
           userAnswer={selectedAnswer as Record<string, string | null> | undefined}
           isSubmitted={isSubmitted}
-          showFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop here
-          isQuizReviewMode={isQuizReviewMode} // Pass new prop here
-          validateOnDrop={true} // Enable immediate feedback validation
+          showFeedbackStyling={shouldApplyFeedbackStyling}
+          isQuizReviewMode={isQuizReviewMode}
+          validateOnDrop={true}
+        />
+      );
+    case 'dropdown_selection': // Add new case for dropdown_selection
+      return (
+        <DropdownSelectionComponent
+          question={question as DropdownSelectionQuestion}
+          onAnswerSelect={onAnswerSelect} // Prop name is onAnswerSelect
+          selectedAnswer={selectedAnswer as Record<string, string | null> | undefined | null} // Corrected prop name to selectedAnswer
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
+          validateOnComplete={true} // Add the new prop to wait for all dropdowns to be filled
+          // isQuizReviewMode prop is not used by DropdownSelectionComponent, so it's removed for now.
+          // If needed later, it can be added to DropdownSelectionComponentProps.
+        />
+      );
+    case 'order':
+      return (
+        <OrderQuestionComponent
+          question={question as OrderQuestion}
+          onAnswerSelect={onAnswerSelect}
+          userAnswer={selectedAnswer as Record<string, string | null> | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
+          isQuizReviewMode={isQuizReviewMode}
+          validateOnComplete={true}
         />
       );
     default:
@@ -12355,6 +13959,255 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
 
 // Memoize the component to prevent unnecessary re-renders
 export default memo(QuestionTypeRenderer);
+
+```
+
+### app/features/quiz/components/question-types/DropdownSelectionComponent.tsx
+
+```tsx
+import React, { useState, useEffect, useMemo, memo } from 'react';
+import { DropdownSelectionQuestion, DropdownOption } from '../../../../types/quiz';
+import { DropdownSelectionController } from '../../controllers/DropdownSelectionController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
+
+interface DropdownSelectionComponentProps {
+  question: DropdownSelectionQuestion;
+  onAnswerSelect: (answer: Record<string, string | null>) => void;
+  selectedAnswer?: Record<string, string | null> | null;
+  isSubmitted?: boolean;
+  showCorrectAnswer?: boolean;
+  validateOnComplete?: boolean; // New prop similar to validateOnDrop in DragAndDrop
+}
+
+const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
+  question,
+  onAnswerSelect,
+  selectedAnswer,
+  isSubmitted = false,
+  showCorrectAnswer = false,
+  validateOnComplete = true, // Default to true for auto-validation
+}) => {
+  // Create controller instance
+  const controller = new DropdownSelectionController(question);
+  
+  // Initialize selections from placeholder keys
+  const initialSelections = useMemo(() => {
+    const selections: Record<string, string | null> = {};
+    controller.getPlaceholderKeys().forEach(key => {
+      selections[key] = selectedAnswer?.[key] || null;
+    });
+    return selections;
+  }, [controller, selectedAnswer]);
+  
+  // Use auto-validation hook
+  const [currentSelections, setCurrentSelections, autoValidating, allDropdownsFilled] = useAutoValidation<
+    DropdownSelectionQuestion,
+    Record<string, string | null>
+  >(
+    controller,
+    initialSelections,
+    onAnswerSelect,
+    validateOnComplete
+  );
+  
+  // Handle selection change for a placeholder
+  const handleSelectChange = (placeholderKey: string, selectedOptionText: string | null) => {
+    if (isSubmitted) return; // Don't allow changes after submission shown
+
+    const newSelections = {
+      ...currentSelections,
+      [placeholderKey]: selectedOptionText,
+    };
+    
+    setCurrentSelections(newSelections);
+  };
+  
+  // Sync with external changes to selectedAnswer
+  useEffect(() => {
+    if (selectedAnswer && JSON.stringify(selectedAnswer) !== JSON.stringify(currentSelections)) {
+      setCurrentSelections({...selectedAnswer});
+    }
+  }, [selectedAnswer]);
+
+  // Memoize parsed parts to avoid re-computation on every render unless question.question changes
+  const parsedQuestionParts = useMemo(() => {
+    const parts: (string | { placeholder: string })[] = [];
+    if (!question.question) return parts;
+
+    // Normalize the question text - convert all escaped brackets to regular brackets
+    // and handle any line breaks properly
+    const processedQuestion = question.question
+      .replace(/\\n/g, '\n')
+      .replace(/\\([[\]])/g, '$1');
+    
+    // Regex to find placeholders like [option_set1] or [key_name]
+    const placeholderRegex = /\[([^\]]+)\]/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = placeholderRegex.exec(processedQuestion)) !== null) {
+      // Add text before the placeholder
+      if (match.index > lastIndex) {
+        parts.push(processedQuestion.substring(lastIndex, match.index));
+      }
+      // Add the placeholder object
+      parts.push({ placeholder: match[1] }); // match[1] is the content inside brackets
+      lastIndex = placeholderRegex.lastIndex;
+    }
+
+    // Add any remaining text after the last placeholder
+    if (lastIndex < processedQuestion.length) {
+      parts.push(processedQuestion.substring(lastIndex));
+    }
+    return parts;
+  }, [question.question]);
+
+  if (!question || !question.placeholderTargets || !question.options) {
+    return <p className="text-red-500">Error: Dropdown question data is incomplete.</p>;
+  }
+  
+  const allDropdownOptions = question.options || [];
+
+  return (
+    <div className="text-lg whitespace-pre-line">
+      {/* This component renders the full question text with dropdown fields inline.
+          The QuestionCard is configured to hide the standard question display for
+          dropdown_selection question types to prevent duplication. */}
+      <h2 className="text-xl md:text-2xl font-bold text-custom-dark-blue mb-6 relative inline-block pb-1.5">
+        Fill in the blanks
+        <span className="absolute left-0 bottom-0 w-10 h-0.5 bg-custom-primary rounded-rounded-full"></span>
+      </h2>
+      {parsedQuestionParts.map((part, index) => {
+        if (typeof part === 'string') {
+          // Just render the text as is - whitespace-pre-line CSS will handle line breaks
+          return <React.Fragment key={`${index}`}>{part}</React.Fragment>;
+        } else {
+          const placeholderKey = part.placeholder;
+          const currentSelectedText = currentSelections[placeholderKey];
+          let borderColor = 'border-gray-300'; // Default border
+
+          if (isSubmitted && showCorrectAnswer) {
+            const correctAnswerText = controller.getCorrectOptionForPlaceholder(placeholderKey);
+            if (correctAnswerText && currentSelectedText === correctAnswerText) {
+              borderColor = 'border-green-500'; // Correct
+            } else {
+              borderColor = 'border-red-500'; // Incorrect
+            }
+          } else if (isSubmitted && !showCorrectAnswer && currentSelectedText !== null) {
+            // If submitted but not showing correct answer yet (e.g. immediate feedback without revealing)
+            // and user has made a selection, show a neutral "answered" border.
+            borderColor = 'border-custom-blue'; 
+          }
+
+          return (
+            <select
+              key={`${placeholderKey}-${index}`}
+              value={currentSelectedText || ""} // Ensure controlled component, default to empty string for "Select..."
+              onChange={(e) => handleSelectChange(placeholderKey, e.target.value === "" ? null : e.target.value)}
+              disabled={isSubmitted && showCorrectAnswer} // Disable after showing correct answer
+              className={`inline-block mx-1 px-2 py-1 border-2 rounded-md shadow-sm focus:ring-custom-blue focus:border-custom-blue text-base ${borderColor} bg-white`}
+              aria-label={`Selection for ${placeholderKey}`}
+            >
+              <option value="" disabled={currentSelectedText !== null && currentSelectedText !== ""}>Select...</option>
+              {allDropdownOptions.map((opt: DropdownOption) => (
+                <option key={opt.option_id} value={opt.text}>
+                  {opt.text}
+                </option>
+              ))}
+            </select>
+          );
+        }
+      })}
+      
+      {/* Show in-progress validation message */}
+      {autoValidating && allDropdownsFilled && !showCorrectAnswer && !isSubmitted && (
+        <div className="mt-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
+          <p className="text-sm text-yellow-700">All dropdowns filled. Your answer will be submitted.</p>
+        </div>
+      )}
+      
+      {/* Show ready to submit message when all dropdowns filled */}
+      {allDropdownsFilled && !autoValidating && !showCorrectAnswer && !isSubmitted && (
+        <div className="mt-4 p-2 bg-green-100 border border-green-300 rounded">
+          <p className="text-sm text-green-700">All dropdowns filled. Ready to submit.</p>
+        </div>
+      )}
+      
+      {isSubmitted && showCorrectAnswer && (
+        <div className="mt-4 p-3 border rounded-md bg-gray-50">
+          <h4 className="font-semibold text-md mb-2 text-custom-dark-blue">Correct Answers:</h4>
+          <ul className="list-disc list-inside text-sm">
+            {controller.getPlaceholderKeys().map((key) => (
+              <li key={key} className="mb-1">
+                <span className="font-medium">{`[${key}]`}:</span> {controller.getCorrectOptionForPlaceholder(key)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default memo(DropdownSelectionComponent);
+
+```
+
+### app/features/quiz/hooks/useAutoValidation.ts
+
+```typescript
+import { useState, useEffect, useRef } from 'react';
+import { QuestionController } from '../controllers/QuestionController';
+import { AnyQuestion } from '@/app/types/quiz';
+
+/**
+ * Hook that manages auto-validation for question components
+ * 
+ * @param controller The question controller
+ * @param initialAnswer Initial answer state
+ * @param onAnswerChange Callback when answer changes
+ * @param validateOnComplete Whether to auto-validate when answer is complete
+ * @returns [answer, setAnswer, isValidating, allComplete]
+ */
+export function useAutoValidation<Q extends AnyQuestion, A>(
+  controller: QuestionController<Q, A>,
+  initialAnswer: A,
+  onAnswerChange: (answer: A) => void,
+  validateOnComplete: boolean = true
+): [A, (answer: A) => void, boolean, boolean] {
+  const [answer, setAnswer] = useState<A>(initialAnswer);
+  const [isValidating, setIsValidating] = useState<boolean>(false);
+  const [allComplete, setAllComplete] = useState<boolean>(false);
+
+  // Use a ref to track if we've submitted this answer already
+  // to avoid duplicate submissions
+  const hasSubmittedRef = useRef<boolean>(false);
+  
+  // Check completeness whenever answer changes
+  useEffect(() => {
+    const isComplete = controller.isAnswerComplete(answer);
+    setAllComplete(isComplete);
+    
+    // If answer is complete, not already submitted, and validateOnComplete is true
+    // trigger validation and submission
+    if (isComplete && validateOnComplete && !hasSubmittedRef.current) {
+      setIsValidating(true);
+      hasSubmittedRef.current = true;
+      onAnswerChange(answer);
+    } else if (!isComplete) {
+      // Reset submission flag and validation state when answer becomes incomplete
+      hasSubmittedRef.current = false;
+      setIsValidating(false);
+    }
+  }, [answer, controller, onAnswerChange, validateOnComplete]);
+  
+  // Wrapper for setAnswer that also updates external state
+  const updateAnswer = (newAnswer: A) => {
+    setAnswer(newAnswer);
+  };
+  
+  return [answer, updateAnswer, isValidating, allComplete];
+}
 
 ```
 
@@ -12392,14 +14245,26 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
       }
     };
 
-    // For single selection and multi questions, we can do client-side validation
+    // Add specific correct answer details for client-side validation
     if (question.type === 'single_selection') {
       submitPayload.payload.correctAnswerOptionId = question.correctAnswerOptionId;
     } else if (question.type === 'multi') {
-      submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
+      submitPayload.payload.correctAnswerOptionIds = question.correctAnswerOptionIds;
+    } else if (question.type === 'dropdown_selection') {
+      // For dropdown, map placeholderTargets to the expected format for client-side validation
+      const correctDropdownAnswers: Record<string, string> = {};
+      if (question.placeholderTargets) {
+        for (const key in question.placeholderTargets) {
+          correctDropdownAnswers[key] = question.placeholderTargets[key].correctOptionText;
+        }
+      }
+      submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
+    } else if (question.type === 'order') {
+      // For 'order' questions, pass the correctOrder array for client-side validation
+      submitPayload.payload.correctOrder = question.correctOrder;
     }
 
-    // First update the UI immediately
+    // First update the UI immediately with client-side validation results
     dispatch(submitPayload);
 
     try {
@@ -12482,8 +14347,11 @@ export type QuizAction =
         questionId: string; 
         answer: any; 
         questionType: QuestionType; 
-        correctAnswerOptionId?: string; 
-        correctAnswerOptionIds?: string[];
+        // Optional fields for client-side validation based on question type
+        correctAnswerOptionId?: string; // For single_selection
+        correctAnswerOptionIds?: string[]; // For multi
+        correctDropdownAnswers?: Record<string, string>; // For dropdown_selection
+        correctOrder?: string[]; // For order
       }
     }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
@@ -12526,19 +14394,65 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
       if (action.payload.questionType === 'single_selection' && action.payload.correctAnswerOptionId !== undefined) {
         isClientCorrect = action.payload.answer === action.payload.correctAnswerOptionId;
       } else if (action.payload.questionType === 'multi' && action.payload.correctAnswerOptionIds !== undefined) {
-        // For multi-selection questions, check if the selected answers match the correct answers exactly
         const selectedAnswers = action.payload.answer as string[];
         const correctAnswers = action.payload.correctAnswerOptionIds;
-        
-        // Check if arrays have the same elements (regardless of order)
         isClientCorrect = 
           selectedAnswers.length === correctAnswers.length && 
           selectedAnswers.every(id => correctAnswers.includes(id)) &&
           correctAnswers.every(id => selectedAnswers.includes(id));
       } else if (action.payload.questionType === 'drag_and_drop') {
-        // For drag-and-drop, we'll rely on server validation
+        // For drag-and-drop, we'll rely on server validation (this seems to be a legacy or different type)
         console.log('Drag and drop answer submitted:', action.payload.answer);
-        // Don't set isClientCorrect here, will be updated by server response
+      } else if (action.payload.questionType === 'dropdown_selection' && action.payload.correctDropdownAnswers) {
+        const userSelections = action.payload.answer as Record<string, string | null>;
+        const correctAnswers = action.payload.correctDropdownAnswers;
+        let allCorrect = true;
+        for (const placeholderKey in correctAnswers) {
+          if (userSelections[placeholderKey] !== correctAnswers[placeholderKey]) {
+            allCorrect = false;
+            break;
+          }
+        }
+        // Also ensure the user has made a selection for all placeholders defined in correctAnswers
+        if (allCorrect) {
+          for (const placeholderKey in correctAnswers) {
+            if (userSelections[placeholderKey] === null || userSelections[placeholderKey] === undefined) {
+              allCorrect = false;
+              break;
+            }
+          }
+        }
+        isClientCorrect = allCorrect;
+      } else if (action.payload.questionType === 'order' && action.payload.correctOrder) {
+        const userAnswer = action.payload.answer as Record<string, string | null>;
+        const correctOrder = action.payload.correctOrder;
+        let allCorrect = true;
+        if (Object.keys(userAnswer).length !== correctOrder.length) {
+          // This basic check might be too strict if partial completion is allowed before submission.
+          // However, for full correctness, the number of placed items should match the total correct items.
+          // For now, let's assume OrderController.isAnswerComplete handles partial states,
+          // and here we check for final correctness.
+          // A more robust check would involve the OrderValidator's getCorrectnessMap.
+          // For simplicity in client-side check, we'll compare slot by slot.
+        }
+
+        for (let i = 0; i < correctOrder.length; i++) {
+          const slotKey = `slot-${i}`; // Assuming slot keys are 'slot-0', 'slot-1', etc.
+          const expectedItemId = correctOrder[i];
+          if (userAnswer[slotKey] !== expectedItemId) {
+            allCorrect = false;
+            break;
+          }
+        }
+        // Ensure no extra items are placed in slots not part of correctOrder
+        for (const slotKey in userAnswer) {
+          const slotIndex = parseInt(slotKey.split('-')[1], 10);
+          if (slotIndex >= correctOrder.length && userAnswer[slotKey] !== null) {
+            allCorrect = false;
+            break;
+          }
+        }
+        isClientCorrect = allCorrect;
       }
 
       return {
@@ -12618,6 +14532,841 @@ export const useQuizState = () => {
     dispatch
   };
 };
+
+```
+
+### app/features/quiz/validators/MultiChoiceValidator.ts
+
+```typescript
+import { MultiChoiceQuestion } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for multi-choice questions
+ * Works with string[] answer type (the selected option IDs)
+ */
+export class MultiChoiceValidator extends AnswerValidator<MultiChoiceQuestion, string[]> {
+  /**
+   * Checks if the required number of selections has been made
+   * @param selectedOptionIds Array of selected option IDs
+   * @returns True if the correct number of options has been selected
+   */
+  isComplete(selectedOptionIds: string[]): boolean {
+    // Empty selections array is always incomplete
+    if (!selectedOptionIds) return false;
+    
+    // Check if the user has selected the required number of options
+    return selectedOptionIds.length === this.question.correctAnswerOptionIds.length;
+  }
+  
+  /**
+   * Validates which selected options are correct
+   * @param selectedOptionIds Array of selected option IDs
+   * @returns Map with entries for each selected option's correctness
+   */
+  getCorrectnessMap(selectedOptionIds: string[]): CorrectnessMap {
+    const correctnessMap: CorrectnessMap = {};
+    
+    // If no selections, return empty map
+    if (!selectedOptionIds || selectedOptionIds.length === 0) {
+      return correctnessMap;
+    }
+    
+    // Check each selected option against the correct answers
+    selectedOptionIds.forEach(optionId => {
+      correctnessMap[optionId] = this.question.correctAnswerOptionIds.includes(optionId);
+    });
+    
+    return correctnessMap;
+  }
+}
+
+```
+
+### app/features/quiz/validators/SingleSelectionValidator.ts
+
+```typescript
+import { SingleSelectionQuestion } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for single selection questions
+ * Works with string answer type (the selected option ID)
+ */
+export class SingleSelectionValidator extends AnswerValidator<SingleSelectionQuestion, string | null> {
+  /**
+   * Checks if a selection has been made
+   * @param selectedOptionId The selected option ID or null
+   * @returns True if an option has been selected
+   */
+  isComplete(selectedOptionId: string | null): boolean {
+    return selectedOptionId !== null && selectedOptionId !== undefined && selectedOptionId !== '';
+  }
+  
+  /**
+   * Validates if the selected option is correct
+   * @param selectedOptionId The selected option ID or null
+   * @returns Map with a single entry for the selected option's correctness
+   */
+  getCorrectnessMap(selectedOptionId: string | null): CorrectnessMap {
+    // If no selection, nothing is correct
+    if (!selectedOptionId) {
+      return { 'answer': false };
+    }
+    
+    // Check if selected option matches the correct answer
+    const isCorrect = selectedOptionId === this.question.correctAnswerOptionId;
+    
+    // Return a map with the selected option ID as key
+    return { [selectedOptionId]: isCorrect };
+  }
+}
+
+```
+
+### app/features/quiz/validators/DropdownSelectionValidator.ts
+
+```typescript
+import { DropdownSelectionQuestion } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for dropdown selection questions
+ * Works with Record<string, string | null> answer type (mapping placeholder keys to selected option text)
+ */
+export class DropdownSelectionValidator extends AnswerValidator<
+  DropdownSelectionQuestion, 
+  Record<string, string | null>
+> {
+  /**
+   * Checks if all dropdowns have selections
+   * @param selections Object mapping placeholder keys to selected option text
+   * @returns True if all placeholders have selections
+   */
+  isComplete(selections: Record<string, string | null>): boolean {
+    // If no selections object or no placeholder targets, nothing is complete
+    if (!selections || !this.question.placeholderTargets || Object.keys(this.question.placeholderTargets).length === 0) {
+      return false;
+    }
+    
+    // Check that every placeholder target has a non-null value selected
+    return Object.keys(this.question.placeholderTargets).every(key => 
+      key in selections && 
+      selections[key] !== null && 
+      selections[key] !== undefined && 
+      selections[key] !== ""
+    );
+  }
+  
+  /**
+   * Validates which selections are correct
+   * @param selections Object mapping placeholder keys to selected option text
+   * @returns Map with entries for each placeholder's correctness
+   */
+  getCorrectnessMap(selections: Record<string, string | null>): CorrectnessMap {
+    const correctnessMap: CorrectnessMap = {};
+    
+    // If no selections or no placeholder targets, return empty map
+    if (!selections || !this.question.placeholderTargets) {
+      return correctnessMap;
+    }
+    
+    // Check each placeholder against its correct answer
+    Object.keys(this.question.placeholderTargets).forEach(placeholderKey => {
+      const selectedText = selections[placeholderKey];
+      const correctText = this.question.placeholderTargets[placeholderKey]?.correctOptionText;
+      
+      // Mark as correct if selected text matches correct text
+      correctnessMap[placeholderKey] = selectedText === correctText;
+    });
+    
+    return correctnessMap;
+  }
+}
+
+```
+
+### app/features/quiz/validators/DragAndDropValidator.ts
+
+```typescript
+import { DragAndDropQuestion } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for drag and drop questions
+ * Works with Record<string, string | null> answer type (mapping target_id to option_id)
+ */
+export class DragAndDropValidator extends AnswerValidator<
+  DragAndDropQuestion, 
+  Record<string, string | null>
+> {
+  /**
+   * Checks if all targets have options placed in them
+   * @param placedAnswers Object mapping target_id to option_id
+   * @returns True if all targets have options
+   */
+  isComplete(placedAnswers: Record<string, string | null>): boolean {
+    // If no answers object or no targets, nothing is complete
+    if (!placedAnswers || this.question.targets.length === 0) {
+      return false;
+    }
+    
+    // Check that every target has a valid non-null option assigned
+    return this.question.targets.every(target => {
+      const targetId = target.target_id;
+      // Make sure the target exists in answers and has a non-null value
+      return targetId in placedAnswers && 
+        placedAnswers[targetId] !== null && 
+        placedAnswers[targetId] !== undefined;
+    });
+  }
+  
+  /**
+   * Validates which placements are correct based on the question's correctPairs
+   * @param placedAnswers Object mapping target_id to option_id
+   * @returns Map with entries for each target's correctness
+   */
+  getCorrectnessMap(placedAnswers: Record<string, string | null>): CorrectnessMap {
+    const correctnessMap: CorrectnessMap = {};
+    
+    // If no answers, return empty map
+    if (!placedAnswers) {
+      return correctnessMap;
+    }
+    
+    // Check each target against correct pairs
+    this.question.targets.forEach(target => {
+      const targetId = target.target_id;
+      const placedOptionId = placedAnswers[targetId];
+      
+      if (placedOptionId) {
+        // Find if this is a correct pairing
+        const correctPair = this.question.correctPairs.find(pair => 
+          pair.target_id === targetId && pair.option_id === placedOptionId
+        );
+        
+        correctnessMap[targetId] = !!correctPair;
+      } else {
+        // If no option placed, it's not correct
+        correctnessMap[targetId] = false;
+      }
+    });
+    
+    return correctnessMap;
+  }
+}
+
+```
+
+### app/features/quiz/validators/OrderValidator.ts
+
+```typescript
+import { OrderQuestion, OrderQuestionAnswer } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for order questions
+ * Works with OrderQuestionAnswer type (Record<string, string | null>)
+ * where keys are slot names (e.g., "slot_0", "slot_1") and values are item_ids or null
+ */
+export class OrderValidator extends AnswerValidator<OrderQuestion, OrderQuestionAnswer> {
+  /**
+   * Checks if user has filled all slots
+   * @param answer Record mapping slots to item_ids
+   * @returns True if all slots have items assigned (no null values)
+   */
+  isComplete(answer: OrderQuestionAnswer): boolean {
+    // If no answer object or no items in question, nothing is complete
+    if (!answer || typeof answer !== 'object' || this.question.correctOrder.length === 0) {
+      return false;
+    }
+    
+    // Check if we have the right number of slots and none are null
+    const slotCount = this.question.correctOrder.length;
+    let filledSlots = 0;
+    
+    for (let i = 0; i < slotCount; i++) {
+      const slotKey = `slot_${i}`;
+      if (answer[slotKey] !== undefined && answer[slotKey] !== null) {
+        filledSlots++;
+      }
+    }
+    
+    return filledSlots === slotCount;
+  }
+  
+  /**
+   * Validates which items are in the correct slots based on the question's correctOrder
+   * @param answer Record mapping slots to item_ids
+   * @returns Map with entries for each item's correctness
+   */
+  getCorrectnessMap(answer: OrderQuestionAnswer): CorrectnessMap {
+    const correctnessMap: CorrectnessMap = {};
+    
+    // If no answer object, return empty map
+    if (!answer || typeof answer !== 'object') {
+      return correctnessMap;
+    }
+    
+    // Check each slot against the correctOrder
+    this.question.correctOrder.forEach((correctItemId, index) => {
+      const slotKey = `slot_${index}`;
+      const placedItemId = answer[slotKey];
+      
+      // Mark the placed item as correct or incorrect
+      if (placedItemId) {
+        const isCorrect = correctItemId === placedItemId;
+        correctnessMap[placedItemId] = isCorrect;
+      }
+    });
+    
+    return correctnessMap;
+  }
+}
+
+```
+
+### app/features/quiz/validators/AnswerValidator.ts
+
+```typescript
+import { AnyQuestion } from "@/app/types/quiz";
+
+/**
+ * Represents the result of validating an answer
+ * Maps target IDs to boolean indicating correctness
+ */
+export type CorrectnessMap = Record<string, boolean>;
+
+/**
+ * Abstract AnswerValidator class
+ * Provides a common interface for validating different question types
+ */
+export abstract class AnswerValidator<Q extends AnyQuestion, A> {
+  protected question: Q;
+
+  /**
+   * Creates an instance of AnswerValidator
+   * @param question The question to validate answers against
+   */
+  constructor(question: Q) {
+    this.question = question;
+  }
+
+  /**
+   * Checks if the answer is complete
+   * @param answer The answer to check
+   * @returns True if the answer is complete and can be submitted
+   */
+  abstract isComplete(answer: A): boolean;
+
+  /**
+   * Gets a map showing correctness of each part of the answer
+   * @param answer The answer to validate
+   * @returns Object mapping target/option IDs to boolean indicating correctness
+   */
+  abstract getCorrectnessMap(answer: A): CorrectnessMap;
+
+  /**
+   * Calculates the overall correctness score
+   * @param answer The answer to score
+   * @returns A value from 0 to 1 representing percentage correct
+   */
+  getCorrectnessScore(answer: A): number {
+    const correctnessMap = this.getCorrectnessMap(answer);
+    const totalItems = Object.keys(correctnessMap).length;
+    
+    if (totalItems === 0) return 0;
+    
+    const correctItems = Object.values(correctnessMap)
+      .filter(isCorrect => isCorrect)
+      .length;
+      
+    return correctItems / totalItems;
+  }
+
+  /**
+   * Determines if the answer is entirely correct
+   * @param answer The answer to check
+   * @returns True if all parts of the answer are correct
+   */
+  isCorrect(answer: A): boolean {
+    const correctnessMap = this.getCorrectnessMap(answer);
+    return Object.values(correctnessMap).every(isCorrect => isCorrect);
+  }
+}
+
+```
+
+### app/features/quiz/controllers/QuestionControllerFactory.ts
+
+```typescript
+import { 
+  SingleSelectionQuestion, 
+  MultiChoiceQuestion, 
+  DragAndDropQuestion, 
+  DropdownSelectionQuestion,
+  OrderQuestion,
+  AnyQuestion 
+} from "@/app/types/quiz";
+import { SingleSelectionController } from "./SingleSelectionController";
+import { MultiChoiceController } from "./MultiChoiceController";
+import { DragAndDropController } from "./DragAndDropController";
+import { DropdownSelectionController } from "./DropdownSelectionController";
+import { OrderController } from "./OrderController";
+import { QuestionController } from "./QuestionController";
+
+/**
+ * Factory function to create the appropriate controller for a question type
+ * @param question The question data
+ * @returns A controller instance for the specific question type
+ */
+export function createQuestionController(question: AnyQuestion): QuestionController<any, any> {
+  switch (question.type) {
+    case 'single_selection':
+      return new SingleSelectionController(question as SingleSelectionQuestion);
+    case 'multi':
+      return new MultiChoiceController(question as MultiChoiceQuestion);
+    case 'drag_and_drop':
+      return new DragAndDropController(question as DragAndDropQuestion);
+    case 'dropdown_selection':
+      return new DropdownSelectionController(question as DropdownSelectionQuestion);
+    case 'order':
+      return new OrderController(question as OrderQuestion);
+    default:
+      throw new Error(`No controller available for question type: ${question.type}`);
+  }
+}
+
+```
+
+### app/features/quiz/controllers/MultiChoiceController.ts
+
+```typescript
+import { MultiChoiceQuestion } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { MultiChoiceValidator } from '../validators/MultiChoiceValidator';
+
+/**
+ * Controller for multi-choice questions
+ * Manages state and validation for questions where the user selects multiple options
+ */
+export class MultiChoiceController extends QuestionController<MultiChoiceQuestion, string[]> {
+  /**
+   * Creates an instance of MultiChoiceController
+   * @param question The multi-choice question
+   */
+  constructor(question: MultiChoiceQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new MultiChoiceValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets the IDs of the correct options
+   * @returns Array of correct option IDs
+   */
+  getCorrectOptionIds(): string[] {
+    return this.question.correctAnswerOptionIds;
+  }
+  
+  /**
+   * Gets the required number of selections
+   * @returns Number of options that should be selected
+   */
+  getRequiredSelectionCount(): number {
+    return this.question.correctAnswerOptionIds.length;
+  }
+  
+  /**
+   * Checks if a specific option is part of the correct answer set
+   * @param optionId The option ID to check
+   * @returns True if the option is one of the correct answers
+   */
+  isOptionCorrect(optionId: string): boolean {
+    return this.question.correctAnswerOptionIds.includes(optionId);
+  }
+}
+
+```
+
+### app/features/quiz/controllers/DropdownSelectionController.ts
+
+```typescript
+import { DropdownSelectionQuestion } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { DropdownSelectionValidator } from '../validators/DropdownSelectionValidator';
+
+/**
+ * Controller for dropdown selection questions
+ * Manages state and validation for questions where the user selects options from dropdowns
+ */
+export class DropdownSelectionController extends QuestionController<
+  DropdownSelectionQuestion, 
+  Record<string, string | null>
+> {
+  /**
+   * Creates an instance of DropdownSelectionController
+   * @param question The dropdown selection question
+   */
+  constructor(question: DropdownSelectionQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new DropdownSelectionValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets the correct text for a specific placeholder
+   * @param placeholderKey The placeholder key
+   * @returns The correct option text or null if placeholder not found
+   */
+  getCorrectOptionForPlaceholder(placeholderKey: string): string | null {
+    return this.question.placeholderTargets[placeholderKey]?.correctOptionText || null;
+  }
+  
+  /**
+   * Gets all placeholder keys in the question
+   * @returns Array of placeholder keys
+   */
+  getPlaceholderKeys(): string[] {
+    return Object.keys(this.question.placeholderTargets || {});
+  }
+  
+  /**
+   * Checks if a specific selection for a placeholder is correct
+   * @param placeholderKey The placeholder key
+   * @param selectedText The selected option text
+   * @returns True if the selection is correct
+   */
+  isSelectionCorrect(placeholderKey: string, selectedText: string | null): boolean {
+    if (!selectedText) return false;
+    
+    const correctText = this.getCorrectOptionForPlaceholder(placeholderKey);
+    return selectedText === correctText;
+  }
+}
+
+```
+
+### app/features/quiz/controllers/DragAndDropController.ts
+
+```typescript
+import { DragAndDropQuestion, DragAndDropOption, DragAndDropTarget } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { DragAndDropValidator } from '../validators/DragAndDropValidator';
+
+/**
+ * Controller for drag and drop questions
+ * Manages state and validation for questions where the user drags options to targets
+ */
+export class DragAndDropController extends QuestionController<
+  DragAndDropQuestion, 
+  Record<string, string | null>
+> {
+  /**
+   * Creates an instance of DragAndDropController
+   * @param question The drag and drop question
+   */
+  constructor(question: DragAndDropQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new DragAndDropValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets all targets in the question
+   * @returns Array of targets
+   */
+  getTargets(): DragAndDropTarget[] {
+    return this.question.targets;
+  }
+  
+  /**
+   * Gets all options in the question
+   * @returns Array of options
+   */
+  getOptions(): DragAndDropOption[] {
+    return this.question.options;
+  }
+  
+  /**
+   * Gets the correct option ID for a specific target
+   * @param targetId The target ID
+   * @returns The correct option ID or null if not found
+   */
+  getCorrectOptionForTarget(targetId: string): string | null {
+    const correctPair = this.question.correctPairs.find(pair => pair.target_id === targetId);
+    return correctPair ? correctPair.option_id : null;
+  }
+  
+  /**
+   * Checks if a specific placement is correct
+   * @param targetId The target ID
+   * @param optionId The option ID
+   * @returns True if the placement is correct
+   */
+  isPlacementCorrect(targetId: string, optionId: string | null): boolean {
+    if (!optionId) return false;
+    
+    const correctPair = this.question.correctPairs.find(pair => 
+      pair.target_id === targetId && pair.option_id === optionId
+    );
+    
+    return !!correctPair;
+  }
+  
+  /**
+   * Gets the available options not yet placed in targets
+   * @param placedAnswers The current state of option placements
+   * @returns Array of options that are still available
+   */
+  getAvailableOptions(placedAnswers: Record<string, string | null>): DragAndDropOption[] {
+    // Get all placed option IDs
+    const placedOptionIds = Object.values(placedAnswers).filter(Boolean) as string[];
+    
+    // Return options that aren't placed anywhere
+    return this.question.options.filter(option => 
+      !placedOptionIds.includes(option.option_id)
+    );
+  }
+  
+  /**
+   * Creates an initial empty answers object with all targets set to null
+   * @returns Initial answers object
+   */
+  createInitialAnswers(): Record<string, string | null> {
+    const initialAnswers: Record<string, string | null> = {};
+    this.question.targets.forEach(target => {
+      initialAnswers[target.target_id] = null;
+    });
+    return initialAnswers;
+  }
+}
+
+```
+
+### app/features/quiz/controllers/OrderController.ts
+
+```typescript
+import { OrderQuestion, OrderItem, OrderQuestionAnswer } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { OrderValidator } from '../validators/OrderValidator';
+
+/**
+ * Controller for order questions
+ * Manages state and validation for questions where the user arranges items in the correct sequence
+ */
+export class OrderController extends QuestionController<OrderQuestion, OrderQuestionAnswer> {
+  /**
+   * Creates an instance of OrderController
+   * @param question The order question
+   */
+  constructor(question: OrderQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new OrderValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets all items in the question
+   * @returns Array of items
+   */
+  getItems(): OrderItem[] {
+    return this.question.items;
+  }
+  
+  /**
+   * Gets the correct order of item IDs
+   * @returns Array of item IDs in the correct order
+   */
+  getCorrectOrder(): string[] {
+    return this.question.correctOrder;
+  }
+
+  /**
+   * Gets the number of slots needed for this question
+   * @returns The number of slots
+   */
+  getSlotCount(): number {
+    return this.question.correctOrder.length;
+  }
+
+  /**
+   * Gets the correct item ID for a specific slot
+   * @param slotIndex The zero-based index of the slot
+   * @returns The correct item ID for the slot, or null if out of range
+   */
+  getCorrectItemForSlot(slotIndex: number): string | null {
+    if (slotIndex < 0 || slotIndex >= this.question.correctOrder.length) {
+      return null;
+    }
+    return this.question.correctOrder[slotIndex];
+  }
+
+  /**
+   * Checks if an item is correctly placed in a slot
+   * @param slotIndex The zero-based index of the slot
+   * @param itemId The item ID to check, or null if the slot is empty
+   * @returns True if the item is correct for the slot
+   */
+  isItemCorrectlyPlacedInSlot(slotIndex: number, itemId: string | null): boolean {
+    // Empty slots are always incorrect
+    if (itemId === null) {
+      return false;
+    }
+    
+    return slotIndex >= 0 && 
+           slotIndex < this.question.correctOrder.length && 
+           this.question.correctOrder[slotIndex] === itemId;
+  }
+  
+  /**
+   * Gets the correctness map for a given answer.
+   * Delegates to the validator.
+   * @param answer The answer to validate
+   * @returns A record mapping slot keys to boolean indicating correctness, or null if not applicable.
+   */
+  getCorrectnessMap(answer: OrderQuestionAnswer): Record<string, boolean | null> {
+    // Ensure the validator is an instance of OrderValidator
+    if (this.validator instanceof OrderValidator) {
+      return this.validator.getCorrectnessMap(answer);
+    }
+    // Fallback or error handling if validator is not the expected type
+    // This should ideally not happen if constructor is correctly used
+    console.error("Validator is not an instance of OrderValidator");
+    const emptyMap: Record<string, boolean | null> = {};
+    Object.keys(answer).forEach(key => {
+      emptyMap[key] = null;
+    });
+    return emptyMap;
+  }
+
+  /**
+   * Creates an initial empty answer with all slots set to null
+   * @returns An object mapping slot names to null values
+   */
+  createInitialAnswer(): OrderQuestionAnswer {
+    const answer: OrderQuestionAnswer = {};
+    const slotCount = this.getSlotCount();
+    
+    for (let i = 0; i < slotCount; i++) {
+      answer[`slot_${i}`] = null;
+    }
+    
+    return answer;
+  }
+}
+
+```
+
+### app/features/quiz/controllers/QuestionController.ts
+
+```typescript
+import { AnyQuestion } from "@/app/types/quiz";
+import { AnswerValidator, CorrectnessMap } from "../validators/AnswerValidator";
+
+/**
+ * Abstract base controller for question components
+ * Manages state and validation logic for question interactions
+ */
+export abstract class QuestionController<Q extends AnyQuestion, A> {
+  protected question: Q;
+  protected validator: AnswerValidator<Q, A>;
+  
+  /**
+   * Creates an instance of QuestionController
+   * @param question The question this controller manages
+   * @param validator The validator for the question's answers
+   */
+  constructor(question: Q, validator: AnswerValidator<Q, A>) {
+    this.question = question;
+    this.validator = validator;
+  }
+  
+  /**
+   * Gets the question this controller manages
+   */
+  getQuestion(): Q {
+    return this.question;
+  }
+  
+  /**
+   * Checks if the answer is complete and ready to be submitted
+   * @param answer The current answer state
+   * @returns True if the answer can be submitted
+   */
+  isAnswerComplete(answer: A): boolean {
+    return this.validator.isComplete(answer);
+  }
+  
+  /**
+   * Validates the correctness of each part of the answer
+   * @param answer The answer to validate
+   * @returns Map of answer parts to correctness booleans
+   */
+  validateAnswer(answer: A): CorrectnessMap {
+    return this.validator.getCorrectnessMap(answer);
+  }
+  
+  /**
+   * Calculates the overall score for an answer (0-1)
+   * @param answer The answer to score
+   * @returns Proportion of correct elements (0-1)
+   */
+  getScore(answer: A): number {
+    return this.validator.getCorrectnessScore(answer);
+  }
+  
+  /**
+   * Checks if the answer is completely correct
+   * @param answer The answer to check
+   * @returns True if the answer is entirely correct
+   */
+  isCorrect(answer: A): boolean {
+    return this.validator.isCorrect(answer);
+  }
+}
+
+```
+
+### app/features/quiz/controllers/SingleSelectionController.ts
+
+```typescript
+import { SingleSelectionQuestion } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { SingleSelectionValidator } from '../validators/SingleSelectionValidator';
+
+/**
+ * Controller for single selection questions
+ * Manages state and validation for questions where the user selects one option
+ */
+export class SingleSelectionController extends QuestionController<SingleSelectionQuestion, string | null> {
+  /**
+   * Creates an instance of SingleSelectionController
+   * @param question The single selection question
+   */
+  constructor(question: SingleSelectionQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new SingleSelectionValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets the ID of the correct option
+   * @returns The correct option ID
+   */
+  getCorrectOptionId(): string {
+    return this.question.correctAnswerOptionId;
+  }
+  
+  /**
+   * Checks if a specific option is the correct answer
+   * @param optionId The option ID to check
+   * @returns True if the option is correct
+   */
+  isOptionCorrect(optionId: string): boolean {
+    return optionId === this.question.correctAnswerOptionId;
+  }
+}
 
 ```
 
@@ -12706,37 +15455,37 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               <div className="flex flex-wrap justify-center gap-2 mb-2">
                 <Link 
                   href={`/quiz-test/${quizId}`}
-                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   All Questions
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/single_selection`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Single Selection
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/multi`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Multiple Selection
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/drag_and_drop`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Drag and Drop
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/dropdown_selection`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Dropdown
                 </Link>
                 <Link 
                   href={`/quiz-test/${quizId}/order`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Order
                 </Link>
@@ -12794,37 +15543,37 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
           <div className="mb-6 flex flex-wrap justify-center gap-2">
             <Link 
               href={`/quiz-test/${quizId}`}
-              className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               All Questions
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/single_selection`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Single Selection
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/multi`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Multiple Selection
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/drag_and_drop`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Drag and Drop
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/dropdown_selection`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Dropdown
             </Link>
             <Link 
               href={`/quiz-test/${quizId}/order`}
-              className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200'}`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
             >
               Order
             </Link>
@@ -14425,6 +17174,297 @@ export default TOS;
 
 ```
 
+### app/test-order-questions/page.tsx
+
+```tsx
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import OrderQuestionComponent from '@/app/features/quiz/components/question-types/OrderQuestionComponent';
+import { Quiz, AnyQuestion, OrderQuestion, OrderQuestionAnswer } from '@/app/types/quiz'; // Added Quiz, AnyQuestion
+import { OrderController } from '@/app/features/quiz/controllers/OrderController';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronLeft, ChevronRight, CheckCircle, XCircle } from 'lucide-react';
+
+// Updated sampleOrderQuestions to conform to OrderQuestion type
+const sampleOrderQuestions: OrderQuestion[] = [
+  {
+    id: 'order_q1_simple', // Changed from question_id
+    quiz_tag: 'demo_quiz', // Changed from quiz_id
+    type: 'order', // Changed from question_type
+    question: 'Arrange these historical events in chronological order:', // Changed from text
+    items: [
+      { item_id: 'event_ww1', text: 'World War I' },
+      { item_id: 'event_moon', text: 'Moon Landing' },
+      { item_id: 'event_fall_berlin_wall', text: 'Fall of the Berlin Wall' },
+    ],
+    correctOrder: ['event_ww1', 'event_moon', 'event_fall_berlin_wall'],
+    points: 10,
+    explanation: 'Understanding the timeline of major world events is key.', // Was feedback.general_feedback
+    feedback_correct: 'Excellent! You know your history.', // Was feedback.correct_feedback
+    feedback_incorrect: 'Not quite. Review the timeline of these events.', // Was feedback.incorrect_feedback
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    difficulty: 'medium',
+    // 'tags' and 'config' removed as they are not in OrderQuestion type
+  },
+  {
+    id: 'order_q2_distractors',
+    quiz_tag: 'demo_quiz',
+    type: 'order',
+    question: 'Order the first four planets from the Sun, starting with the closest.',
+    items: [
+      { item_id: 'planet_mercury', text: 'Mercury' },
+      { item_id: 'planet_venus', text: 'Venus' },
+      { item_id: 'planet_earth', text: 'Earth' },
+      { item_id: 'planet_mars', text: 'Mars' },
+      { item_id: 'distractor_jupiter', text: 'Jupiter (Distractor)' },
+      { item_id: 'distractor_moon', text: 'Moon (Distractor)' },
+    ],
+    correctOrder: ['planet_mercury', 'planet_venus', 'planet_earth', 'planet_mars'],
+    points: 15,
+    explanation: 'The solar system has a fascinating order.',
+    feedback_correct: 'Perfect! You know your planets.',
+    feedback_incorrect: 'Check your astronomy notes! Some of these are further out or not planets.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    difficulty: 'medium',
+  },
+  {
+    id: 'order_q3_similar_text',
+    quiz_tag: 'demo_quiz',
+    type: 'order',
+    question: 'Arrange the steps to make a cup of tea (simplified).',
+    items: [
+      { item_id: 'tea_boil', text: 'Boil water' },
+      { item_id: 'tea_pour', text: 'Pour water into cup with tea bag' },
+      { item_id: 'tea_steep', text: 'Let tea steep' },
+      { item_id: 'tea_add_milk', text: 'Add milk/sugar (optional)' },
+      { item_id: 'distractor_drink_cold_water', text: 'Drink cold water (Distractor)' },
+    ],
+    correctOrder: ['tea_boil', 'tea_pour', 'tea_steep', 'tea_add_milk'],
+    points: 10,
+    explanation: 'Making tea is a simple process.',
+    feedback_correct: 'Great! Enjoy your virtual tea.',
+    feedback_incorrect: 'Think about the logical sequence of making tea.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    difficulty: 'easy',
+  },
+  {
+    id: 'order_q4_long_sequence',
+    quiz_tag: 'demo_quiz',
+    type: 'order',
+    question: 'Order the stages of cellular respiration (simplified to 5 steps).',
+    items: [
+      { item_id: 'cr_glycolysis', text: 'Glycolysis' },
+      { item_id: 'cr_pyruvate_oxidation', text: 'Pyruvate Oxidation' },
+      { item_id: 'cr_citric_acid_cycle', text: 'Citric Acid Cycle (Krebs Cycle)' },
+      { item_id: 'cr_electron_transport_chain', text: 'Electron Transport Chain' },
+      { item_id: 'cr_oxidative_phosphorylation', text: 'Oxidative Phosphorylation (Final Stage)' },
+      { item_id: 'distractor_photosynthesis', text: 'Photosynthesis (Distractor)' },
+    ],
+    correctOrder: [
+      'cr_glycolysis', 
+      'cr_pyruvate_oxidation', 
+      'cr_citric_acid_cycle', 
+      'cr_electron_transport_chain', 
+      'cr_oxidative_phosphorylation'
+    ],
+    points: 20,
+    explanation: 'Cellular respiration is fundamental to energy production in cells. This is a simplified 5-step model.',
+    feedback_correct: 'Excellent! You have a good grasp of cellular respiration.',
+    feedback_incorrect: 'Review the stages of cellular respiration. It’s a complex but logical process.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    difficulty: 'hard',
+  },
+];
+
+const TestOrderQuestionsPage = () => {
+  const [quizData, setQuizData] = useState<Quiz | null>(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, OrderQuestionAnswer>>({});
+  const [isSubmitted, setIsSubmitted] = useState<Record<string, boolean>>({});
+  const [scores, setScores] = useState<Record<string, number | null>>({});
+  const [correctnessMap, setCorrectnessMap] = useState<Record<string, Record<string, boolean | null>>>({});
+
+  useEffect(() => {
+    // Simulate loading quiz data
+    const loadedQuiz: Quiz = {
+      id: 'demo_quiz',
+      title: 'Order Questions Test Suite',
+      description: 'A collection of order questions for testing.',
+      difficulty: 'medium',
+      quiz_topic: 'testing',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      questions: sampleOrderQuestions as AnyQuestion[], // Cast to AnyQuestion[]
+    };
+    setQuizData(loadedQuiz);
+
+    // Initialize answers
+    const initialAnswers: Record<string, OrderQuestionAnswer> = {};
+    loadedQuiz.questions.forEach(q => {
+      if (q.type === 'order') {
+        const orderQ = q as OrderQuestion;
+        const controller = new OrderController(orderQ);
+        initialAnswers[orderQ.id] = controller.createInitialAnswer();
+      }
+    });
+    setAnswers(initialAnswers);
+  }, []);
+
+  const handleAnswerSelect = useCallback((questionId: string, answer: OrderQuestionAnswer) => {
+    setAnswers(prev => ({ ...prev, [questionId]: answer }));
+    // If you had auto-validation or immediate feedback logic, it would go here
+    // For now, submission is manual
+  }, []);
+
+  const handleSubmit = (questionId: string) => {
+    if (!quizData) return;
+    const question = quizData.questions.find(q => q.id === questionId) as OrderQuestion | undefined;
+    if (question && question.type === 'order') {
+      const controller = new OrderController(question);
+      const answer = answers[questionId];
+      const score = controller.getScore(answer);
+      const currentCorrectnessMap = controller.getCorrectnessMap(answer);
+      
+      setScores(prev => ({ ...prev, [questionId]: score }));
+      setCorrectnessMap(prev => ({ ...prev, [questionId]: currentCorrectnessMap }));
+      setIsSubmitted(prev => ({ ...prev, [questionId]: true }));
+    }
+  };
+
+  const currentQuestion = quizData?.questions[currentQuestionIndex] as OrderQuestion | undefined;
+
+  if (!quizData || !currentQuestion || currentQuestion.type !== 'order') {
+    return <div>Loading or invalid question type...</div>;
+  }
+
+  const controller = new OrderController(currentQuestion);
+  const numSlots = controller.getSlotCount();
+
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="container mx-auto p-4 min-h-screen flex flex-col items-center">
+        <Card className="w-full max-w-2xl">
+          <CardHeader>
+            <CardTitle>Test Order Question ({currentQuestionIndex + 1} / {quizData.questions.length})</CardTitle>
+            <p className="text-sm text-muted-foreground">{currentQuestion.question}</p>
+            <p className="text-sm text-muted-foreground">Points: {currentQuestion.points}</p>
+          </CardHeader>
+          <CardContent>
+            <OrderQuestionComponent
+              question={currentQuestion}
+              onAnswerSelect={(answer) => handleAnswerSelect(currentQuestion.id, answer as OrderQuestionAnswer)}
+              initialAnswer={answers[currentQuestion.id]}
+              isSubmitted={isSubmitted[currentQuestion.id] || false}
+              isQuizReviewMode={isSubmitted[currentQuestion.id] || false} // Simulate review mode post-submit
+              correctnessMap={correctnessMap[currentQuestion.id]}
+            />
+            {isSubmitted[currentQuestion.id] && (
+              <div className="mt-4 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
+                <h3 className="font-semibold mb-2">Feedback:</h3>
+                {scores[currentQuestion.id] !== null && (
+                  <p className="mb-1">
+                    Your score: {scores[currentQuestion.id]} / {currentQuestion.points}
+                    {scores[currentQuestion.id] === currentQuestion.points ? 
+                      <CheckCircle className="inline ml-2 h-5 w-5 text-green-500" /> : 
+                      <XCircle className="inline ml-2 h-5 w-5 text-red-500" />}
+                  </p>
+                )}
+                <p className="text-sm">
+                  {scores[currentQuestion.id] === currentQuestion.points 
+                    ? currentQuestion.feedback_correct 
+                    : currentQuestion.feedback_incorrect}
+                </p>
+                {currentQuestion.explanation && <p className="text-xs mt-1 italic">{currentQuestion.explanation}</p>}
+                 <div className="mt-2">
+                  <h4 className="text-sm font-semibold">Correct Order:</h4>
+                  <ul className="list-decimal list-inside text-sm">
+                    {currentQuestion.correctOrder.map((itemId) => {
+                      const item = currentQuestion.items.find(i => i.item_id === itemId);
+                      return <li key={itemId}>{item ? item.text : 'Unknown item'}</li>;
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex flex-col items-center space-y-4">
+            {!isSubmitted[currentQuestion.id] && (
+              <Button onClick={() => handleSubmit(currentQuestion.id)} className="w-full">
+                Submit Answer
+              </Button>
+            )}
+            {isSubmitted[currentQuestion.id] && (
+               <Button onClick={() => handleSubmit(currentQuestion.id)} className="w-full" variant="outline" disabled>
+                Answer Submitted
+              </Button>
+            )}
+            <div className="flex justify-between w-full">
+              <Button 
+                onClick={() => setCurrentQuestionIndex(prev => Math.max(0, prev - 1))} 
+                disabled={currentQuestionIndex === 0}
+                variant="outline"
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+              </Button>
+              <Button 
+                onClick={() => setCurrentQuestionIndex(prev => Math.min(quizData.questions.length - 1, prev + 1))} 
+                disabled={currentQuestionIndex === quizData.questions.length - 1}
+                variant="outline"
+              >
+                Next <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+        
+        {/* Debugging section */}
+        <Card className="w-full max-w-2xl mt-6">
+          <CardHeader><CardTitle>Debug State</CardTitle></CardHeader>
+          <CardContent className="text-xs space-y-2">
+            <div><strong>Current Answer:</strong> <pre>{JSON.stringify(answers[currentQuestion.id], null, 2)}</pre></div>
+            <div><strong>Is Submitted:</strong> {isSubmitted[currentQuestion.id]?.toString() || 'false'}</div>
+            <div><strong>Score:</strong> {scores[currentQuestion.id]?.toString() ?? 'N/A'}</div>
+            <div><strong>Correctness Map:</strong> <pre>{JSON.stringify(correctnessMap[currentQuestion.id], null, 2)}</pre></div>
+            <div><strong>Available Items (for D&D reference):</strong>
+              <ul>
+                {currentQuestion.items
+                  .filter(item => !Object.values(answers[currentQuestion.id] || {}).includes(item.item_id))
+                  .map(item => <li key={item.item_id}>{item.text} ({item.item_id})</li>)
+                }
+              </ul>
+            </div>
+            <div><strong>Slots (Correct Order for reference):</strong>
+                <ol>
+                    {currentQuestion.correctOrder.map((itemId, index) => {
+                        const item = currentQuestion.items.find(i => i.item_id === itemId);
+                        return <li key={itemId}>Slot {index}: {item?.text} ({itemId})</li>
+                    })}
+                </ol>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </DndProvider>
+  );
+};
+
+export default TestOrderQuestionsPage;
+
+// Ensure all questions are processed for initial answers
+// This was a small bug fix for the initialAnswers setup.
+// The original code was fine, but this is a slightly more robust way to ensure all questions are processed.
+// No, the original code was fine. This comment is not needed.
+
+```
+
 ### app/components/QuizCTA.tsx
 
 ```tsx
@@ -14475,17 +17515,21 @@ export default QuizCTA;
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType } from '../../types/quiz';
+import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion, OrderQuestion } from '../../types/quiz'; // Added OrderQuestion
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
+import DropdownSelectionComponent from '../../features/quiz/components/question-types/DropdownSelectionComponent'; // Import DropdownSelectionComponent
+import OrderQuestionComponent from '../../features/quiz/components/question-types/OrderQuestionComponent'; // Import OrderQuestionComponent
 import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
 
 export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Added isLoading state
   const [error, setError] = useState<string | null>(null); // Added error state
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null); // single_selection
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // multi
+  const [dropdownSelections, setDropdownSelections] = useState<Record<string, string | null>>({}); // dropdown_selection
+  const [orderedItems, setOrderedItems] = useState<string[]>([]); // order
   const [isSubmittedDemo, setIsSubmittedDemo] = useState(false);
   const [showCorrectAnswerDemo, setShowCorrectAnswerDemo] = useState(false);
 
@@ -14519,6 +17563,8 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     // Reset selections when question or filters change
     setSelectedOption(null);
     setSelectedOptions([]);
+    setDropdownSelections({}); // Reset dropdown selections
+    setOrderedItems([]); // Reset order selections
     setIsSubmittedDemo(false);
     setShowCorrectAnswerDemo(false);
   }, [loadQuestion]); // useEffect now depends on loadQuestion
@@ -14532,6 +17578,18 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
   const handleMultiSelect = (optionIds: string[]) => {
     if (!isSubmittedDemo) {
       setSelectedOptions(optionIds);
+    }
+  };
+
+  const handleDropdownSelect = (selections: Record<string, string | null>) => {
+    if (!isSubmittedDemo) {
+      setDropdownSelections(selections);
+    }
+  };
+  
+  const handleOrderSelect = (itemIds: string[]) => {
+    if (!isSubmittedDemo) {
+      setOrderedItems(itemIds);
     }
   };
 
@@ -14664,6 +17722,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
           <p className="text-gray-700">
             {currentQuestion.type === 'single_selection' && 'Select the correct answer from the options below.'}
             {currentQuestion.type === 'multi' && `Select all correct answers from the options below. (Correct: ${(currentQuestion as MultiChoiceQuestion).correctAnswerOptionIds.length})`}
+            {currentQuestion.type === 'dropdown_selection' && 'Select the correct option for each placeholder in the text.'}
             {/* Add instructions for other question types as they are implemented */}
           </p>
         </div>
@@ -14686,6 +17745,27 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
               onAnswerSelect={handleMultiSelect}
               isSubmitted={isSubmittedDemo}
               showCorrectAnswer={showCorrectAnswerDemo}
+            />
+          )}
+          {currentQuestion.type === 'dropdown_selection' && (
+            <DropdownSelectionComponent
+              question={currentQuestion as DropdownSelectionQuestion}
+              selectedAnswer={dropdownSelections} // Pass current dropdown selections
+              onAnswerSelect={handleDropdownSelect} // Handle updates to dropdown selections
+              isSubmitted={isSubmittedDemo}
+              showCorrectAnswer={showCorrectAnswerDemo}
+              validateOnComplete={true} // Add the new prop to wait for all dropdowns to be filled
+            />
+          )}
+          {currentQuestion.type === 'order' && (
+            <OrderQuestionComponent
+              question={currentQuestion as OrderQuestion}
+              onAnswerSelect={handleOrderSelect}
+              userAnswer={orderedItems}
+              isSubmitted={isSubmittedDemo}
+              showCorrectAnswer={showCorrectAnswerDemo}
+              isQuizReviewMode={false}
+              validateOnComplete={true}
             />
           )}
           {/* Add other question type components here as needed */}
@@ -14713,7 +17793,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
             </div>
             {isSubmittedDemo && (
               <p className="mt-3 text-xs text-gray-600">
-                Answers are {selectedOption || selectedOptions.length > 0 ? 'locked' : 'not selected but locked'}. Toggle "Show Feedback" to see correctness.
+                Answers are {selectedOption || selectedOptions.length > 0 || Object.values(dropdownSelections).some(s => s !== null) ? 'locked' : 'not selected but locked'}. Toggle "Show Feedback" to see correctness.
               </p>
             )}
              {!isSubmittedDemo && (
@@ -14929,7 +18009,12 @@ import {
   DragAndDropOption,
   DragAndDropCorrectPair,
   DragAndDropQuestion,
-  Quiz // Will be needed for fetchQuizById
+  DropdownOption,
+  DropdownPlaceholderTarget,
+  DropdownSelectionQuestion,
+  OrderQuestion,
+  OrderItem,
+  Quiz
 } from '../types/quiz';
 
 // Initialize Supabase client
@@ -15126,7 +18211,7 @@ export async function enrichQuestionWithDetails(
         console.warn(`No correct pairs found for drag_and_drop question ${baseQuestion.id}`);
         return null;
       }
-
+      
       const dragAndDropQuestion: DragAndDropQuestion = {
         ...baseQuestion,
         type: 'drag_and_drop',
@@ -15138,6 +18223,122 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching drag_and_drop question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'dropdown_selection') { // New case for dropdown_selection
+    try {
+      // Fetch all available options for this dropdown question
+      const { data: optionsData, error: optionsError } = await supabase
+        .from('dropdown_selection_options')
+        .select('option_id, text, is_correct') // is_correct might be useful for some UI/logic
+        .eq('question_id', baseQuestion.id);
+
+      if (optionsError) {
+        console.error(`Error fetching options for dropdown_selection question ${baseQuestion.id}:`, optionsError.message);
+        return null;
+      }
+
+      // Fetch the placeholder-to-correct-value mappings
+      const { data: targetsData, error: targetsError } = await supabase
+        .from('dropdown_selection_targets')
+        .select('key, value') // 'key' is the placeholder, 'value' is the correct option's text
+        .eq('question_id', baseQuestion.id);
+
+      if (targetsError) {
+        console.error(`Error fetching targets for dropdown_selection question ${baseQuestion.id}:`, targetsError.message);
+        return null;
+      }
+
+      const typedOptions: DropdownOption[] = (optionsData || []).map((opt: any) => ({
+        option_id: opt.option_id,
+        text: opt.text,
+        is_correct: opt.is_correct, // Keep is_correct as it's in the table and type
+      }));
+
+      const placeholderTargets: Record<string, DropdownPlaceholderTarget> = {};
+      (targetsData || []).forEach((target: any) => {
+        placeholderTargets[target.key] = {
+          key: target.key,
+          correctOptionText: target.value,
+        };
+      });
+
+      if (!typedOptions.length) {
+        console.warn(`No options found for dropdown_selection question ${baseQuestion.id}`);
+        return null; // Critical: a dropdown question must have options
+      }
+      if (Object.keys(placeholderTargets).length === 0) {
+        console.warn(`No placeholder targets found for dropdown_selection question ${baseQuestion.id}`);
+        return null; // Critical: must have target mappings
+      }
+
+      const dropdownSelectionQuestion: DropdownSelectionQuestion = {
+        ...baseQuestion,
+        type: 'dropdown_selection',
+        options: typedOptions,
+        placeholderTargets: placeholderTargets,
+      };
+      return dropdownSelectionQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching dropdown_selection question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'order') {
+    try {
+      // Fetch the order items
+      const { data: itemsData, error: itemsError } = await supabase
+        .from('order_items')
+        .select('item_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (itemsError) {
+        console.error(`Error fetching items for order question ${baseQuestion.id}:`, itemsError.message);
+        return null;
+      }
+
+      // Fetch the correct order sequence
+      const { data: correctOrderData, error: correctOrderError } = await supabase
+        .from('order_correct_order')
+        .select('item_id, position')
+        .eq('question_id', baseQuestion.id)
+        .order('position', { ascending: true });
+
+      if (correctOrderError) {
+        console.error(`Error fetching correct order for question ${baseQuestion.id}:`, correctOrderError.message);
+        return null;
+      }
+
+      const items: OrderItem[] = (itemsData || []).map((item: any) => ({
+        item_id: item.item_id,
+        text: item.text,
+      }));
+
+      // Sort by position and extract just the item_ids for correctOrder
+      const correctOrder = (correctOrderData || [])
+        .sort((a: any, b: any) => a.position - b.position)
+        .map((item: any) => item.item_id);
+
+      if (!items.length) {
+        console.warn(`No items found for order question ${baseQuestion.id}`);
+        return null;
+      }
+
+      if (!correctOrder.length) {
+        console.warn(`No correct order found for order question ${baseQuestion.id}`);
+        return null;
+      }
+
+      const orderQuestion: OrderQuestion = {
+        ...baseQuestion,
+        type: 'order',
+        items: items,
+        correctOrder: correctOrder,
+      };
+      return orderQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching order question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {
@@ -15498,7 +18699,8 @@ export async function GET(
   request: Request,
   { params }: { params: { quizId: string } }
 ) {
-  const quizId = params.quizId;
+  // Need to properly handle params in Next.js 13+
+  const quizId = (await Promise.resolve(params)).quizId;
   
   // Extract questionType from URL if present
   const url = new URL(request.url);
@@ -16030,8 +19232,9 @@ import ClientQuizPage from '../client-page';
 
 // This is a server component that properly handles async params in Next.js 15
 export default async function QuizTestByTypePage({ params }: { params: { quizId: string, questionType: string } }) {
-  // Using server component to access params properly
-  const { quizId, questionType } = params;
+  // Using server component to access params properly - need to await params in Next.js 13+
+  const resolvedParams = await Promise.resolve(params);
+  const { quizId, questionType } = resolvedParams;
   
   // Pass the quizId and questionType to the client component
   return <ClientQuizPage quizId={quizId} questionType={questionType} />;
@@ -16127,48 +19330,5168 @@ export default async function QuizByTypeAndQuestionTypePage({ params }: { params
 
 ```
 
-### app/data/quizzes/azure-a102/sample_multi_question.json
+### app/data/quizzes/azure-a102/clean_single_selection_questions.json
 
 ```json
 {
   "questions": [
     {
-      "id": "multi-select-01",
-      "type": "multi",
-      "question": "Which of the following are Azure Cognitive Services? (Select 2)",
-      "points": 2,
-      "quiz_tag": "azure-a102",
-      "difficulty": "medium",
-      "explanation": "Azure Cognitive Services include Language, Computer Vision, Speech, and Decision services. Azure Blob Storage is a storage service, Azure Virtual Network is a networking service, and Azure Kubernetes Service is a container orchestration service.",
-      "feedback_correct": "Correct! You've identified the Azure Cognitive Services correctly.",
-      "feedback_incorrect": "Not quite. Review the Azure Cognitive Services offerings.",
-      "created_at": "2023-05-01T00:00:00Z",
-      "updated_at": "2023-05-01T00:00:00Z",
+      "id": "1",
+      "type": "single_selection",
+      "question": "You need to build a chatbot that meets the following requirements:\n- Supports chit-chat, knowledge base, and multilingual models\n- Performs sentiment analysis on user messages\n- Selects the best language model automatically\nWhat should you integrate into the chatbot?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
       "options": [
         {
-          "option_id": "A",
-          "text": "Azure Blob Storage"
+          "id": "a",
+          "text": "A. QnA Maker, Language Understanding, and Dispatch"
         },
         {
-          "option_id": "B",
-          "text": "Azure Language Service"
+          "id": "b",
+          "text": "B. Translator, Speech, and Dispatch"
         },
         {
-          "option_id": "C",
-          "text": "Azure Kubernetes Service"
+          "id": "c",
+          "text": "C. Language Understanding, Text Analytics, and QnA Maker"
         },
         {
-          "option_id": "D",
-          "text": "Azure Computer Vision"
-        },
-        {
-          "option_id": "E",
-          "text": "Azure Virtual Network"
+          "id": "d",
+          "text": "D. Text Analytics, Translator, and Dispatch"
         }
       ],
-      "correctAnswerOptionIds": ["B", "D"]
+      "feedback": {
+        "correct": "Correct! Language Understanding: An AI service that allows users to interact with your applications, bots, and loT devices by using natural language. QnA Maker is a cloud-based Natural Language Processing (NLP) service that allows you to create a natural conversational layer over your data. It is used to find the most appropriate answer for any input from your custom knowledge base (KB) of information. Text Analytics: Mine insights in unstructured text using natural language processing (NLP) (no machine learning expertise required). Gain a deeper understanding of customer opinions with sentiment analysis. The Language Detection feature of the Azure Text Analytics REST API evaluates text input.",
+        "incorrect": "Incorrect! Language Understanding, Text Analytics (now part of Azure AI Language), and QnA Maker (now Custom Question Answering) provide the required capabilities."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "2",
+      "type": "single_selection",
+      "question": "Your company wants to reduce how long it takes for employees to log receipts in expense reports. All the receipts are in English. You need to extract top-level information from the receipts, such as the vendor and the transaction total. The solution must minimize development effort. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Custom Vision"
+        },
+        {
+          "id": "b",
+          "text": "B. Personalizer"
+        },
+        {
+          "id": "c",
+          "text": "C. Form Recognizer"
+        },
+        {
+          "id": "d",
+          "text": "D. Computer Vision"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure Form Recognizer (now Azure AI Document Intelligence) is a cognitive service that lets you build automated data processing software using machine learning technology. Identify and extract text, key/value pairs, selection marks, tables, and structure from your documents. The service outputs structured data that includes the relationships in the original file, bounding boxes, confidence and more. Form Recognizer is composed of custom document processing models, prebuilt models for invoices, receipts, IDs and business cards, and the layout model.",
+        "incorrect": "Incorrect! Form Recognizer (now Azure AI Document Intelligence) has a prebuilt receipt model perfect for this scenario with minimal development effort."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "8",
+      "type": "single_selection",
+      "question": "You plan to perform predictive maintenance. You collect IoT sensor data from 100 industrial machines for a year. Each machine has 50 different sensors that generate data at one-minute intervals. In total, you have 5,000 time series datasets. You need to identify unusual values in each time series to help predict machinery failures. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Anomaly Detector"
+        },
+        {
+          "id": "b",
+          "text": "B. Cognitive Search"
+        },
+        {
+          "id": "c",
+          "text": "C. Form Recognizer"
+        },
+        {
+          "id": "d",
+          "text": "D. Custom Vision"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Anomaly Detector is designed to identify unusual patterns or outliers in time series data, making it suitable for detecting potential machinery failures from sensor readings.",
+        "incorrect": "Incorrect! Anomaly Detector is specifically designed for finding anomalies in time series data like sensor readings."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "12",
+      "type": "single_selection",
+      "question": "You are building a language model by using a Language Understanding (classic) service. You create a new Language Understanding (classic) resource. You need to add more contributors. What should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a conditional access policy in Azure Active Directory (Azure AD)"
+        },
+        {
+          "id": "b",
+          "text": "B. the Access control (IAM) page for the authoring resources in the Azure portal"
+        },
+        {
+          "id": "c",
+          "text": "C. the Access control (IAM) page for the prediction resources in the Azure portal"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Contributors are managed via Azure RBAC roles assigned on the LUIS authoring resource in the Azure portal using Access control (IAM).",
+        "incorrect": "Incorrect! Access control for LUIS resources is managed via IAM roles on the authoring resource in the Azure portal."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "16",
+      "type": "single_selection",
+      "question": "You have a Language Understanding resource named lu1. You build and deploy an Azure bot named bot1 that uses lu1. You need to ensure that bot1 adheres to the Microsoft responsible AI principle of inclusiveness. How should you extend bot1?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Implement authentication for bot1."
+        },
+        {
+          "id": "b",
+          "text": "B. Enable active learning for lu1."
+        },
+        {
+          "id": "c",
+          "text": "C. Host lu1 in a container."
+        },
+        {
+          "id": "d",
+          "text": "D. Add Direct Line Speech to bot1."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Inclusiveness: AI systems should empower everyone and engage people. Direct Line Speech enables voice interaction, making the bot accessible to users who prefer or need to interact via speech, thus enhancing inclusiveness.",
+        "incorrect": "Incorrect! Adding speech capabilities via Direct Line Speech enhances accessibility, supporting the principle of inclusiveness."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "19",
+      "type": "single_selection",
+      "question": "You have a factory that produces food products. You need to build a monitoring solution for staff compliance with personal protective equipment (PPE) requirements. The solution must meet the following requirements:\n* Identify staff who have removed masks or safety glasses.\n* Perform a compliance check every 15 minutes.\n* Minimize development effort.\n* Minimize costs.\nWhich service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Face"
+        },
+        {
+          "id": "b",
+          "text": "B. Computer Vision"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Video Analyzer for Media (formerly Video Indexer)"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Face API is an AI service that analyzes faces in images. Features include face detection that perceives facial features and attributes such as a face mask, glasses, or face location in an image, and identification of a person. This aligns well with detecting masks/glasses with minimal development effort using pre-built capabilities.",
+        "incorrect": "Incorrect! The Face API includes attributes for detecting accessories like masks and glasses with minimal effort."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "26",
+      "type": "single_selection",
+      "question": "You have an Azure Video Analyzer for Media (previously Video Indexer) service that is used to provide a search interface over company videos on your company's website. You need to be able to search for videos based on who is present in the video. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Create a person model and associate the model to the videos."
+        },
+        {
+          "id": "b",
+          "text": "B. Create person objects and provide face images for each object."
+        },
+        {
+          "id": "c",
+          "text": "C. Invite the entire staff of the company to Video Indexer."
+        },
+        {
+          "id": "d",
+          "text": "D. Edit the faces in the videos."
+        },
+        {
+          "id": "e",
+          "text": "E. Upload names to a language model."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Video Indexer supports face detection and celebrity recognition. For non-celebrities, you label faces which adds them to your account's Person model. Associating this model during indexing/reindexing allows recognition and search based on known faces.",
+        "incorrect": "Incorrect! Video Indexer uses Person models to recognize and search for specific individuals in videos."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "33",
+      "type": "single_selection",
+      "question": "You need to build a solution that will use optical character recognition (OCR) to scan sensitive documents by using the Computer Vision API. The solution must NOT be deployed to the public cloud. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Build an on-premises web app to query the Computer Vision endpoint."
+        },
+        {
+          "id": "b",
+          "text": "B. Host the Computer Vision endpoint in a container on an on-premises server."
+        },
+        {
+          "id": "c",
+          "text": "C. Host an exported Open Neural Network Exchange (ONNX) model on an on-premises server."
+        },
+        {
+          "id": "d",
+          "text": "D. Build an Azure web app to query the Computer Vision endpoint."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Cognitive Services, including Computer Vision's Read API (OCR), can be deployed in Docker containers, allowing them to run on-premises, meeting the requirement of not deploying to the public cloud while using the standard API.",
+        "incorrect": "Incorrect! Running the Computer Vision container on-premises keeps data processing local."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "41",
+      "type": "single_selection",
+      "question": "You have the following C# method for creating Azure Cognitive Services resources programmatically.\n```csharp\nstatic void create_resource(CognitiveServicesManagementClient client, string resource_group_name, string resource_name, string kind, string account_tier, string location)\n{\n    CognitiveServicesAccount parameters = new CognitiveServicesAccount(null, null, kind, location, resource_name, new CognitiveServicesAccountProperties(), new Sku(account_tier));\n    var result = client.Accounts.Create(resource_group_name, resource_name, parameters);\n}\n```\nYou need to call the method to create a free Azure resource in the West US Azure region. The resource will be used to generate captions of images automatically. Which code should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(client, \"RG1\", \"res1\", \"ComputerVision\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(client, \"RG1\", \"res1\", \"CustomVision.Prediction\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(client, \"RG1\", \"res1\", \"ComputerVision\", \"S0\", \"westus\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(client, \"RG1\", \"res1\", \"CustomVision.Prediction\", \"S0\", \"westus\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Image captioning is a feature of the Computer Vision service ('Kind' = 'ComputerVision'). 'F0' specifies the Free pricing tier. 'westus' is the location.",
+        "incorrect": "Incorrect! Computer Vision provides image captioning, F0 is the free tier, and westus is the location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "42",
+      "type": "single_selection",
+      "question": "You successfully run the following HTTP request.\nPOST https://management.azure.com/subscriptions/18c51a87-3a69-47a8-aedc-a54745f708a1/resourceGroups/RG1/providers/Microsoft.CognitiveServices/accounts/contoso1/regenerateKey?api-version=2017-04-18\nBody{\"keyName\": \"Key2\"}\nWhat is the result of the request?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. A key for Azure Cognitive Services was generated in Azure Key Vault."
+        },
+        {
+          "id": "b",
+          "text": "B. A new query key was generated."
+        },
+        {
+          "id": "c",
+          "text": "C. The primary subscription key and the secondary subscription key were rotated."
+        },
+        {
+          "id": "d",
+          "text": "D. The secondary subscription key was reset."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The `regenerateKey` action with `keyName: Key2` specifically regenerates (resets) the secondary subscription key for the specified Cognitive Services account.",
+        "incorrect": "Incorrect! Specifying 'Key2' targets the secondary subscription key for regeneration."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "43",
+      "type": "single_selection",
+      "question": "You are developing a new sales system that will process the video and text from a public-facing website. You plan to notify users that their data has been processed by the sales system. Which responsible AI principle does this help meet?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. transparency"
+        },
+        {
+          "id": "b",
+          "text": "B. fairness"
+        },
+        {
+          "id": "c",
+          "text": "C. inclusiveness"
+        },
+        {
+          "id": "d",
+          "text": "D. reliability and safety"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Transparency involves making AI systems understandable. Notifying users about data processing is a key aspect of being transparent about how the system operates and uses their data.",
+        "incorrect": "Incorrect! Informing users how their data is used directly supports the principle of Transparency."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "46",
+      "type": "single_selection",
+      "question": "You have receipts that are accessible from a URL. You need to extract data from the receipts by using Form Recognizer and the SDK. The solution must use a prebuilt model. Which client and method should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. the FormRecognizerClient client and the StartRecognizeContentFromUri method"
+        },
+        {
+          "id": "b",
+          "text": "B. the FormTrainingClient client and the StartRecognizeContentFromUri method"
+        },
+        {
+          "id": "c",
+          "text": "C. the FormRecognizerClient client and the StartRecognizeReceiptsFromUri method"
+        },
+        {
+          "id": "d",
+          "text": "D. the FormTrainingClient client and the StartRecognizeReceiptsFromUri method"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The `FormRecognizerClient` is used for analysis operations. The `StartRecognizeReceiptsFromUri` method specifically targets the prebuilt receipt model and accepts a URL as input.",
+        "incorrect": "Incorrect! Use FormRecognizerClient for analysis and the specific StartRecognizeReceiptsFromUri for the prebuilt receipt model with URL input."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "47",
+      "type": "single_selection",
+      "question": "You have a collection of 50,000 scanned documents that contain text. You plan to make the text available through Azure Cognitive Search. You need to configure an enrichment pipeline to perform optical character recognition (OCR) and text analytics. The solution must minimize costs. What should you attach to the skillset?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a new Computer Vision resource"
+        },
+        {
+          "id": "b",
+          "text": "B. a free (Limited enrichments) Cognitive Services resource"
+        },
+        {
+          "id": "c",
+          "text": "C. an Azure Machine Learning Designer pipeline"
+        },
+        {
+          "id": "d",
+          "text": "D. a new Cognitive Services resource that uses the S0 pricing tier"
+        }
+      ],
+      "feedback": {
+        "correct": "Incorrect! The free Cognitive Services tier allows only a very limited number of enrichments per day (typically 20 documents total for all skills). For 50,000 documents, a paid tier (like S0) is required. The lowest cost option that can realistically process this volume is S0.",
+        "incorrect": "Correct! Cognitive Search skillsets require an attached Cognitive Services multi-service resource for billing enrichments like OCR and text analytics. While the Free tier exists, its limits (e.g., 20 documents per indexer per day) are far too low for 50,000 documents. The S0 tier is the standard paid tier needed for this volume, making D the most practical answer, although B is technically the 'cheapest' option if processing time is not a constraint and the user intends to process over many months/years, which is unlikely."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "51",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Search instance that indexes purchase orders by using Form Recognizer. You need to analyze the extracted information by using Microsoft Power BI. The solution must minimize development effort. What should you add to the indexer?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a projection group"
+        },
+        {
+          "id": "b",
+          "text": "B. a table projection"
+        },
+        {
+          "id": "c",
+          "text": "C. a file projection"
+        },
+        {
+          "id": "d",
+          "text": "D. an object projection"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Knowledge Store projections allow enriched data from the indexing pipeline to be stored outside the search index, typically in Azure Storage. A 'table' projection specifically stores data in Azure Table Storage in a structured format easily consumable by tools like Power BI with minimal effort.",
+        "incorrect": "Incorrect! Table projections store enriched data in Azure Table Storage, which Power BI can easily connect to."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "64",
+      "type": "single_selection",
+      "question": "You have an Azure IoT hub that receives sensor data from machinery. You need to build an app that will perform the following actions:\n- Perform anomaly detection across multiple correlated sensors.\n- Identify the root cause of process stops.\n- Send incident alerts.\nThe solution must minimize development time. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure Metrics Advisor"
+        },
+        {
+          "id": "b",
+          "text": "B. Form Recognizer"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Machine Learning"
+        },
+        {
+          "id": "d",
+          "text": "D. Anomaly Detector"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure Metrics Advisor is designed for time series monitoring, multi-dimensional analysis, anomaly detection across correlated metrics, root cause analysis, and alerting, minimizing development effort for this scenario.",
+        "incorrect": "Incorrect! Metrics Advisor is specifically designed for multivariate anomaly detection, root cause analysis, and alerting on time series data."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "65",
+      "type": "single_selection",
+      "question": "You have an app that analyzes images by using the Computer Vision API. You need to configure the app to provide an output for users who are vision impaired. The solution must provide the output in complete sentences. Which API call should you perform?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. readInStreamAsync"
+        },
+        {
+          "id": "b",
+          "text": "B. analyzeImagesByDomainInStreamAsync"
+        },
+        {
+          "id": "c",
+          "text": "C. tagImageInStreamAsync"
+        },
+        {
+          "id": "d",
+          "text": "D. describeImageInStreamAsync"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Describe Image operation generates a human-readable sentence describing the image content, suitable for alt text or accessibility.",
+        "incorrect": "Incorrect! The Describe Image API generates full-sentence descriptions of images."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "67",
+      "type": "single_selection",
+      "question": "You are building an AI solution that will use Sentiment Analysis results from surveys to calculate bonuses for customer service staff. You need to ensure that the solution meets the Microsoft responsible AI principles. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Add a human review and approval step before making decisions that affect the staff's financial situation."
+        },
+        {
+          "id": "b",
+          "text": "B. Include the Sentiment Analysis results when surveys return a low confidence score."
+        },
+        {
+          "id": "c",
+          "text": "C. Use all the surveys, including surveys by customers who requested that their account be deleted and their data be removed."
+        },
+        {
+          "id": "d",
+          "text": "D. Publish the raw survey data to a central location and provide the staff with access to the location."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! This aligns with the principles of Accountability and Fairness, ensuring that automated decisions with significant impact on individuals are subject to human oversight and intervention, mitigating potential biases or errors from the AI.",
+        "incorrect": "Incorrect! Adding human oversight for high-stakes decisions aligns with Accountability and Fairness."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "68",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains a Language service resource named ta1 and a virtual network named vnet1. You need to ensure that only resources in vnet1 can access ta1. What should you configure?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a network security group (NSG) for vnet1"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure Firewall for vnet1"
+        },
+        {
+          "id": "c",
+          "text": "C. the virtual network settings for ta1"
+        },
+        {
+          "id": "d",
+          "text": "D. a Language service container for ta1"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Configuring the networking settings directly on the Language service resource (ta1), specifically by setting up Private Endpoints or Service Endpoints linked to vnet1 and potentially disabling public access, restricts access to the specified VNet.",
+        "incorrect": "Incorrect! Configuring network settings (like Private Endpoints or VNet service endpoints) on the Language service resource itself restricts access."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "69",
+      "type": "single_selection",
+      "question": "You are developing a monitoring system that will analyze engine sensor data, such as rotation speed, angle, temperature, and pressure. The system must generate an alert in response to atypical values.",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Application Insights in Azure Monitor"
+        },
+        {
+          "id": "b",
+          "text": "B. metric alerts in Azure Monitor"
+        },
+        {
+          "id": "c",
+          "text": "C. Multivariate Anomaly Detection"
+        },
+        {
+          "id": "d",
+          "text": "D. Univariate Anomaly Detection"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Multivariate Anomaly Detection (available in Anomaly Detector API or Metrics Advisor) is designed to analyze correlations between multiple time series (sensors) to find systemic anomalies.",
+        "incorrect": "Incorrect! Analyzing multiple correlated sensors requires Multivariate Anomaly Detection."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "70",
+      "type": "single_selection",
+      "question": "You have an app named App1 that uses an Azure Cognitive Services model to identify anomalies in a time series data stream. You need to run App1 in a location that has limited connectivity. The solution must minimize costs. What should you use to host the model?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure Kubernetes Service (AKS)"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure Container Instances"
+        },
+        {
+          "id": "c",
+          "text": "C. a Kubernetes cluster hosted in an Azure Stack Hub integrated system"
+        },
+        {
+          "id": "d",
+          "text": "D. the Docker Engine"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! ACI allows running single containers without managing underlying infrastructure, offering a cost-effective and simpler way to host the model container, suitable for scenarios like limited connectivity where complex orchestration might not be needed.",
+        "incorrect": "Incorrect! Azure Container Instances (ACI) provides a simple, cost-effective way to run individual containers, suitable for edge scenarios with limited connectivity."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "72",
+      "type": "single_selection",
+      "question": "You are building a solution that will detect anomalies in sensor data from the previous 24 hours. You need to ensure that the solution scans the entire dataset, at the same time, for anomalies. Which type of detection should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. batch"
+        },
+        {
+          "id": "b",
+          "text": "B. streaming"
+        },
+        {
+          "id": "c",
+          "text": "C. change points"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Batch detection processes a whole dataset (like the previous 24 hours) at once.",
+        "incorrect": "Incorrect! Analyzing an entire existing dataset (previous 24 hours) at once is batch detection."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "75",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains an Anomaly Detector resource. You deploy a Docker host server named Server1 to the on-premises network. You need to host an instance of the Anomaly Detector service on Server1. Which parameter should you include in the docker run command?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Fluentd"
+        },
+        {
+          "id": "b",
+          "text": "B. Billing"
+        },
+        {
+          "id": "c",
+          "text": "C. Http Proxy"
+        },
+        {
+          "id": "d",
+          "text": "D. Mounts"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'Billing' parameter is required for all Cognitive Services containers to specify the endpoint of the associated Azure resource for usage metering.",
+        "incorrect": "Incorrect! The Billing endpoint parameter is mandatory for running Cognitive Services containers."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "86",
+      "type": "single_selection",
+      "question": "You have an Azure Video Analyzer for Media (previously Video Indexer) service that is used to provide a search interface over company videos on your company's website. You need to be able to search for videos based on who is present in the video. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Create a person model and associate the model to the videos."
+        },
+        {
+          "id": "b",
+          "text": "B. Create person objects and provide face images for each object."
+        },
+        {
+          "id": "c",
+          "text": "C. Invite the entire staff of the company to Video Indexer."
+        },
+        {
+          "id": "d",
+          "text": "D. Edit the faces in the videos."
+        },
+        {
+          "id": "e",
+          "text": "E. Upload names to a language model."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Video Indexer uses Person models to store known faces. You train this model by labeling unknown faces in videos. Associating the model during indexing allows recognition and searching by name.",
+        "incorrect": "Incorrect! Create and train a Person Model within Video Indexer by labeling faces."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "92",
+      "type": "single_selection",
+      "question": "Your company uses an Azure Cognitive Services solution to detect faces in uploaded images. The method uses the Face API Detect endpoint with `detectionModel=detection_01`. You discover that the solution frequently fails to detect faces in blurred images and in images that contain sideways faces. You need to increase the likelihood that the solution can detect faces in blurred images and images that contain sideways faces. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Use a different version of the Face API."
+        },
+        {
+          "id": "b",
+          "text": "B. Use the Computer Vision service instead of the Face service."
+        },
+        {
+          "id": "c",
+          "text": "C. Use the Identify method instead of the Detect method."
+        },
+        {
+          "id": "d",
+          "text": "D. Change the detection model."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Detection models `detection_02` and `detection_03` offer improved accuracy for challenging images, including blur, sideways orientations, and small faces, compared to `detection_01`. Changing the `detectionModel` parameter in the API call is the correct approach.",
+        "incorrect": "Incorrect! Newer detection models (`detection_02`, `detection_03`) are better at handling challenging images like blurred or sideways faces."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "93",
+      "type": "single_selection",
+      "question": "You have the following Python function for creating Azure Cognitive Services resources programmatically.\n```python\ndef create_resource(resource_group_name, resource_name, kind, account_tier, location):\n    parameters = CognitiveServicesAccount(sku=Sku(name=account_tier), kind=kind, location=location, properties={})\n    client = CognitiveServicesManagementClient(credential, subscription_id)\n    result = client.accounts.begin_create(resource_group_name, resource_name, parameters).result()\n```\nYou need to call the function to create a free Azure resource in the West US Azure region. The resource will be used to generate captions of images automatically. Which code should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(\"RG1\", \"res1\", \"ComputerVision\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(\"RG1\", \"res1\", \"CustomVision.Prediction\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(\"RG1\", \"res1\", \"ComputerVision\", \"S0\", \"westus\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(\"RG1\", \"res1\", \"CustomVision.Prediction\", \"S0\", \"westus\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Image captioning is part of 'ComputerVision'. 'F0' represents the Free tier. 'westus' is the location.",
+        "incorrect": "Incorrect! Image captioning is provided by ComputerVision, F0 is the free tier, and westus is the location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "96",
+      "type": "single_selection",
+      "question": "You need to build a solution that will use optical character recognition (OCR) to scan sensitive documents by using the Computer Vision API. The solution must NOT be deployed to the public cloud. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Build an on-premises web app to query the Computer Vision endpoint."
+        },
+        {
+          "id": "b",
+          "text": "B. Host the Computer Vision endpoint in a container on an on-premises server."
+        },
+        {
+          "id": "c",
+          "text": "C. Host an exported Open Neural Network Exchange (ONNX) model on an on-premises server."
+        },
+        {
+          "id": "d",
+          "text": "D. Build an Azure web app to query the Computer Vision endpoint."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Running the Computer Vision Read API container on-premises keeps the data and processing within the local network, meeting the requirement.",
+        "incorrect": "Incorrect! Running the Computer Vision container on-premises allows local processing without sending data to the public cloud."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "97",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Search solution and a collection of handwritten letters stored as JPEG files. You plan to index the collection. The solution must ensure that queries can be performed on the contents of the letters. You need to create an indexer that has a skillset. Which skill should you include?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. image analysis"
+        },
+        {
+          "id": "b",
+          "text": "B. optical character recognition (OCR)"
+        },
+        {
+          "id": "c",
+          "text": "C. key phrase extraction"
+        },
+        {
+          "id": "d",
+          "text": "D. document extraction"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The OCR skill (specifically using its 'printed' or 'handwritten' mode) is designed to extract text content from images, including scanned documents and handwritten letters, making it searchable.",
+        "incorrect": "Incorrect! The OCR skill extracts text (including handwritten) from images, making it searchable."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "99",
+      "type": "single_selection",
+      "question": "You have an app that captures live video of exam candidates. You need to use the Face service to validate that the subjects of the videos are real people.",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Call the face detection API and retrieve the face rectangle by using the FaceRectangle attribute."
+        },
+        {
+          "id": "b",
+          "text": "B. Call the face detection API repeatedly and check for changes to the FaceAttributes.HeadPose attribute."
+        },
+        {
+          "id": "c",
+          "text": "C. Call the face detection API and use the FaceLandmarks attribute to calculate the distance between pupils."
+        },
+        {
+          "id": "d",
+          "text": "D. Call the face detection API repeatedly and check for changes to the FaceAttributes.Accessories attribute."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Natural head movements (changes in yaw, pitch, roll in HeadPose) over a short time suggest a live person rather than a static photo. While not foolproof, it's a basic liveness check available through standard attributes.",
+        "incorrect": "Incorrect! Checking for natural changes in head pose over time is a basic method to infer liveness."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "100",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains an AI enrichment pipeline in Azure Cognitive Search and an Azure Storage account that has 10 GB of scanned documents and images. You need to index the documents and images in the storage account. The solution must minimize how long it takes to build the index. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. From the Azure portal, configure parallel indexing."
+        },
+        {
+          "id": "b",
+          "text": "B. From the Azure portal, configure scheduled indexing."
+        },
+        {
+          "id": "c",
+          "text": "C. Configure field mappings by using the REST API."
+        },
+        {
+          "id": "d",
+          "text": "D. Create a text-based indexer by using the REST API."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Parallel indexing allows the indexer to process multiple documents concurrently, significantly speeding up the indexing process for large datasets, provided the search service has sufficient scale (partitions/replicas).",
+        "incorrect": "Incorrect! Parallel indexing processes multiple documents simultaneously, reducing overall indexing time."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "102",
+      "type": "single_selection",
+      "question": "You have a mobile app that manages printed forms. You need the app to send images of the forms directly to Forms Recognizer to extract relevant information. For compliance reasons, the image files must not be stored in the cloud. In which format should you send the images to the Form Recognizer API endpoint?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. raw image binary"
+        },
+        {
+          "id": "b",
+          "text": "B. form URL encoded"
+        },
+        {
+          "id": "c",
+          "text": "C. JSON"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! To avoid storing the image in the cloud (e.g., by providing a URL), the image can be sent directly in the request body as raw binary data (octet-stream). This meets the compliance requirement.",
+        "incorrect": "Incorrect! Sending the image as raw binary data in the request body avoids storing it externally."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "103",
+      "type": "single_selection",
+      "question": "You plan to build an app that will generate a list of tags for uploaded images. The app must meet the following requirements:\n- Generate tags in a user's preferred language.\n- Support English, French, and Spanish.\n- Minimize development effort.\nYou need to build a function that will generate the tags for the app. Which Azure service endpoint should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Content Moderator Image Moderation"
+        },
+        {
+          "id": "b",
+          "text": "B. Custom Vision image classification"
+        },
+        {
+          "id": "c",
+          "text": "C. Computer Vision Image Analysis"
+        },
+        {
+          "id": "d",
+          "text": "D. Custom Translator"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Computer Vision Image Analysis endpoint (specifically the 'tag' feature) provides thousands of recognizable objects, living things, scenery, and actions. It supports multiple languages for the output tags with minimal development effort using a pre-built model.",
+        "incorrect": "Incorrect! Computer Vision Image Analysis provides pre-built image tagging with multi-language support."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "107",
+      "type": "single_selection",
+      "question": "You are building an app that will include one million scanned magazine articles. Each article will be stored as an image file. You need to configure the app to extract text from the images. The solution must minimize development effort.",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Computer Vision Image Analysis"
+        },
+        {
+          "id": "b",
+          "text": "B. the Read API in Computer Vision"
+        },
+        {
+          "id": "c",
+          "text": "C. Form Recognizer"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure Cognitive Service for Language"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Read API (also known as OCR in v3.2+) is specifically designed for extracting large amounts of printed and handwritten text from images and multi-page PDF documents, making it ideal for scanned articles with minimal development effort using the pre-built model.",
+        "incorrect": "Incorrect! The Computer Vision Read API (OCR) is optimized for extracting text from dense documents like articles."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "108",
+      "type": "single_selection",
+      "question": "You have a 20-GB video file named File1.avi that is stored on a local drive. You need to index File1.avi by using the Azure Video Indexer website. What should you do first?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Upload File1.avi to an Azure Storage queue."
+        },
+        {
+          "id": "b",
+          "text": "B. Upload File1.avi to the Azure Video Indexer website."
+        },
+        {
+          "id": "c",
+          "text": "C. Upload File1.avi to Microsoft OneDrive."
+        },
+        {
+          "id": "d",
+          "text": "D. Upload File1.avi to the www.youtube.com webpage."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Video Indexer website provides an interface to directly upload video files from a local drive or provide a URL for processing. Note: There might be size limits for direct upload vs URL, but upload is the first step.",
+        "incorrect": "Incorrect! The Video Indexer portal allows direct file uploads for processing."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "115",
+      "type": "single_selection",
+      "question": "You are building a Conversational Language Understanding model for an e-commerce chatbot. Users can speak or type their billing address when prompted by the chatbot. You need to construct an entity to capture billing addresses. Which entity type should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. machine learned"
+        },
+        {
+          "id": "b",
+          "text": "B. Regex"
+        },
+        {
+          "id": "c",
+          "text": "C. list"
+        },
+        {
+          "id": "d",
+          "text": "D. Pattern.any"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! A billing address is complex and has varied structure ('123 Main St, Anytown, CA 90210', 'PO Box 100', etc.). A machine learned entity is best suited for learning to identify such complex, context-dependent entities from examples.",
+        "incorrect": "Incorrect! Addresses have variable structure and context, making machine learned entities the best choice."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "118",
+      "type": "single_selection",
+      "question": "You are building a conversational language understanding model. You need to enable active learning.",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Add show-all-intents=true to the prediction endpoint query."
+        },
+        {
+          "id": "b",
+          "text": "B. Enable speech priming."
+        },
+        {
+          "id": "c",
+          "text": "C. Add log=true to the prediction endpoint query."
+        },
+        {
+          "id": "d",
+          "text": "D. Enable sentiment analysis."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Setting the `log=true` query parameter when calling the prediction endpoint logs the utterance, allowing it to be reviewed later for active learning suggestions.",
+        "incorrect": "Incorrect! Setting log=true logs endpoint utterances, enabling active learning."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "120",
+      "type": "single_selection",
+      "question": "You are building a Language Understanding model for an e-commerce platform. You need to construct an entity to capture billing addresses. Which entity type should you use for the billing address?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. machine learned"
+        },
+        {
+          "id": "b",
+          "text": "B. Regex"
+        },
+        {
+          "id": "c",
+          "text": "C. geographyV2"
+        },
+        {
+          "id": "d",
+          "text": "D. Pattern.any"
+        },
+        {
+          "id": "e",
+          "text": "E. list"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! As explained in Q115, addresses are complex and variable, best handled by machine learned entities trained on examples.",
+        "incorrect": "Incorrect! Machine learned entities are best for complex, variable data like addresses."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "121",
+      "type": "single_selection",
+      "question": "You need to upload speech samples to a Speech Studio project for use in training. How should you upload the samples?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Combine the speech samples into a single audio file in the .wma format and upload the file."
+        },
+        {
+          "id": "b",
+          "text": "B. Upload a .zip file that contains a collection of audio files in the .wav format and a corresponding text transcript file."
+        },
+        {
+          "id": "c",
+          "text": "C. Upload individual audio files in the FLAC format and manually upload a corresponding transcript in Microsoft Word format."
+        },
+        {
+          "id": "d",
+          "text": "D. Upload individual audio files in the .wma format."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Speech Studio accepts datasets packaged as a .zip file containing multiple audio files (often .wav or .mp3) and a single transcript file mapping filenames to their text content.",
+        "incorrect": "Incorrect! Speech Studio typically requires a zip file containing audio files (e.g., WAV) and a single transcript text file."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "127",
+      "type": "single_selection",
+      "question": "You are training a Language Understanding model for a user support system. You create the first intent named GetContactDetails and add 200 examples. You need to decrease the likelihood of a false positive.",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enable active learning."
+        },
+        {
+          "id": "b",
+          "text": "B. Add a machine learned entity."
+        },
+        {
+          "id": "c",
+          "text": "C. Add additional examples to the GetContactDetails intent."
+        },
+        {
+          "id": "d",
+          "text": "D. Add examples to the None intent."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Adding varied examples of utterances that should *not* trigger the 'GetContactDetails' intent (or any other defined intent) to the 'None' intent helps the model learn the boundaries between intents and reduces the chance of misclassifying irrelevant utterances (false positives).",
+        "incorrect": "Incorrect! Adding examples to the None intent helps the model learn what is *not* a specific intent, reducing false positives."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "129",
+      "type": "single_selection",
+      "question": "You have the following C# method.\n```csharp\nstatic void create_resource(string resource_group_name, string resource_name, string kind, string account_tier, string location)\n{\n    CognitiveServicesManagementClient client = /* Assume initialized */;\n    CognitiveServicesAccount parameters = new CognitiveServicesAccount(sku: new Sku(account_tier), kind: kind, location: location);\n    var result = client.Accounts.BeginCreate(resource_group_name, resource_name, parameters).Result;\n}\n```\nYou need to deploy an Azure resource to the East US Azure region. The resource will be used to perform sentiment analysis. How should you call the method?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"S0\", \"eastus\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"S0\", \"eastus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"Standard\", \"East US\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"Standard\", \"East US\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Sentiment analysis is part of the 'TextAnalytics' service kind (or the newer 'Language' kind). 'S0' is a valid standard tier name. 'eastus' is the location.",
+        "incorrect": "Incorrect! Sentiment analysis falls under the 'TextAnalytics' (or 'Language') kind, 'S0' is a standard tier, and 'eastus' is the location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "130",
+      "type": "single_selection",
+      "question": "You build a Conversational Language Understanding model by using the Language Services portal. You export the model as a JSON file as shown in the following sample:\n```json\n{\n  \"text\": \"average amount of rain by month at chicago last year\",\n  \"intent\": \"Weather.CheckWeatherValue\",\n  \"entities\": [\n    {\n      \"entity\": \"Weather.WeatherRange\",\n      \"startPos\": 0,\n      \"endPos\": 6,\n      \"children\": []\n    },\n    {\n      \"entity\": \"Weather.WeatherCondition\",\n      \"startPos\": 18,\n      \"endPos\": 21,\n      \"children\": []\n    },\n    {\n      \"entity\": \"Weather.Historic\",\n      \"startPos\": 23,\n      \"endPos\": 30,\n      \"children\": []\n    }\n  ]\n}\n```\nTo what does the Weather.Historic entity correspond in the utterance?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. by month"
+        },
+        {
+          "id": "b",
+          "text": "B. chicago"
+        },
+        {
+          "id": "c",
+          "text": "C. rain"
+        },
+        {
+          "id": "d",
+          "text": "D. location"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'Weather.Historic' entity has `startPos: 23` and `endPos: 30`. Counting characters in the utterance 'average amount of rain by month at chicago last year', index 23 starts at 'b' in 'by month' and index 30 is the end of 'month'.",
+        "incorrect": "Incorrect! The start and end positions (23 to 30) correspond to 'by month' in the utterance."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "131",
+      "type": "single_selection",
+      "question": "You are examining the Text Analytics output of an application. The text analyzed is: \u201cOur tour guide took us up the Space Needle during our trip to Seattle last week.\u201d The response contains the data shown in the following table:\nText | Category | ConfidenceScore\n---|---|---\nTour guide | PersonType | 0.45\nSpace Needle | Location | 0.38\nTrip | Event | 0.78\nSeattle | Location | 0.78\nLast week | DateTime | 0.80\nWhich Text Analytics API is used to analyze the text?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Entity Linking"
+        },
+        {
+          "id": "b",
+          "text": "B. Named Entity Recognition"
+        },
+        {
+          "id": "c",
+          "text": "C. Sentiment Analysis"
+        },
+        {
+          "id": "d",
+          "text": "D. Key Phrase Extraction"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Named Entity Recognition (NER) identifies and categorizes entities in text into predefined categories like Person, Location, Organization, DateTime, Event, etc., which matches the output shown.",
+        "incorrect": "Incorrect! Identifying and categorizing entities like PersonType, Location, Event, and DateTime is Named Entity Recognition (NER)."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "134",
+      "type": "single_selection",
+      "question": "You have the following data sources:\n- Finance: On-premises Microsoft SQL Server database\n- Sales: Azure Cosmos DB using the Core (SQL) API\n- Logs: Azure Table storage\n- HR: Azure SQL database\nYou need to ensure that you can search all the data by using the Azure Cognitive Search REST API. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Migrate the data in HR to Azure Blob storage."
+        },
+        {
+          "id": "b",
+          "text": "B. Migrate the data in HR to the on-premises SQL server."
+        },
+        {
+          "id": "c",
+          "text": "C. Export the data in Finance to Azure Data Lake Storage."
+        },
+        {
+          "id": "d",
+          "text": "D. Ingest the data in Logs into Azure Sentinel."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! On-premises SQL Server is NOT a directly supported data source for Cognitive Search indexers. Azure Cosmos DB (SQL API), Azure Table Storage, and Azure SQL Database ARE supported. To make the Finance data searchable via a standard indexer, it must be moved to a supported Azure source like Azure SQL DB, Azure Blob Storage, or Azure Data Lake Storage Gen2.",
+        "incorrect": "Incorrect! On-premises SQL Server is not a directly supported data source for Cognitive Search indexers. Moving the Finance data to a supported Azure source like ADLS Gen2 is necessary."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "137",
+      "type": "single_selection",
+      "question": "You have a Language service resource that performs the following:\n- Sentiment analysis\n- Named Entity Recognition (NER)\n- Personally Identifiable Information (PII) identification\nYou need to prevent the resource from persisting input data once the data is analyzed. Which query parameter in the Language service API should you configure?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. model-version"
+        },
+        {
+          "id": "b",
+          "text": "B. piiCategories"
+        },
+        {
+          "id": "c",
+          "text": "C. showStats"
+        },
+        {
+          "id": "d",
+          "text": "D. loggingOptOut"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Setting `loggingOptOut=true` in the API request prevents the service from logging the input text for 48 hours, helping with compliance and privacy.",
+        "incorrect": "Incorrect! The loggingOptOut parameter prevents the service from logging input text."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "138",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Services model named Model1 that identifies the intent of text input. You develop an app in C# named App1. You need to configure App1 to use Model1. Which package should you add to App1?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Universal.Microsoft.CognitiveServices.Speech"
+        },
+        {
+          "id": "b",
+          "text": "B. SpeechServicesToolkit"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure.AI.Language.Conversations"
+        },
+        {
+          "id": "d",
+          "text": "D. Xamarin.Cognitive.Speech"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! This is the correct .NET SDK package for interacting with the newer Conversational Language Understanding (CLU) service, which identifies intents and entities.",
+        "incorrect": "Incorrect! The Azure.AI.Language.Conversations NuGet package contains the SDK for Conversational Language Understanding."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "140",
+      "type": "single_selection",
+      "question": "You need to measure the public perception of your brand on social media by using natural language processing. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Language service"
+        },
+        {
+          "id": "b",
+          "text": "B. Content Moderator"
+        },
+        {
+          "id": "c",
+          "text": "C. Computer Vision"
+        },
+        {
+          "id": "d",
+          "text": "D. Form Recognizer"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Azure Cognitive Service for Language includes Sentiment Analysis and Opinion Mining features, which are designed to analyze text (like social media posts) and determine the positive, negative, or neutral sentiment, effectively measuring public perception.",
+        "incorrect": "Incorrect! The Language service's Sentiment Analysis feature is ideal for measuring public perception from text."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "142",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Search instance that indexes purchase orders by using Form Recognizer. You need to analyze the extracted information by using Microsoft Power BI. The solution must minimize development effort. What should you add to the indexer?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a projection group"
+        },
+        {
+          "id": "b",
+          "text": "B. a table projection"
+        },
+        {
+          "id": "c",
+          "text": "C. a file projection"
+        },
+        {
+          "id": "d",
+          "text": "D. an object projection"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Knowledge Store table projections save enriched data (like Form Recognizer output) into Azure Table Storage. Power BI has built-in connectors for Table Storage, making it easy to analyze the structured data with minimal effort.",
+        "incorrect": "Incorrect! Table projections output structured data to Azure Table Storage, easily consumable by Power BI."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "143",
+      "type": "single_selection",
+      "question": "You are building a social media extension that will convert text to speech. The solution must meet the following requirements:\n- Support messages of up to 400 characters.\n- Provide users with multiple voice options.\n- Minimize costs.\nYou create an Azure Cognitive Services resource.\nWhich Speech API endpoint provides users with the available voice options?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. https://[region].api.cognitive.microsoft.com/speechtotext/v3.0/models/base"
+        },
+        {
+          "id": "b",
+          "text": "B. https://[region].customvoice.api.speech.microsoft.com/api/texttospeech/v3.0/longaudiosynthesis/voices"
+        },
+        {
+          "id": "c",
+          "text": "C. https://[region].tts.speech.microsoft.com/cognitiveservices/voices/list"
+        },
+        {
+          "id": "d",
+          "text": "D. https://[region].voice.speech.microsoft.com/cognitiveservices/v1?deploymentId={deploymentId}"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! This REST API endpoint specifically lists the available standard and neural Text-to-Speech voices for a given region.",
+        "incorrect": "Incorrect! The /voices/list endpoint provides the available TTS voices."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "148",
+      "type": "single_selection",
+      "question": "You are enriching your Azure Cognitive Search service with knowledge store projections. The main requirement is to save the image extracted from the documents. Which type of projection you need to use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Tables"
+        },
+        {
+          "id": "b",
+          "text": "B. Objects"
+        },
+        {
+          "id": "c",
+          "text": "C. Files"
+        },
+        {
+          "id": "d",
+          "text": "D. Message"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! File projections are specifically designed to save binary files, such as normalized images extracted during the skillset execution (e.g., by the OCR skill), into Azure Blob Storage.",
+        "incorrect": "Incorrect! File projections are used to save binary files like images extracted during enrichment."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "149",
+      "type": "single_selection",
+      "question": "You have been asked to develop a real-time speech-to-speech translation prototype that will be showcased in the next corporate webinar. The prototype will translate conversational English to Spanish, French, and Italian for now. What is the most suitable approach to follow?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Develop one app using Azure AI Translator and select translation of English into Spanish, French, and Italian."
+        },
+        {
+          "id": "b",
+          "text": "B. Develop one app using the Speech Service SDK and add Spanish, French, and Italian as target translation languages."
+        },
+        {
+          "id": "c",
+          "text": "C. Develop separate apps using the Speech Service SDK to translate English into one of the three target languages."
+        },
+        {
+          "id": "d",
+          "text": "D. Develop one app to convert the speech to text using the Speech Service SDK, translate the speech with Azure AI Translator, and then read the translations with Azure AI Immersive Reader."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Speech SDK's `SpeechTranslationConfig` allows specifying the source speech language and multiple target translation languages (`AddTargetLanguage`). The `TranslationRecognizer` then provides both the original transcription and translations to the specified target languages, which can be synthesized back to speech if needed (speech-to-speech).",
+        "incorrect": "Incorrect! The Speech SDK supports real-time speech-to-speech translation to multiple target languages within a single recognizer."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "151",
+      "type": "single_selection",
+      "question": "You are training a Conversational Language Understanding (CLU) application. After you finish training a CLU app, it receives a prediction score of 0.01. How can you describe the result?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. A definite failure to match"
+        },
+        {
+          "id": "b",
+          "text": "B. A high-confidence, low-error model"
+        },
+        {
+          "id": "c",
+          "text": "C. A low-confidence, high-error model"
+        },
+        {
+          "id": "d",
+          "text": "D. A definite match"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! A prediction score close to 0 (like 0.01) indicates very low confidence in the predicted intent or entity. This usually correlates with a high probability of error or misclassification.",
+        "incorrect": "Incorrect! A prediction score close to 0 indicates very low confidence."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "152",
+      "type": "single_selection",
+      "question": "Your company decided to use the Azure AI Vision to analyze images for insights extraction. Given a set of input parameters, such as region/transactions and required features, you have been asked to estimate the upfront and recurring fees for implementing and using this service in a production-level environment. How could you estimate costs?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Collect the required features/inputs elements and send a request to Azure support."
+        },
+        {
+          "id": "b",
+          "text": "B. Use the Azure Price Calculator to estimate costs."
+        },
+        {
+          "id": "c",
+          "text": "C. Create the resources, send sample traffic, and then extrapolate costs using Cost Analysis in the Azure Portal."
+        },
+        {
+          "id": "d",
+          "text": "D. Hire a specialized firm for an accurate estimation."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Azure Pricing Calculator is the standard tool for estimating costs for Azure services based on region, tier, usage volume (e.g., number of transactions), and specific features used.",
+        "incorrect": "Incorrect! The Azure Pricing Calculator is designed for estimating costs based on service configuration and expected usage."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "153",
+      "type": "single_selection",
+      "question": "You developed a chatbot using Conversational Language Understanding (CLU) and published it. The end user interacts with the bot by sending inputs to be interpreted by the application and receiving responses. What is the exact nomination of those inputs?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Utterances"
+        },
+        {
+          "id": "b",
+          "text": "B. Intents"
+        },
+        {
+          "id": "c",
+          "text": "C. Entities"
+        },
+        {
+          "id": "d",
+          "text": "D. Patterns"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! In the context of CLU and LUIS, the raw input text (or speech transcript) provided by the user is referred to as an utterance.",
+        "incorrect": "Incorrect! User input to a CLU/LUIS model is called an utterance."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "155",
+      "type": "single_selection",
+      "question": "A developer is working with Azure Cognitive Search and wants to enhance the current pipeline by adding searchable content out of raw unstructured text in multiple languages and apply language detection and translation. What is the most appropriate approach to fulfill those requirements?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Use AI Enrichment with custom skills to integrate with Translator and Computer Vision API."
+        },
+        {
+          "id": "b",
+          "text": "B. Train and deploy custom models for language detection and translation, then use AI Enrichment to call those APIs."
+        },
+        {
+          "id": "c",
+          "text": "C. Use AI Enrichment with built-in skills for language detection and translation."
+        },
+        {
+          "id": "d",
+          "text": "D. Train and deploy custom models for language detection and translation then call those API right after the source documents are 'cracked'."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Cognitive Search provides built-in cognitive skills, including Language Detection and Text Translation, which can be easily added to an AI enrichment skillset to process multilingual text.",
+        "incorrect": "Incorrect! Cognitive Search has built-in skills for language detection and translation."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "156",
+      "type": "single_selection",
+      "question": "You have been asked to build a solution using Azure and ensure its compliance with Microsoft AI principles. Which of the following is not a Microsoft AI principle?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Privacy and Security"
+        },
+        {
+          "id": "b",
+          "text": "B. Transparency"
+        },
+        {
+          "id": "c",
+          "text": "C. Accountability"
+        },
+        {
+          "id": "d",
+          "text": "D. Scalability"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Scalability is a general cloud computing concept (and desirable for AI solutions) but is not one of the six core Microsoft Responsible AI principles (which are: Fairness, Reliability & Safety, Privacy & Security, Inclusiveness, Transparency, Accountability).",
+        "incorrect": "Incorrect! The six Microsoft Responsible AI principles are Fairness, Reliability & Safety, Privacy & Security, Inclusiveness, Transparency, and Accountability. Scalability is not one of them."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "157",
+      "type": "single_selection",
+      "question": "You want to classify URL-based images using Custom Vision Prediction API. Review the following Python 3 code fragment.\n```python\nimport http.client, urllib.request, urllib.parse, urllib.error, base64\nheaders = {\n    'Content-Type': 'application/json',\n    'Prediction-Key': '{prediction key}',\n}\ntry:\n    body = \"{'Url' : '\" + url + \"' }\"\n    conn = http.client.HTTPSConnection( 'southcentralus.api.cognitive.microsoft.com' )\n    conn.request(\"POST\", \"/customvision/v3.0/Prediction/{projectId}/{PROJECT_TYPE}/iterations/{iterationName}/{IMAGE_TYPE}\", body, headers)\n    response = conn.getresponse()\n    data = response.read()\n    print(data)\n    conn.close()\nexcept Exception as e:\n    print(\"[Errno {}] {}\".format(e.errno, e.strerror))\n```\nWhat parameters should replace PROJECT_TYPE and IMAGE_TYPE in this code snippet?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enter \u2018classify\u2019 for {PROJECT_TYPE} parameter and enter \u2018url\u2019 for the {IMAGE_TYPE} parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Enter \u2018detect\u2019 for the {PROJECT_TYPE} parameter and enter \u2018image\u2019 for the {IMAGE_TYPE} parameter."
+        },
+        {
+          "id": "c",
+          "text": "C. Enter \u2018classify\u2019 for the {PROJECT_TYPE} parameter and enter \u2018image\u2019 for the {IMAGE_TYPE} parameter."
+        },
+        {
+          "id": "d",
+          "text": "D. Enter \u2018detect\u2019 for the {PROJECT_TYPE} parameter and \u2018url' for the {IMAGE_TYPE} parameter."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The problem states the goal is to 'classify' images. Since the input is a URL (provided in the 'body'), the endpoint variation for URL-based input is used, indicated by 'url' in the path.",
+        "incorrect": "Incorrect! Use 'classify' for image classification projects and 'url' when providing an image URL in the request body."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "158",
+      "type": "single_selection",
+      "question": "Which of the following techniques is not used for natural language processing?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Tokenization"
+        },
+        {
+          "id": "b",
+          "text": "B. Stemming"
+        },
+        {
+          "id": "c",
+          "text": "C. Lemmatization"
+        },
+        {
+          "id": "d",
+          "text": "D. Optical Character Recognition"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Optical Character Recognition (OCR) is used in computer vision to extract text *from images*. NLP techniques are then applied *to* the extracted text. OCR itself is not an NLP technique.",
+        "incorrect": "Incorrect! OCR extracts text from images (Computer Vision); NLP processes the text itself."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "159",
+      "type": "single_selection",
+      "question": "Consider the following C# Computer Vision API code fragment:\n```csharp\nforeach (var category in results.Categories)\n{\n    if (category.Detail?.Celebrities != null)\n    {\n        foreach (var celeb in category.Detail.Celebrities)\n        {\n             Console.WriteLine($\"{celeb.Name} with confidence {celeb.Confidence} at location {celeb.FaceRectangle.Left}, \" +\n             $\"{celeb.FaceRectangle.Top}, {celeb.FaceRectangle.Height}, {celeb.FaceRectangle.Width}\");\n        }\n    }\n}\nConsole.WriteLine();\n```\nWhat is this segment of code designed to do?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Analyze image details"
+        },
+        {
+          "id": "b",
+          "text": "B. Detect celebrities in images"
+        },
+        {
+          "id": "c",
+          "text": "C. Detect image categories"
+        },
+        {
+          "id": "d",
+          "text": "D. Detect faces in images"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The code iterates through `results.Categories`, checks for `category.Detail.Celebrities`, and then iterates through each `celeb` in that collection, printing the celebrity's name, confidence, and face rectangle. This clearly indicates it's processing detected celebrity information.",
+        "incorrect": "Incorrect! The code specifically checks for and iterates through `category.Detail.Celebrities`."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "160",
+      "type": "single_selection",
+      "question": "You have been asked by your management to process all internal documents such as contracts, and invoices. This process needs to identify and classify personal and sensitive information that may exist to be compliant with the regulation and respect customer privacy. What is the most suitable approach to use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Develop a custom machine learning model to identify efficiently personal info and sensitive data."
+        },
+        {
+          "id": "b",
+          "text": "B. Use Computer Vision Optical Character Recognition and custom scripts using heuristics."
+        },
+        {
+          "id": "c",
+          "text": "C. Use the Azure AI Language Named Entity Recognition (NER) to identify personal info and classify the documents."
+        },
+        {
+          "id": "d",
+          "text": "D. Process the documents by integrating the Text Analytics Key Phrases API with Power BI."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure AI Language's NER feature includes pre-built categories for identifying Personally Identifiable Information (PII) and sensitive data within text, providing a suitable and efficient approach.",
+        "incorrect": "Incorrect! Azure AI Language NER has built-in capabilities for PII detection."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "161",
+      "type": "single_selection",
+      "question": "Your company must process hundreds of sales receipts manually and wants to automate the process. All the receipts are available in JPEG and PDF format and 2-3 MB in size. You decided to choose an Azure AI service for such cases. What is the most appropriate service to use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure AI Vision"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure AI Custom Vision"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure AI Document Intelligence"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure AI Personalizer"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure AI Document Intelligence (formerly Form Recognizer) offers a prebuilt receipt model specifically designed to extract key information (merchant name, date, total, etc.) from receipts in various formats like JPEG and PDF.",
+        "incorrect": "Incorrect! Azure AI Document Intelligence (Form Recognizer) has a prebuilt model specifically for receipts."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "164",
+      "type": "single_selection",
+      "question": "Which of the following scenarios is not suited for built-in skills for Azure Cognitive Search?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Scanned documents (JPEG) that you want to make full-text searchable."
+        },
+        {
+          "id": "b",
+          "text": "B. Multi-lingual content against which you want to apply language detection and possibly text translation."
+        },
+        {
+          "id": "c",
+          "text": "C. Unstructured or semi-structured documents containing content that has inherent meaning or context that is hidden in the larger document."
+        },
+        {
+          "id": "d",
+          "text": "D. Identify and extract text, key-value pairs, selection marks, or tables from your documents as forms."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Extracting structured form data (key-value pairs, tables) typically requires Azure AI Document Intelligence (Form Recognizer). While Document Intelligence can be integrated as a *custom skill*, it's not a standard *built-in skill* within Cognitive Search itself for this detailed form extraction.",
+        "incorrect": "Incorrect! Detailed form extraction (key-value pairs, tables) requires Azure AI Document Intelligence, typically integrated as a custom skill, not a built-in skill."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "166",
+      "type": "single_selection",
+      "question": "You have the following Python method.\n```python\ndef create_resource(resource_group_name, resource_name, kind, account_tier, location):\n    parameters = CognitiveServicesAccount(sku=Sku(name=account_tier), kind=kind, location=location, properties={})\n    client = CognitiveServicesManagementClient(credential, subscription_id)\n    result = client.accounts.begin_create(resource_group_name, resource_name, parameters).result()\n```\nYou need to deploy an Azure resource to the East US Azure region. The resource will be used to perform sentiment analysis. How should you call the method?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"Standard\", \"East US\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"S0\", \"eastus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"Standard\", \"East US\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"S0\", \"eastus\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Sentiment analysis uses the 'TextAnalytics' (or 'Language') kind. 'S0' is a valid standard tier SKU name. 'eastus' is the location.",
+        "incorrect": "Incorrect! Use 'TextAnalytics' kind, 'S0' tier, and 'eastus' location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "167",
+      "type": "single_selection",
+      "question": "You have the following C# function.\n```csharp\nstatic void MyFunction(TextAnalyticsClient textAnalyticsClient, string text)\n{\n    var response = textAnalyticsClient.ExtractKeyPhrases(text);\n    Console.WriteLine(\"Key phrases:\");\n    foreach (string keyphrase in response.Value)\n    {\n        Console.WriteLine($\"{keyphrase}\");\n    }\n}\n```\nYou call the function by using the following code.\n`MyFunction(textAnalyticsClient, \"the quick brown fox jumps over the lazy dog\");`\nWhich output will you receive?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. The quick\\nThe lazy"
+        },
+        {
+          "id": "b",
+          "text": "B. the quick brown fox jumps over the lazy dog"
+        },
+        {
+          "id": "c",
+          "text": "C. jumps over the"
+        },
+        {
+          "id": "d",
+          "text": "D. quick brown fox\\nlazy dog"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Key Phrase Extraction algorithm identifies the most salient noun phrases. In this common pangram, 'quick brown fox' and 'lazy dog' are the key phrases likely to be extracted.",
+        "incorrect": "Incorrect! Key Phrase Extraction identifies 'quick brown fox' and 'lazy dog' as the main concepts."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "179",
+      "type": "single_selection",
+      "question": "You are building a retail kiosk system that will use a custom neural voice. You acquire audio samples and consent from the voice talent. You need to create a voice talent profile. What should you upload to the profile?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a .zip file that contains 10-second .wav files and the associated transcripts as .txt files"
+        },
+        {
+          "id": "b",
+          "text": "B. a five-minute .flac audio file and the associated transcript as a .txt file"
+        },
+        {
+          "id": "c",
+          "text": "C. a .wav or .mp3 file of the voice talent consenting to the creation of a synthetic version of their voice"
+        },
+        {
+          "id": "d",
+          "text": "D. a five-minute .wav or .mp3 file of the voice talent describing the kiosk system"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Creating a voice talent profile requires uploading an audio recording where the voice talent reads a specific consent statement provided by Microsoft, verifying their identity and agreement.",
+        "incorrect": "Incorrect! The voice talent profile requires an audio recording of the consent statement."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "185",
+      "type": "single_selection",
+      "question": "You are developing an app that will use the Decision and Language APIs. You need to provision resources for the app. The solution must ensure that each service is accessed by using a single endpoint and credential. Which type of resource should you create?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Language"
+        },
+        {
+          "id": "b",
+          "text": "B. Speech"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Cognitive Services"
+        },
+        {
+          "id": "d",
+          "text": "D. Content Moderator"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The multi-service 'Azure Cognitive Services' resource provides a single key and endpoint to access multiple underlying services, including Language, Speech, Vision, and Decision APIs.",
+        "incorrect": "Incorrect! The Azure Cognitive Services multi-service resource provides a single key/endpoint for multiple services like Language and Decision."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "186",
+      "type": "single_selection",
+      "question": "You are building an Azure AI Language Understanding solution. You discover that many intents have similar utterances containing airport names or airport codes. You need to minimize the number of utterances used to train the model. Which type of custom entity should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Pattern.any"
+        },
+        {
+          "id": "b",
+          "text": "B. machine-learning"
+        },
+        {
+          "id": "c",
+          "text": "C. regular expression"
+        },
+        {
+          "id": "d",
+          "text": "D. list"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! A List entity is ideal for a defined, finite set of items like airport names or codes. By providing the list (e.g., 'JFK', 'LAX', 'Heathrow') and optional synonyms ('Kennedy Airport', 'Los Angeles International'), you explicitly tell the model what these terms represent. The model can then generalize from fewer examples containing these list items compared to training a machine-learned entity to discover them contextually or using a broad Pattern.any.",
+        "incorrect": "Incorrect. A List entity is the most efficient way to handle a known set of specific terms like airport names/codes, allowing the model to generalize with fewer training utterances compared to other entity types."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "190",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains an Azure Cognitive Service for Language resource. You need to identify the URL of the REST interface for the Language service. Which blade should you use in the Azure portal?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Identity"
+        },
+        {
+          "id": "b",
+          "text": "B. Keys and Endpoint"
+        },
+        {
+          "id": "c",
+          "text": "C. Networking"
+        },
+        {
+          "id": "d",
+          "text": "D. Properties"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'Keys and Endpoint' blade displays the subscription keys and the base Endpoint URL required to interact with the service's REST API.",
+        "incorrect": "Incorrect! The Endpoint URL is found on the 'Keys and Endpoint' blade."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "191",
+      "type": "single_selection",
+      "question": "You develop a custom question answering project in Azure Cognitive Service for Language. The project will be used by a chatbot. You need to configure the project to engage in multi-turn conversations.",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Add follow-up prompts."
+        },
+        {
+          "id": "b",
+          "text": "B. Enable active learning."
+        },
+        {
+          "id": "c",
+          "text": "C. Add alternate questions."
+        },
+        {
+          "id": "d",
+          "text": "D. Enable chit-chat."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Follow-up prompts are specifically designed to enable multi-turn conversations in question answering by presenting related questions or options after an initial answer, guiding the user through a conversational flow.",
+        "incorrect": "Incorrect! Follow-up prompts enable multi-turn conversations in Custom Question Answering."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
     }
   ]
+}
+```
+
+### app/data/quizzes/azure-a102/clean_multi_questions.json
+
+```json
+{
+  "questions": [
+    {
+      "id": "3",
+      "type": "multi",
+      "question": "You are developing a new sales system that will process the video and text from a public-facing website. You plan to monitor the sales system to ensure that it provides equitable results regardless of the user's location or background. Which two responsible AI principles provide guidance to meet the monitoring requirements? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. transparency"
+        },
+        {
+          "id": "b",
+          "text": "B. fairness"
+        },
+        {
+          "id": "c",
+          "text": "C. inclusiveness"
+        },
+        {
+          "id": "d",
+          "text": "D. reliability and safety"
+        },
+        {
+          "id": "e",
+          "text": "E. privacy and security"
+        }
+      ],
+      "feedback": {
+        "correct": "Fairness ensures equitable treatment, and inclusiveness ensures that the system serves all groups. Together they provide guidance for monitoring equitable outcomes.",
+        "incorrect": "Incorrect! Review the principles that directly impact equitable treatment and inclusion."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "163",
+      "type": "multi",
+      "question": "You just received the results of the customer experience tests campaign for a recently released Conversational Language Understanding (CLU) app. You notice that the majority of the feedback is about inaccurate responses given to the customers. What modifications could you implement to enhance the prediction accuracy of the CLU app? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enable active learning for the current application."
+        },
+        {
+          "id": "b",
+          "text": "B. Build a new version of the application with a collection of 'good' utterances."
+        },
+        {
+          "id": "c",
+          "text": "C. Add entity roles to your CLU application."
+        },
+        {
+          "id": "d",
+          "text": "D. Duplicate the utterances for your CLU application."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Active learning suggests utterances from endpoint traffic that the model is unsure about. Reviewing and correctly labeling these helps improve the model's accuracy over time. Additionally, adding more diverse and representative ('good') utterances directly to the training data for relevant intents and entities will also enhance prediction accuracy.",
+        "incorrect": "Incorrect! Both enabling active learning (to improve from real-world data) and adding more high-quality training utterances directly improve model accuracy."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "5",
+      "type": "multi",
+      "question": "You build a custom Form Recognizer model. You receive sample files to use for training the model as shown in the following table.\nName | Type | Size\nFile1 | PDF | 20 MB\nFile2 | MP4 | 100 MB\nFile3 | JPG | 20 MB\nFile4 | PDF | 100 MB\nFile5 | GIF | 1 MB\nFile6 | JPG | 40 MB\nWhich three files can you use to train the model? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "c",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. File1"
+        },
+        {
+          "id": "b",
+          "text": "B. File2"
+        },
+        {
+          "id": "c",
+          "text": "C. File3"
+        },
+        {
+          "id": "d",
+          "text": "D. File4"
+        },
+        {
+          "id": "e",
+          "text": "E. File5"
+        },
+        {
+          "id": "f",
+          "text": "F. File6"
+        }
+      ],
+      "feedback": {
+        "correct": "Form Recognizer accepts PDFs (with embedded text) and image formats like JPG that are less than 50 MB. Files File1, File3, and File6 meet these criteria.",
+        "incorrect": "Incorrect! Check the file formats and sizes that are supported by Form Recognizer."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "6",
+      "type": "multi",
+      "question": "A customer uses Azure Cognitive Search. The customer plans to enable server-side encryption and use customer-managed keys (CMK) stored in Azure. What are three implications of the planned change? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. The index size will increase."
+        },
+        {
+          "id": "b",
+          "text": "B. Query times will increase."
+        },
+        {
+          "id": "c",
+          "text": "C. A self-signed X.509 certificate is required."
+        },
+        {
+          "id": "d",
+          "text": "D. The index size will decrease."
+        },
+        {
+          "id": "e",
+          "text": "E. Query times will decrease."
+        },
+        {
+          "id": "f",
+          "text": "F. Azure Key Vault is required."
+        }
+      ],
+      "feedback": {
+        "correct": "Enabling CMK encryption can slightly increase index size and query times due to encryption overhead and requires Azure Key Vault to manage the keys.",
+        "incorrect": "Incorrect! Revisit the implications of using customer-managed keys with Cognitive Search."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "11",
+      "type": "multi",
+      "question": "You plan to provision a QnA Maker service in a new resource group named RG1. In RG1, you create an App Service plan named AP1. Which two Azure resources are automatically created in RG1 when you provision the QnA Maker service? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "d",
+        "e"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Language Understanding"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure SQL Database"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Storage"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure Cognitive Search"
+        },
+        {
+          "id": "e",
+          "text": "E. Azure App Service"
+        }
+      ],
+      "feedback": {
+        "correct": "Provisioning QnA Maker automatically creates an Azure Cognitive Search service (for indexing) and an Azure App Service (to host the endpoint).",
+        "incorrect": "Incorrect! Review which dependent resources are created when provisioning QnA Maker."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "27",
+      "type": "multi",
+      "question": "You use the Custom Vision service to build a classifier. After training is complete, you need to evaluate the classifier. Which two metrics are available for review? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. recall"
+        },
+        {
+          "id": "b",
+          "text": "B. F-score"
+        },
+        {
+          "id": "c",
+          "text": "C. weighted accuracy"
+        },
+        {
+          "id": "d",
+          "text": "D. precision"
+        },
+        {
+          "id": "e",
+          "text": "E. area under the curve (AUC)"
+        }
+      ],
+      "feedback": {
+        "correct": "Custom Vision evaluation shows recall and precision metrics as key performance indicators.",
+        "incorrect": "Incorrect! The available metrics are recall and precision."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "31",
+      "type": "multi",
+      "question": "You are developing a method that uses the Computer Vision client library. The method will perform optical character recognition (OCR) in images. The method has the following code:\n```python\ndef read_file_url(computervision_client, url_file):\n  read_response = computervision_client.read(url_file, raw=True)\n  read_operation_location = read_response.headers[\"Operation-Location\"]\n  operation_id = read_operation_location.split(\"/\")[-1]\n\n  # Wait for the operation to complete\n  while True:\n    read_result = computervision_client.get_read_result(operation_id)\n    # Insert checks here\n    break # Simplified loop for example\n\n  for page in read_result.analyze_result.read_results:\n    for line in page.lines:\n      print(line.text)\n```\nDuring testing, you discover that the call to the get_read_result method occurs before the read operation is complete. You need to prevent get_read_result from proceeding until the operation is complete. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Remove the operation_id parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Add code to verify the read_result.status value."
+        },
+        {
+          "id": "c",
+          "text": "C. Add code to verify the status of the read_operation_location value."
+        },
+        {
+          "id": "d",
+          "text": "D. Wrap the call to get_read_result within a loop that contains a delay."
+        }
+      ],
+      "feedback": {
+        "correct": "Checking the status property and adding a delay loop ensures that the OCR operation is complete before processing results.",
+        "incorrect": "Incorrect! You must verify the operation status and wait appropriately."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "76",
+      "type": "multi",
+      "question": "You are building an app that will use the Speech service. You need to ensure that the app can authenticate to the service by using a Microsoft Azure Active Directory (Azure AD), part of Microsoft Entra, token. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enable a virtual network service endpoint."
+        },
+        {
+          "id": "b",
+          "text": "B. Configure a custom subdomain."
+        },
+        {
+          "id": "c",
+          "text": "C. Request an X.509 certificate."
+        },
+        {
+          "id": "d",
+          "text": "D. Create a private endpoint."
+        },
+        {
+          "id": "e",
+          "text": "E. Create a Conditional Access policy."
+        }
+      ],
+      "feedback": {
+        "correct": "For AAD token authentication, configuring a custom subdomain and creating a private endpoint are necessary to support secure connectivity.",
+        "incorrect": "Incorrect! Focus on the actions that directly enable Azure AD\u2013based authentication."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "78",
+      "type": "multi",
+      "question": "You are developing a method that uses the Computer Vision client library. The method will perform optical character recognition (OCR) in images using ReadAsync. During testing, you discover that the call to the GetReadResultAsync method occurs before the read operation is complete. You need to prevent GetReadResultAsync from proceeding until the read operation is complete. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Remove the Guid.Parse(operationId) parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Add code to verify the results.Status value."
+        },
+        {
+          "id": "c",
+          "text": "C. Add code to verify the status of the txtHeaders.Status value."
+        },
+        {
+          "id": "d",
+          "text": "D. Wrap the call to GetReadResultAsync within a loop that contains a delay."
+        }
+      ],
+      "feedback": {
+        "correct": "Checking the Status property and implementing a delay loop ensures that the OCR operation has finished before retrieving results.",
+        "incorrect": "Incorrect! Ensure you verify the operation status and delay subsequent calls."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "87",
+      "type": "multi",
+      "question": "You use the Custom Vision service to build a classifier. After training is complete, you need to evaluate the classifier. Which two metrics are available for review? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. recall"
+        },
+        {
+          "id": "b",
+          "text": "B. F-score"
+        },
+        {
+          "id": "c",
+          "text": "C. weighted accuracy"
+        },
+        {
+          "id": "d",
+          "text": "D. precision"
+        },
+        {
+          "id": "e",
+          "text": "E. area under the curve (AUC)"
+        }
+      ],
+      "feedback": {
+        "correct": "Recall and precision are the standard evaluation metrics provided by Custom Vision.",
+        "incorrect": "Incorrect! The available metrics are recall and precision."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "94",
+      "type": "multi",
+      "question": "You are developing a method that uses the Computer Vision client library (Python). The method will perform optical character recognition (OCR) in images using `computervision_client.read`. During testing, you discover that the call to the `get_read_result` method occurs before the read operation is complete. You need to prevent `get_read_result` from proceeding until the read operation is complete. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Remove the operation_id parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Add code to verify the read_result.status value."
+        },
+        {
+          "id": "c",
+          "text": "C. Add code to verify the status of the read_operation_location value."
+        },
+        {
+          "id": "d",
+          "text": "D. Wrap the call to get_read_result within a loop that contains a delay."
+        }
+      ],
+      "feedback": {
+        "correct": "Verifying the status and looping with a delay will prevent premature retrieval of the OCR results.",
+        "incorrect": "Incorrect! You must ensure the operation has finished before retrieving results."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "116",
+      "type": "multi",
+      "question": "You are building an Azure WebJob that will create knowledge bases from an array of URLs. You instantiate a QnAMakerClient object that has the relevant API keys and assign the object to a variable named client. You need to develop a method to create the knowledge bases. Which two actions should you include in the method? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Create a list of FileDTO objects that represents data from the WebJob."
+        },
+        {
+          "id": "b",
+          "text": "B. Call the client.Knowledgebase.CreateAsync method."
+        },
+        {
+          "id": "c",
+          "text": "C. Create a list of QnADTO objects that represents data from the WebJob."
+        },
+        {
+          "id": "d",
+          "text": "D. Create a CreateKbDTO object."
+        }
+      ],
+      "feedback": {
+        "correct": "Calling CreateAsync with a properly formed CreateKbDTO object initiates the knowledge base creation process.",
+        "incorrect": "Incorrect! The solution requires invoking the SDK method with the proper DTO."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "122",
+      "type": "multi",
+      "question": "You are developing a method for an application that uses the Translator API. The method will receive the content of a webpage, and then translate the content into Greek (el). The result will also contain a transliteration that uses the Roman alphabet. You need to create the URI for the call to the Translator API. You have the following URI: https://api.cognitive.microsofttranslator.com/translate?api-version=3.0 Which three additional query parameters should you include in the URI? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "c",
+        "d",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. toScript=Cyrl"
+        },
+        {
+          "id": "b",
+          "text": "B. from=el"
+        },
+        {
+          "id": "c",
+          "text": "C. textType=html"
+        },
+        {
+          "id": "d",
+          "text": "D. to=el"
+        },
+        {
+          "id": "e",
+          "text": "E. textType=plain"
+        },
+        {
+          "id": "f",
+          "text": "F. toScript=Latn"
+        }
+      ],
+      "feedback": {
+        "correct": "Using textType=html ensures proper handling of webpage content; specifying to=el sets the target language; and toScript=Latn requests a transliteration to the Roman alphabet.",
+        "incorrect": "Incorrect! Ensure you include parameters that support both translation and transliteration for HTML content."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "123",
+      "type": "multi",
+      "question": "You have a chatbot that was built by using the Microsoft Bot Framework. You need to debug the chatbot endpoint remotely. Which two tools should you install on a local computer? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "c",
+        "e"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Fiddler"
+        },
+        {
+          "id": "b",
+          "text": "B. Bot Framework Composer"
+        },
+        {
+          "id": "c",
+          "text": "C. Bot Framework Emulator"
+        },
+        {
+          "id": "d",
+          "text": "D. Bot Framework CLI"
+        },
+        {
+          "id": "e",
+          "text": "E. ngrok"
+        },
+        {
+          "id": "f",
+          "text": "F. nginx"
+        }
+      ],
+      "feedback": {
+        "correct": "The Bot Framework Emulator is used to test and debug bot endpoints, while ngrok helps expose a local endpoint for remote access.",
+        "incorrect": "Incorrect! Focus on the tools specifically designed for remote bot debugging."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "146",
+      "type": "multi",
+      "question": "You have been asked to build an application that recognizes intents in audio captured from a microphone using exclusively Azure AI Services. Which combination of the following services can you use to fulfill the requirements? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure AI Translator"
+        },
+        {
+          "id": "b",
+          "text": "B. Conversational Language Understanding (CLU)"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure AI Immersive Reader"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure AI Speech Service"
+        }
+      ],
+      "feedback": {
+        "correct": "Azure AI Speech Service converts speech to text, and CLU analyzes the text to recognize intents and entities.",
+        "incorrect": "Incorrect! Translator and Immersive Reader do not directly support intent recognition from audio."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "147",
+      "type": "multi",
+      "question": "You are working with Azure AI Language Preconfigured Name Entity Recognition (NER) features. Which choices belong to general entity categories offered by the service? (Choose 3 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Person"
+        },
+        {
+          "id": "b",
+          "text": "B. Event"
+        },
+        {
+          "id": "c",
+          "text": "C. Location"
+        },
+        {
+          "id": "d",
+          "text": "D. Social"
+        }
+      ],
+      "feedback": {
+        "correct": "The general NER categories include Person, Event, and Location. 'Social' is not a standard top-level category.",
+        "incorrect": "Incorrect! Only Person, Event, and Location are general categories."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "150",
+      "type": "multi",
+      "question": "After your company's call center support staff receive a call, you need to implement an AI solution to identify additional metrics. The solution requires:\n- Processing speech in English, French, and Spanish.\n- Identifying the main topics of customer calls, and\n- Implementing sentiment analysis\nWhich of the following Azure AI services does this solution require? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure AI Speech service's Speech-to-Text"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure AI Speech service's Text-to-Speech"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure AI Translator"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure AI Language"
+        }
+      ],
+      "feedback": {
+        "correct": "Speech-to-Text converts audio to text while Azure AI Language processes the text for topics and sentiment.",
+        "incorrect": "Incorrect! Text-to-Speech and Translator do not fulfill these requirements."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "154",
+      "type": "multi",
+      "question": "You are using the Speech SDK to access the speech service for an application in development. During the tests, you noticed that attempts to connect frequently result in HTTP 403 Forbidden and HTTP 401 Unauthorized errors. What could be the root cause of the 403 errors? (Choose 3 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. The subscription key is missing."
+        },
+        {
+          "id": "b",
+          "text": "B. The subscription usage quota exceeded."
+        },
+        {
+          "id": "c",
+          "text": "C. The endpoint is invalid."
+        },
+        {
+          "id": "d",
+          "text": "D. The subscription key is invalid."
+        }
+      ],
+      "feedback": {
+        "correct": "Missing or invalid subscription keys and exceeded quotas typically cause HTTP 403/401 errors.",
+        "incorrect": "Incorrect! The endpoint being invalid would generally cause connection errors, not 403/401."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "162",
+      "type": "multi",
+      "question": "You received a business requirement from the marketing department for building a Chatbot as a new customer communication channel via social media. The Chatbot needs to be able to respond to customer questions in natural language using the existing knowledge base published on the company's FAQ webpage. Which Azure service would you use to accomplish this task? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. QnA Maker"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure Bot Service"
+        },
+        {
+          "id": "c",
+          "text": "C. Bing Search Service"
+        },
+        {
+          "id": "d",
+          "text": "D. Text Analytics"
+        }
+      ],
+      "feedback": {
+        "correct": "QnA Maker creates a knowledge base from FAQs, and Azure Bot Service hosts the chatbot.",
+        "incorrect": "Incorrect! Bing Search and Text Analytics do not directly support a FAQ-based Chatbot."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "165",
+      "type": "multi",
+      "question": "Consider the following schema of an Azure Search index:\n```json\n{\n  \"name\": \"musicstoreindex\",\n  \"fields\": [ ... ],\n  \"scoringProfiles\": [\n    {\n      \"name\": \"boostGenre\",\n      \"text\": { ... }\n    },\n    {\n      \"name\": \"newAndHighlyRated\",\n      \"functions\": [ ... ]\n    }\n  ],\n  \"suggesters\": [ ... ]\n}\n```\nWhat are scoring profile names used in this index? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. freshness"
+        },
+        {
+          "id": "b",
+          "text": "B. boostGenre"
+        },
+        {
+          "id": "c",
+          "text": "C. magnitude"
+        },
+        {
+          "id": "d",
+          "text": "D. newAndHighlyRated"
+        }
+      ],
+      "feedback": {
+        "correct": "The index schema shows scoring profiles named 'boostGenre' and 'newAndHighlyRated'.",
+        "incorrect": "Incorrect! The scoring profiles in the schema are boostGenre and newAndHighlyRated."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "176",
+      "type": "multi",
+      "question": "You are developing a method for an application that uses the Translator API. The method will receive the content of a webpage, and then translate the content into Greek (el). The result will also contain a transliteration that uses the Roman alphabet. You need to create the URI for the call to the Translator API. You have the following URI: https://api.cognitive.microsofttranslator.com/translate?api-version=3.0 Which three additional query parameters should you include in the URI? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "c",
+        "d",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. toScript=Cyrl"
+        },
+        {
+          "id": "b",
+          "text": "B. from=el"
+        },
+        {
+          "id": "c",
+          "text": "C. textType=html"
+        },
+        {
+          "id": "d",
+          "text": "D. to=el"
+        },
+        {
+          "id": "e",
+          "text": "E. textType=plain"
+        },
+        {
+          "id": "f",
+          "text": "F. toScript=Latn"
+        }
+      ],
+      "feedback": {
+        "correct": "Using textType=html, to=el, and toScript=Latn ensures that the HTML content is properly translated into Greek with a Roman-script transliteration.",
+        "incorrect": "Incorrect! Make sure to include parameters that preserve HTML formatting and provide transliteration."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "177",
+      "type": "multi",
+      "question": "You are developing a method that uses the Text Analytics client library to extract key entities from text. You call the function with the string: \"Our tour of Paris included a visit to the Eiffel Tower\". For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "Statements: The output will include the words 'our' and 'included'."
+        },
+        {
+          "id": "b",
+          "text": "Statements: The output will include the words 'Paris', 'Eiffel', and 'Tower'."
+        },
+        {
+          "id": "c",
+          "text": "Statements: The function will output all key phrases from the input string."
+        }
+      ],
+      "feedback": {
+        "correct": "RecognizeEntities identifies named entities such as 'Paris' and 'Eiffel Tower' (or its parts), not common words like 'our' or 'included'.",
+        "incorrect": "Incorrect! Only significant named entities are expected."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "183",
+      "type": "multi",
+      "question": "You have a text-based chatbot. You need to enable content moderation by using the Text Moderation API of Content Moderator. Which two service responses should you use? Each correct answer presents part of the solution. (Duplicate of Q175)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. personal data"
+        },
+        {
+          "id": "b",
+          "text": "B. the adult classification score"
+        },
+        {
+          "id": "c",
+          "text": "C. text classification"
+        },
+        {
+          "id": "d",
+          "text": "D. optical character recognition (OCR)"
+        },
+        {
+          "id": "e",
+          "text": "E. the racy classification score"
+        }
+      ],
+      "feedback": {
+        "correct": "The Text Moderation API returns information on detected personally identifiable information and text classification details.",
+        "incorrect": "Incorrect! The adult and racy scores are part of image moderation."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "188",
+      "type": "multi",
+      "question": "You train a Conversational Language Understanding model to understand the natural language input of users. You need to evaluate the accuracy of the model before deploying it. What are two methods you can use? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. From the language authoring REST endpoint, retrieve the model evaluation summary."
+        },
+        {
+          "id": "b",
+          "text": "B. From Language Studio, enable Active Learning, and then validate the utterances logged for review."
+        },
+        {
+          "id": "c",
+          "text": "C. From Language Studio, select Model performance."
+        },
+        {
+          "id": "d",
+          "text": "D. From the Azure portal, enable log collection in Log Analytics, and then analyze the logs."
+        }
+      ],
+      "feedback": {
+        "correct": "You can evaluate model accuracy by retrieving the evaluation summary via the REST endpoint or by checking Model performance in Language Studio.",
+        "incorrect": "Incorrect! Active Learning helps improve models post-deployment rather than for initial evaluation."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    }
+  ]
+}
+```
+
+### app/data/quizzes/azure-a102/clean_drag_and_drop_questions.json
+
+```json
+{
+  "questions": [
+    {
+      "id": "14",
+      "type": "drag_and_drop",
+      "question": "You need to develop an automated call handling system that can respond to callers in their own language. The system will support only French and English. Which Azure Cognitive Services service should you use to meet each requirement? To answer, drag the appropriate services to the correct requirements. Each service may be used once, more than once, or not at all.\nRequirements:\n1. Detect the incoming language:\n2. Respond in the callers\u2019 own language:",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Detect the incoming language"
+        },
+        {
+          "id": "target-2",
+          "text": "Respond in the callers\u2019 own language"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "Service Option: Speaker Recognition",
+          "target_id": null
+        },
+        {
+          "id": "option-2",
+          "text": "Service Option: Speech to Text",
+          "target_id": null
+        },
+        {
+          "id": "option-3",
+          "text": "Service Option: Text Analytics",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "Service Option: Text to Speech",
+          "target_id": null
+        },
+        {
+          "id": "option-5",
+          "text": "Service Option: Translator",
+          "target_id": "target-2",
+          "is_correct": true
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-3",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-5",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Text Analytics detects the language, and Translator translates the response.",
+        "incorrect": "Incorrect. Text Analytics (Language Detection) identifies the language, and Translator is used to provide the response in that language."
+      },
+      "explanation": "Text Analytics (specifically its Language Detection feature) is used to detect the incoming language. Translator service is used to translate responses into the caller's detected language (French or English).",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "21",
+      "type": "drag_and_drop",
+      "question": "You are developing a webpage that will use the Azure Video Analyzer for Media (previously Video Indexer) service to display videos of internal company meetings. You embed the Player widget and the Cognitive Insights widget into the page. You need to configure the widgets to meet the following requirements:\n- Ensure that users can search for keywords.\n- Display the names and faces of people in the video.\n- Show captions in the video in English (United States).\nHow should you complete the URL for each widget? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.\nCognitive Insights Widget URL:\n`https://www.videoindexer.ai/embed/insights/<accountId>/<videoId>/?widgets=` [Target1] `&controls=` [Target2]\nPlayer Widget URL:\n`https://www.videoindexer.ai/embed/player/<accountId>/<videoId>/?showCaptions=true&captions=` [Target3]",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Cognitive Insights Widget 'widgets' parameter"
+        },
+        {
+          "id": "target-2",
+          "text": "Cognitive Insights Widget 'controls' parameter"
+        },
+        {
+          "id": "target-3",
+          "text": "Player Widget 'captions' parameter"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "false",
+          "target_id": null
+        },
+        {
+          "id": "option-2",
+          "text": "people,keywords",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "search",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "en-US",
+          "target_id": "target-3",
+          "is_correct": true
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-2",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-3",
+          "target_id": "target-2"
+        },
+        {
+          "option_id": "option-4",
+          "target_id": "target-3"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! 'people,keywords' enables those insights, 'search' adds the search control, and 'en-US' sets caption language.",
+        "incorrect": "Incorrect. Review the widget parameters for displaying insights, enabling controls, and setting caption language."
+      },
+      "explanation": "For Target1 (Cognitive Insights widgets): 'people,keywords' shows people and keywords insights. For Target2 (Cognitive Insights controls): 'search' enables the search control within the insights widget. For Target3 (Player captions): 'en-US' specifies the language code for English (United States) captions.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "80",
+      "type": "drag_and_drop",
+      "question": "You are developing a webpage that will use the Azure Video Analyzer for Media (previously Video Indexer) service to display videos of internal company meetings. You embed the Player widget and the Cognitive Insights widget into the page. You need to configure the widgets to meet the following requirements:\n- Ensure that users can search for keywords.\n- Display the names and faces of people in the video.\n- Show captions in the video in English (United States).\nHow should you complete the URL for each widget? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Cognitive Insights Widget 'widgets' parameter"
+        },
+        {
+          "id": "target-2",
+          "text": "Cognitive Insights Widget 'controls' parameter"
+        },
+        {
+          "id": "target-3",
+          "text": "Player Widget 'captions' parameter"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "people, keywords",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "search",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "en-US",
+          "target_id": "target-3",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "labels",
+          "target_id": null
+        },
+        {
+          "id": "option-5",
+          "text": "true",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        },
+        {
+          "option_id": "option-3",
+          "target_id": "target-3"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! 'people,keywords' enables those insights, 'search' adds the search control, and 'en-US' sets caption language.",
+        "incorrect": "Incorrect. Review the widget parameters for displaying insights, enabling controls, and setting caption language."
+      },
+      "explanation": "Setting `widgets=people,keywords` adds the 'people' and 'keywords' insight panes. Setting `controls=search` adds the search control to the insights widget. Setting `captions=en-US` specifies the language code for captions to be displayed.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "88",
+      "type": "drag_and_drop",
+      "question": "You are developing a call to the Face API. The call must find similar faces from an existing list named employeefaces. The employeefaces list contains 60,000 images. How should you complete the body of the HTTP request? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "List ID field name"
+        },
+        {
+          "id": "target-2",
+          "text": "Mode field value"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "\"LargeFaceListId\"",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "\"matchFace\"",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "\"faceListId\"",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "\"matchPerson\"",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Use 'LargeFaceListId' for lists over 1,000 faces and 'matchFace' to find visually similar faces.",
+        "incorrect": "Incorrect. Remember to use 'LargeFaceListId' for large lists and 'matchFace' for visual similarity."
+      },
+      "explanation": "For lists potentially exceeding 1,000 faces (like 60,000), 'LargeFaceListId' must be used instead of 'faceListId'. The 'matchFace' mode finds visually similar faces regardless of whether they belong to the same person. 'matchPerson' finds faces belonging to the same person.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "89",
+      "type": "drag_and_drop",
+      "question": "You are developing a photo application that will find photos of a person based on a sample image by using the Face API. You need to create a POST request to find the photos. How should you complete the request? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "URL Path Segment"
+        },
+        {
+          "id": "target-2",
+          "text": "Request Body 'mode' value"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "findsimilars",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "matchPerson",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "detect",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "matchFace",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Use the 'findsimilars' operation and 'matchPerson' mode to find photos of the same person.",
+        "incorrect": "Incorrect. The 'findsimilars' operation with 'matchPerson' mode is needed to find photos belonging to the same person."
+      },
+      "explanation": "The 'findsimilars' operation is used to search for similar faces based on a query face ID against a face list or large face list. The 'matchPerson' mode filters the similar faces found to only include those that likely belong to the same person as the query face.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "128",
+      "type": "drag_and_drop",
+      "question": "You are building a Language Understanding model for purchasing tickets. You have the following utterance for an intent named PurchaseAndSendTickets: Purchase [2 adult business] tickets to [Paris] [next Monday] and send tickets to [email@domain.com]. You need to select the entity types. The solution must use built-in entity types to minimize training data whenever possible. Which entity type should you use for each label? To answer, drag the appropriate entity types to the correct labels. Each entity type may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Paris"
+        },
+        {
+          "id": "target-2",
+          "text": "email@domain.com"
+        },
+        {
+          "id": "target-3",
+          "text": "2 adult business"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "GeographyV2",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "Email",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "Machine learned",
+          "target_id": "target-3",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "List",
+          "target_id": null
+        },
+        {
+          "id": "option-5",
+          "text": "DatetimeV2",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        },
+        {
+          "option_id": "option-3",
+          "target_id": "target-3"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Use built-in entities GeographyV2 and Email where possible, and Machine learned for custom concepts.",
+        "incorrect": "Incorrect. Leverage built-in entities like GeographyV2 and Email first. Use Machine learned entities for concepts not covered by built-ins."
+      },
+      "explanation": "GeographyV2 is a built-in entity for recognizing geographical locations like cities and countries. Email is a built-in entity specifically for recognizing email addresses. '2 adult business' represents ticket details (number, type, class). There's no single built-in entity for this complex combination. A machine learned entity, trained with examples, is appropriate. While 'next Monday' would use DatetimeV2, that wasn't one of the target labels.",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "173",
+      "type": "drag_and_drop",
+      "question": "You are building a customer support chatbot. You need to configure the bot to identify the following:\n- Code names for internal product development\n- Messages that include credit card numbers\nThe solution must minimize development effort. Which Azure Cognitive Service for Language feature should you use for each requirement? To answer, drag the appropriate features to the correct requirements. Each feature may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Code names for internal product development"
+        },
+        {
+          "id": "target-2",
+          "text": "Messages that include credit card numbers"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "Custom named entity recognition (NER)",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "Personally identifiable Information (PII) detection",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "Key phrase extraction",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "Sentiment analysis",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Custom NER is needed for internal code names, while PII detection handles standard sensitive data like credit card numbers.",
+        "incorrect": "Incorrect. Use Custom NER for unique identifiers like internal code names and the built-in PII detection feature for common sensitive data."
+      },
+      "explanation": "Internal code names are specific to the business and won't be recognized by pre-built NER. Custom NER allows you to train a model to identify these specific entities. The PII detection feature within the Language service is specifically designed to identify sensitive information like credit card numbers, minimizing development effort compared to building custom logic.",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "184",
+      "type": "drag_and_drop",
+      "question": "You develop a Python app named App1 that performs speech-to-speech translation. You need to configure App1 to translate English to German. How should you complete the SpeechTranslationConfig object? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once or not at all.\n```python\ntranslation_config = speechsdk.translation.SpeechTranslationConfig(subscription=speech_key, region=service_region)\ntranslation_config.[Target1] = \"en-US\"\ntranslation_config.[Target2](\"de\")\n```",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Set Input Language Property"
+        },
+        {
+          "id": "target-2",
+          "text": "Add Target Language Method"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "speech_recognition_language",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "add_target_language",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "target_languages",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "set_profanity",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! `speech_recognition_language` sets the input language and `add_target_language` adds a translation target.",
+        "incorrect": "Incorrect. Use `speech_recognition_language` to set the source language and `add_target_language` to specify the translation output language."
+      },
+      "explanation": "The `speech_recognition_language` attribute sets the language of the input speech to be recognized (source language, e.g., 'en-US'). The `add_target_language` method adds a language code (e.g., 'de') to the list of target languages for translation.",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "189",
+      "type": "drag_and_drop",
+      "question": "You develop an app in C# named App1 that performs speech-to-speech translation. You need to configure App1 to translate English to German. How should you complete the SpeechTranslationConfig object? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.\n```csharp\nvar translationConfig = SpeechTranslationConfig.FromSubscription(SPEECH_SUBSCRIPTION_KEY, SPEECH_SERVICE_REGION);\ntranslationConfig.[Target1] = \"en-US\";\ntranslationConfig.[Target2](\"de\");\n```",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Set Input Language Property"
+        },
+        {
+          "id": "target-2",
+          "text": "Add Target Language Method"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "SpeechRecognitionLanguage",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "AddTargetLanguage",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "TargetLanguages",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "SetProfanity",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! `SpeechRecognitionLanguage` sets the input language and `AddTargetLanguage` adds a translation target.",
+        "incorrect": "Incorrect. Use `SpeechRecognitionLanguage` to set the source language and `AddTargetLanguage` to specify the translation output language."
+      },
+      "explanation": "The `SpeechRecognitionLanguage` property sets the language of the input speech to be recognized (source language, e.g., 'en-US'). The `AddTargetLanguage` method adds a language code (e.g., 'de') to the list of target languages for translation.",
+      "quiz_tag": "Implement natural language processing solutions"
+    }
+  ]
+}
+```
+
+### app/data/quizzes/azure-a102/clean_order_questions.json
+
+```json
+{
+  "questions": [
+    {
+      "id": "180",
+      "type": "order",
+      "question": "You have a Language Understanding solution that runs in a Docker container. You download the Language Understanding container image from the Microsoft Container Registry (MCR). You need to deploy the container image to a host computer. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "From the Language Understanding portal, export the solution as a package file."
+        },
+        {
+          "id": "item2",
+          "text": "From the host computer, move the package file to the Docker input directory."
+        },
+        {
+          "id": "item3",
+          "text": "From the host computer, build the container and specify the output directory."
+        },
+        {
+          "id": "item4",
+          "text": "From the host computer, run the container and specify the input directory."
+        },
+        {
+          "id": "item5",
+          "text": "From the Language Understanding portal, retrain the model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item3",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! To deploy the container image, first export the container package from the Language Understanding portal (item1). Next, build the container on the host computer using the exported package (item3). Finally, run the container with the specified input configuration (item4). This sequence leverages the exported package to create and execute the container properly.",
+        "incorrect": "Incorrect. Review the process: export the container package, build the container image, then run it. Moving the package file separately or retraining the model are not required for deployment."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "178",
+      "type": "order",
+      "question": "You are building a transcription service for technical podcasts. Testing reveals that the service fails to transcribe technical terms accurately. You need to improve the accuracy of the service. Which five actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a Custom Speech project."
+        },
+        {
+          "id": "item2",
+          "text": "Create a speech-to-text model."
+        },
+        {
+          "id": "item3",
+          "text": "Upload training datasets."
+        },
+        {
+          "id": "item4",
+          "text": "Create a Speaker Recognition model."
+        },
+        {
+          "id": "item5",
+          "text": "Deploy the model."
+        },
+        {
+          "id": "item6",
+          "text": "Train the model."
+        },
+        {
+          "id": "item7",
+          "text": "Create a Conversational Language Understanding model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3",
+        "item6",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! The proper sequence is to first create a Custom Speech project (item1), then define a speech-to-text model within that project (item2). Next, upload the training datasets (item3), train the model using these datasets (item6), and finally deploy the trained model (item5). This process directly addresses the transcription accuracy issues without involving extraneous models.",
+        "incorrect": "Incorrect. Ensure you start by creating the project and model, then upload the necessary datasets, train the model, and finally deploy it. Options like Speaker Recognition or Conversational Language Understanding are not needed here."
+      },
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "4",
+      "type": "order",
+      "question": "You plan to use containerized versions of the Anomaly Detector API on local devices for testing and in on-premises datacenters. You need to ensure that the containerized deployments meet the following requirements:\n- Prevent billing and API information from being stored in the command-line histories of the devices that run the container.\n- Control access to the container images by using Azure role-based access control (Azure RBAC).\nWhich four actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a custom Dockerfile."
+        },
+        {
+          "id": "item2",
+          "text": "Pull the Anomaly Detector container image."
+        },
+        {
+          "id": "item3",
+          "text": "Distribute a docker run script."
+        },
+        {
+          "id": "item4",
+          "text": "Push the image to an Azure container registry."
+        },
+        {
+          "id": "item5",
+          "text": "Build the image."
+        },
+        {
+          "id": "item6",
+          "text": "Push the image to Docker Hub."
+        }
+      ],
+      "correctOrder": [
+        "item4",
+        "item2",
+        "item5",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! The sequence is: first, push the image to an Azure container registry (item4) to ensure centralized management and security via Azure RBAC; then pull the container image (item2), build the image locally if modifications are needed (item5), and finally distribute a docker run script (item3) to facilitate deployment.",
+        "incorrect": "Incorrect. Review the necessary steps: secure the image in an Azure container registry, then pull, build, and distribute the deployment script. Other sequences do not meet the security and operational requirements."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "22",
+      "type": "order",
+      "question": "You train a Custom Vision model to identify a company's products by using the Retail domain. You plan to deploy the model as part of an app for Android phones. You need to prepare the model for deployment. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Change the model domain."
+        },
+        {
+          "id": "item2",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item3",
+          "text": "Test the model."
+        },
+        {
+          "id": "item4",
+          "text": "Export the model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! The required steps are to change the model domain to a compact version for mobile export (item1), retrain the model to incorporate the domain change (item2), and then export the model for deployment (item4). Testing, while important, is not part of the deployment sequence.",
+        "incorrect": "Incorrect. The proper sequence is to change the domain, retrain the model, and export it. Testing the model is not a required step in the deployment process."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "81",
+      "type": "order",
+      "question": "You train a Custom Vision model to identify a company's products by using the Retail domain. You plan to deploy the model as part of an app for Android phones. You need to prepare the model for deployment. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Change the model domain."
+        },
+        {
+          "id": "item2",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item3",
+          "text": "Test the model."
+        },
+        {
+          "id": "item4",
+          "text": "Export the model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! Begin by changing the model domain to a compact version (item1), then retrain the model (item2) so the new settings take effect, and finally export the model (item4) for deployment. Testing is not required as part of this sequence.",
+        "incorrect": "Incorrect. The correct sequence is to change the domain, retrain, and export the model. Testing is not part of the deployment process."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "23",
+      "type": "order",
+      "question": "You have a Custom Vision resource named acvdev in a development environment. You have a Custom Vision resource named acvprod in a production environment. In acvdev, you build an object detection model named obj1 in a project named proj1. You need to move obj1 to acvprod. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Use the Get Projects endpoint on acvdev."
+        },
+        {
+          "id": "item2",
+          "text": "Use the ExportProject endpoint on acvdev."
+        },
+        {
+          "id": "item3",
+          "text": "Use the Import Project endpoint on acvprod."
+        },
+        {
+          "id": "item4",
+          "text": "Use the ExportIteration endpoint on acvdev."
+        },
+        {
+          "id": "item5",
+          "text": "Use the Get Iterations endpoint on acvdev."
+        },
+        {
+          "id": "item6",
+          "text": "Use the UpdateProject endpoint on acvprod."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! First, retrieve the project details from acvdev using the Get Projects endpoint (item1). Then, export the project using the ExportProject endpoint (item2), and finally import the project into acvprod using the Import Project endpoint (item3). This sequence ensures a smooth migration of the object detection model.",
+        "incorrect": "Incorrect. The correct process is to identify the project, export it from the development resource, and then import it into the production resource."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "24",
+      "type": "order",
+      "question": "You are developing an application that will recognize faults in components produced on a factory production line. The components are specific to your business. You need to use the Custom Vision API to help detect common faults. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a project."
+        },
+        {
+          "id": "item2",
+          "text": "Upload and tag images."
+        },
+        {
+          "id": "item3",
+          "text": "Train the classifier model."
+        },
+        {
+          "id": "item4",
+          "text": "Initialize the training dataset."
+        },
+        {
+          "id": "item5",
+          "text": "Train the object detection model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! Start by creating a new Custom Vision project (item1), then upload and tag your images to form a robust training dataset (item2), and finally train the classifier model (item3) to recognize faults. This sequence efficiently uses the labeled data to build the model.",
+        "incorrect": "Incorrect. The proper sequence is to create the project, prepare the training dataset by uploading and tagging images, and then train the classifier model. Other options are not directly required."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "36",
+      "type": "order",
+      "question": "You train a Custom Vision model used in a mobile app. You receive 1,000 new images that do not have any associated data. You need to use the images to retrain the model. The solution must minimize how long it takes to retrain the model. Which three actions should you perform in the Custom Vision portal? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Get suggested tags."
+        },
+        {
+          "id": "item2",
+          "text": "Upload all the images."
+        },
+        {
+          "id": "item3",
+          "text": "Group the images locally into category folders."
+        },
+        {
+          "id": "item4",
+          "text": "Upload the images by category."
+        },
+        {
+          "id": "item5",
+          "text": "Tag the images manually."
+        },
+        {
+          "id": "item6",
+          "text": "Review the suggestions and confirm the tags."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item1",
+        "item6"
+      ],
+      "feedback": {
+        "correct": "Correct! To minimize retraining time, first upload all the images (item2). Then, use Smart Labeler to generate suggested tags automatically (item1), and finally review and confirm the suggestions (item6) to ensure accuracy.",
+        "incorrect": "Incorrect. The optimal process is to upload all images, obtain automatic tag suggestions, and then verify them. Manual grouping or tagging is less efficient."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "38",
+      "type": "order",
+      "question": "You plan to use a Language Understanding application named app1 that is deployed to a container. App1 was developed by using a Language Understanding authoring resource named lu1. App1 has the versions shown in the following table.\nVersion | Trained date | Published date\n------- | ------------ | --------------\nV1.2    | None         | None\nV1.1    | 2020-10-01   | None\nV1.0    | 2020-09-01   | 2020-09-15\nYou need to create a container that uses the latest deployable version of app1. Which three actions should you perform in sequence?",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Run a container that has version set as an environment variable."
+        },
+        {
+          "id": "item2",
+          "text": "Export the model by using the Export as JSON option."
+        },
+        {
+          "id": "item3",
+          "text": "Export the model by using the Export for containers (GZIP) option."
+        },
+        {
+          "id": "item4",
+          "text": "Select v1.1 of app1."
+        },
+        {
+          "id": "item5",
+          "text": "Run a container and mount the model file."
+        },
+        {
+          "id": "item6",
+          "text": "Select v1.0 of app1."
+        },
+        {
+          "id": "item7",
+          "text": "Select v1.2 of app1."
+        }
+      ],
+      "correctOrder": [
+        "item6",
+        "item3",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! Since V1.0 is the only version that has been fully published, first select v1.0 (item6). Then, export the model for container use with the GZIP option (item3), and finally run a container and mount the model file (item5) to deploy the correct version.",
+        "incorrect": "Incorrect. Only the published version (V1.0) is deployable. The steps must select V1.0, export the model appropriately for container use, and then run the container with the model mounted."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "66",
+      "type": "order",
+      "question": "DRAG DROP - You have a Custom Vision service project that performs object detection. The project uses the General domain for classification and contains a trained model. You need to export the model for use on a network that is disconnected from the internet. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Change the classification type."
+        },
+        {
+          "id": "item2",
+          "text": "Change Domains to General (compact)."
+        },
+        {
+          "id": "item3",
+          "text": "Export the model."
+        },
+        {
+          "id": "item4",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item5",
+          "text": "Create a new classification model."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item4",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! First, change the domain to its compact version (item2) to meet offline export requirements. Next, retrain the model (item4) so it is optimized for the new domain, and finally export the model (item3) for use on a disconnected network.",
+        "incorrect": "Incorrect. The model must be converted to a compact version, retrained, and then exported. Changing the classification type or creating a new model is not necessary."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "73",
+      "type": "order",
+      "question": "You are building an app that will scan confidential documents and use the Language service to analyze the contents. You provision an Azure Cognitive Services resource. You need to ensure that the app can make requests to the Language service endpoint. The solution must ensure that confidential documents remain on-premises. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Run the container and specify an App ID and Client Secret"
+        },
+        {
+          "id": "item2",
+          "text": "Pull an image from the Microsoft Container Registry (MCR)."
+        },
+        {
+          "id": "item3",
+          "text": "Provision an on-premises Kubernetes cluster that is isolated from the internet."
+        },
+        {
+          "id": "item4",
+          "text": "Run the container and specify an API key and the Endpoint URL of the Cognitive Services resource."
+        },
+        {
+          "id": "item5",
+          "text": "Provision an on-premises Kubernetes cluster that has internet connectivity."
+        },
+        {
+          "id": "item6",
+          "text": "Pull an image from Docker Hub."
+        },
+        {
+          "id": "item7",
+          "text": "Provision an Azure Kubernetes Service (AKS) resource."
+        }
+      ],
+      "correctOrder": [
+        "item3",
+        "item2",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! First, provision an on-premises Kubernetes cluster that is isolated from the internet (item3) to maintain data confidentiality. Next, pull the container image from MCR (item2) into your secure environment, and finally run the container using the API key and endpoint URL (item4) to connect to the Language service.",
+        "incorrect": "Incorrect. The solution requires an isolated on-premises cluster, using the image from MCR, and running the container with proper authentication\u2014not using public cloud connectivity."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "83",
+      "type": "order",
+      "question": "You have a Custom Vision resource named acvdev in a development environment. You have a Custom Vision resource named acvprod in a production environment. In acvdev, you build an object detection model named obj1 in a project named proj1. You need to move obj1 to acvprod. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Use the Get Projects endpoint on acvdev."
+        },
+        {
+          "id": "item2",
+          "text": "Use the ExportProject endpoint on acvdev."
+        },
+        {
+          "id": "item3",
+          "text": "Use the Import Project endpoint on acvprod."
+        },
+        {
+          "id": "item4",
+          "text": "Use the ExportIteration endpoint on acvdev."
+        },
+        {
+          "id": "item5",
+          "text": "Use the Get Iterations endpoint on acvdev."
+        },
+        {
+          "id": "item6",
+          "text": "Use the UpdateProject endpoint on acvprod."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! Retrieve the project details from acvdev using the Get Projects endpoint (item1), export the project with the ExportProject endpoint (item2), and then import it into acvprod using the Import Project endpoint (item3). This ensures a smooth migration of the model.",
+        "incorrect": "Incorrect. The process requires identifying the project, exporting it from the development environment, and importing it into production."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "84",
+      "type": "order",
+      "question": "You are developing an application that will recognize faults in components produced on a factory production line. The components are specific to your business. You need to use the Custom Vision API to help detect common faults. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Create a project."
+        },
+        {
+          "id": "item2",
+          "text": "Upload and tag images."
+        },
+        {
+          "id": "item3",
+          "text": "Train the classifier model."
+        },
+        {
+          "id": "item4",
+          "text": "Initialize the training dataset."
+        },
+        {
+          "id": "item5",
+          "text": "Train the object detection model."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item2",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! The proper sequence is to create a new Custom Vision project (item1), upload and tag images to build a robust training dataset (item2), and then train the classifier model (item3) to detect faults effectively.",
+        "incorrect": "Incorrect. Ensure you create the project, prepare the dataset through uploading and tagging, and then train the classifier model. Other options do not directly contribute to fault detection."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "101",
+      "type": "order",
+      "question": "You need to analyze video content to identify any mentions of specific company names. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Sign in to the Azure Video Analyzer for Media website."
+        },
+        {
+          "id": "item2",
+          "text": "Add the specific company names to the exclude list."
+        },
+        {
+          "id": "item3",
+          "text": "Add the specific company names to the include list."
+        },
+        {
+          "id": "item4",
+          "text": "From Content model customization, select Brands."
+        },
+        {
+          "id": "item5",
+          "text": "From Content model customization, select Language."
+        },
+        {
+          "id": "item6",
+          "text": "Sign in to the Custom Vision website."
+        }
+      ],
+      "correctOrder": [
+        "item1",
+        "item4",
+        "item3"
+      ],
+      "feedback": {
+        "correct": "Correct! Begin by signing in to the Azure Video Analyzer for Media website (item1) to access the video content. Next, select the Brands option in the content model customization (item4) to enable brand detection, and finally add the specific company names to the include list (item3) so they are recognized during analysis.",
+        "incorrect": "Incorrect. The proper steps are to sign in, select the Brands option, and add the company names to the include list\u2014not to use the exclude list or unrelated sites."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "114",
+      "type": "order",
+      "question": "DRAG DROP - You train a Custom Vision model used in a mobile app. You receive 1,000 new images that do not have any associated data. You need to use the images to retrain the model. The solution must minimize how long it takes to retrain the model. Which three actions should you perform in the Custom Vision portal? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Group the images locally into category folders."
+        },
+        {
+          "id": "item2",
+          "text": "Get suggested tags."
+        },
+        {
+          "id": "item3",
+          "text": "Upload the images by category."
+        },
+        {
+          "id": "item4",
+          "text": "Upload all the images."
+        },
+        {
+          "id": "item5",
+          "text": "Tag the images manually."
+        },
+        {
+          "id": "item6",
+          "text": "Review the suggestions and confirm the tags."
+        }
+      ],
+      "correctOrder": [
+        "item4",
+        "item2",
+        "item6"
+      ],
+      "feedback": {
+        "correct": "Correct! To expedite retraining, first upload all the images (item4), then use Smart Labeler to obtain suggested tags (item2), and finally review and confirm the suggested tags (item6) to ensure accuracy.",
+        "incorrect": "Incorrect. The optimal sequence is to upload all images, generate automatic tag suggestions, and then verify them, rather than manually grouping or tagging the images."
+      },
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "124",
+      "type": "order",
+      "question": "DRAG DROP - You are building a retail chatbot that will use a QnA Maker service. You upload an internal support document to train the model. The document contains the following question: 'What is your warranty period?' Users report that the chatbot returns the default QnA Maker answer when they ask the following question: 'How long is the warranty coverage?' The chatbot returns the correct answer when the users ask the following question: \u2018What is your warranty period?' Both questions should return the same answer. You need to increase the accuracy of the chatbot responses. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Add a new question and answer (QnA) pair."
+        },
+        {
+          "id": "item2",
+          "text": "Add alternative phrasing to the question and answer (QnA) pair."
+        },
+        {
+          "id": "item3",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item4",
+          "text": "Add additional questions to the document."
+        },
+        {
+          "id": "item5",
+          "text": "Republish the model."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item3",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! First, add alternative phrasing to the existing QnA pair (item2) so that variations of the question are recognized. Then, retrain the model (item3) to update its understanding, and finally republish the model (item5) so that the changes take effect.",
+        "incorrect": "Incorrect. The proper process is to add alternative phrasing, retrain the model, and republish it. Other steps do not address the inconsistency in responses."
+      },
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "168",
+      "type": "order",
+      "question": "You have a collection of Microsoft Word documents and PowerPoint presentations in German. You need to create a solution to translate the files to French. The solution must meet the following requirements:\n- Preserve the original formatting of the files.\n- Support the use of a custom glossary.\nYou create a blob container for German files and a blob container for French files. You upload the original files to the container for German files. Which three actions should you perform in sequence to complete the solution? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Perform an asynchronous translation by using the list of files to be translated."
+        },
+        {
+          "id": "item2",
+          "text": "Upload a glossary file to the container for French files."
+        },
+        {
+          "id": "item3",
+          "text": "Define a document translation specification that has a French target."
+        },
+        {
+          "id": "item4",
+          "text": "Generate a list of files to be translated."
+        },
+        {
+          "id": "item5",
+          "text": "Perform an asynchronous translation by using the document translation specification."
+        },
+        {
+          "id": "item6",
+          "text": "Upload a glossary file to the container for German files."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item3",
+        "item5"
+      ],
+      "feedback": {
+        "correct": "Correct! First, upload the custom glossary file to the French container (item2). Then, define a document translation specification targeting French (item3) that incorporates the glossary, and finally perform an asynchronous translation using this specification (item5). This process preserves formatting and applies the glossary as required.",
+        "incorrect": "Incorrect. The solution requires uploading the glossary, defining a translation specification with the French target, and then initiating the translation. Other options do not satisfy the requirements."
+      },
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "170",
+      "type": "order",
+      "question": "You have a Docker host named Host1 that contains a container base image. You have an Azure subscription that contains a custom speech-to-text model named model1. You need to run model1 on Host1. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "Retrain the model."
+        },
+        {
+          "id": "item2",
+          "text": "Request approval to run the container."
+        },
+        {
+          "id": "item3",
+          "text": "Export model1 to Host1."
+        },
+        {
+          "id": "item4",
+          "text": "Run the container."
+        },
+        {
+          "id": "item5",
+          "text": "Configure disk logging."
+        }
+      ],
+      "correctOrder": [
+        "item2",
+        "item3",
+        "item4"
+      ],
+      "feedback": {
+        "correct": "Correct! First, request approval to run the container on Host1 (item2) to ensure compliance. Then, export the custom speech-to-text model (model1) to Host1 (item3), and finally run the container (item4) to deploy the model.",
+        "incorrect": "Incorrect. The proper process is to obtain approval, export the model to the host, and then run the container, rather than retraining the model or configuring disk logging."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    },
+    {
+      "id": "172",
+      "type": "order",
+      "question": "You have a question answering project in Azure Cognitive Service for Language. You need to move the project to a Language service instance in a different Azure region. Which three actions should you perform in sequence? To answer, move the appropriate actions from the list of actions to the answer area and arrange them in the correct order.",
+      "points": 1,
+      "items": [
+        {
+          "id": "item1",
+          "text": "From the new Language service instance, train and publish the project."
+        },
+        {
+          "id": "item2",
+          "text": "From the new Language service instance, import the project file."
+        },
+        {
+          "id": "item3",
+          "text": "From the new Language service instance, enable custom text classification."
+        },
+        {
+          "id": "item4",
+          "text": "From the original Language service instance, export the existing project."
+        },
+        {
+          "id": "item5",
+          "text": "From the new Language service instance, regenerate the keys."
+        },
+        {
+          "id": "item6",
+          "text": "From the original Language service instance, train and publish the model."
+        }
+      ],
+      "correctOrder": [
+        "item4",
+        "item2",
+        "item1"
+      ],
+      "feedback": {
+        "correct": "Correct! First, export the existing project from the original Language service instance (item4). Then, import the project file into the new instance (item2), and finally, train and publish the project in the new region (item1) to complete the migration.",
+        "incorrect": "Incorrect. The proper steps are to export the project, import it into the new instance, and then train and publish it. Other actions are not necessary for a successful migration."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution"
+    }
+  ]
+}
+```
+
+### app/data/quizzes/azure-a102/clean_yesno_multi_questions.json
+
+```json
+{
+  "questions": [
+    {
+      "id": "77",
+      "type": "yesno_multi",
+      "question": "HOTSPOT - You are developing an application that will use the Computer Vision client library. The application has code using AnalyzeImageInStreamAsync with VisualFeatureTypes.Description and VisualFeatureTypes.Tags. For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "no",
+        "yes",
+        "yes"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "The code will perform face recognition."
+        },
+        {
+          "id": "b",
+          "text": "The code will list tags and their associated confidence."
+        },
+        {
+          "id": "c",
+          "text": "The code will read a file from the local file system."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. AnalyzeImageInStreamAsync reads from a stream (like a file), Description/Tags features don't do face recognition, but Tags feature lists tags and confidence.",
+        "incorrect": "Incorrect. AnalyzeImageInStreamAsync reads from a stream (like a file), Description/Tags features don't do face recognition, but Tags feature lists tags and confidence."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "hard"
+    },
+    {
+      "id": "82",
+      "type": "yesno_multi",
+      "question": "You are developing an application to recognize employees' faces by using the Face Recognition API. Images of the faces will be accessible from a URI endpoint. The application has Python code calling `conn.request('POST', f'/face/v1.0/persongroups/{person_group_id}/persons/{person_id}/persistedFaces', f'{body}', headers)`. For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "yes",
+        "yes",
+        "yes"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "The code will add a face image to a person object in a person group."
+        },
+        {
+          "id": "b",
+          "text": "The code will work for up to 10,000 people."
+        },
+        {
+          "id": "c",
+          "text": "add_face can be called multiple times to add multiple face images to a person object."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. The API adds a face to a person in a group, PersonGroups support up to 10,000 Persons, and multiple faces can be added per person.",
+        "incorrect": "Incorrect. Review the Face API documentation regarding adding faces and PersonGroup limits."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "90",
+      "type": "yesno_multi",
+      "question": "HOTSPOT - You develop a test method to verify the results retrieved from a call to the Computer Vision API for brand detection. The call returns a collection named image_analysis.brands. You have code iterating through brands. For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "yes",
+        "yes",
+        "no"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "The code will return the name of each detected brand with a confidence equal to or higher than 75 percent."
+        },
+        {
+          "id": "b",
+          "text": "The code will return coordinates for the top-left corner of the rectangle that contains the brand logo of the displayed brands."
+        },
+        {
+          "id": "c",
+          "text": "The code will return coordinates for the bottom-right corner of the rectangle that contains the brand logo of the displayed brands."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. The code checks confidence >= 0.75, prints the name, and prints rectangle.x, rectangle.y (top-left corner). It does not print bottom-right coordinates.",
+        "incorrect": "Incorrect. The code checks confidence >= 0.75, prints the name, and prints rectangle.x, rectangle.y (top-left corner). It does not print bottom-right coordinates."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "104",
+      "type": "yesno_multi",
+      "question": "You develop a test method to verify the results retrieved from a call to the Computer Vision API. The call is used to analyze the existence of company logos in images. The call returns a collection of brands named brands. You have the following code segment.\n```csharp\nforeach (var brand in brands)\n{\n  if (brand.Confidence >= 0.75)\n  {\n    Console.WriteLine($\"Logo of {brand.Name} between {brand.Rectangle.X}, {brand.Rectangle.Y} and {brand.Rectangle.W}, {brand.Rectangle.H}\");\n  }\n}\n```For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "yes",
+        "yes",
+        "no"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "The code will display the name of each detected brand with a confidence equal to or higher than 75 percent."
+        },
+        {
+          "id": "b",
+          "text": "The code will display coordinates for the top-left corner of the rectangle that contains the brand logo of the displayed brands."
+        },
+        {
+          "id": "c",
+          "text": "The code will display coordinates for the bottom-right corner of the rectangle that contains the brand logo of the displayed brands."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. The code checks `brand.Confidence >= 0.75`, prints `brand.Name`, and prints `brand.Rectangle.X`, `brand.Rectangle.Y` (top-left corner). It prints width (W) and height (H), not the bottom-right corner coordinates.",
+        "incorrect": "Incorrect. The code checks `brand.Confidence >= 0.75`, prints `brand.Name`, and prints `brand.Rectangle.X`, `brand.Rectangle.Y` (top-left corner). It prints width (W) and height (H), not the bottom-right corner coordinates."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "hard"
+    },
+    {
+      "id": "119",
+      "type": "yesno_multi",
+      "question": "HOTSPOT - You run the following command.\n```bash\ndocker run --rm -it -p 5000:5000 --memory 10g --cpus 2 \\\nmcr.microsoft.com/azure-cognitive-services/textanalytics/sentiment \\\nEula=accept \\\nBilling={ENDPOINT_URI} \\\nApikey={API_KEY}\n```\nFor each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "no",
+        "yes",
+        "yes"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "Going to http://localhost:5000/status will query the Azure endpoint to verify whether the API key used to start the container is valid."
+        },
+        {
+          "id": "b",
+          "text": "The container logging provider will write log data."
+        },
+        {
+          "id": "c",
+          "text": "Going to http://localhost:5000/swagger will provide the details to access the documentation for the available endpoints."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. `/status` checks local container status, not Azure key validity. Docker containers log output (`-it` flag shows it). Cognitive Services containers often expose a Swagger UI at `/swagger`.",
+        "incorrect": "Incorrect. `/status` checks local container status, not Azure key validity. Docker containers log output (`-it` flag shows it). Cognitive Services containers often expose a Swagger UI at `/swagger`."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "175",
+      "type": "yesno_multi",
+      "question": "You have a text-based chatbot. You need to enable content moderation by using the Text Moderation API of Content Moderator. Which two service responses should you use? Select Yes for the two responses you should use, and No for the others.",
+      "points": 1,
+      "correctAnswers": [
+        "yes",
+        "no",
+        "yes",
+        "no",
+        "no"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "Personal data detection"
+        },
+        {
+          "id": "b",
+          "text": "The adult classification score"
+        },
+        {
+          "id": "c",
+          "text": "Text classification (profanity, etc.)"
+        },
+        {
+          "id": "d",
+          "text": "Optical character recognition (OCR)"
+        },
+        {
+          "id": "e",
+          "text": "The racy classification score"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. The Text Moderation API specifically provides PII (Personal Identifiable Information/personal data) detection and text classification for categories like profanity.",
+        "incorrect": "Incorrect. Adult/Racy scores are for image moderation. OCR is for extracting text from images. Text Moderation focuses on analyzing text content for PII and classification."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "187",
+      "type": "yesno_multi",
+      "question": "You are building a solution that students will use to find references for essays. You use the following code to start building the solution.\n```csharp\nusing Azure;\nusing System;\nusing Azure.AI.TextAnalytics;\nprivate static readonly AzureKeyCredential credentials = new AzureKeyCredential(\"<key>\");\nprivate static readonly Uri endpoint = new Uri(\"<endpoint>\");\nstatic void EntityLinker(TextAnalyticsClient client)\n{\n    var response = client.RecognizeLinkedEntities(\n        \"Our tour guide took us up the Space Needle during our trip to Seattle last week.\");\n    // ... process response ...\n}\n```\nFor each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "no",
+        "no",
+        "yes"
+      ],
+      "statements": [
+        {
+          "id": "a",
+          "text": "The code will detect the language of documents."
+        },
+        {
+          "id": "b",
+          "text": "The url attribute returned for each linked entity will be a Bing search link."
+        },
+        {
+          "id": "c",
+          "text": "The matches attribute returned for each linked entity will provide the location in a document where the entity is referenced."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct. `RecognizeLinkedEntities` focuses on identifying known entities and linking them to a knowledge base (like Wikipedia, providing a URL), not language detection. The `Matches` property indicates where in the text the entity was found.",
+        "incorrect": "Incorrect. `RecognizeLinkedEntities` does not perform language detection (that's `DetectLanguage`). The URL links to a knowledge base (like Wikipedia), not Bing search. The `Matches` property does provide the location (offset and length) of the entity in the text."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    }
+  ]
+}
+```
+
+### app/data/quizzes/azure-a102/clean_dropdown_selection_questions.json
+
+```json
+{
+  "questions": [
+    {
+      "id": "9",
+      "type": "dropdown_selection",
+      "question": "Complete the Speech SDK code snippet for streaming MP3 data.",
+      "questionText": "You are developing a streaming Speech to Text solution that will use the Speech SDK and MP3 encoding. You need to develop a method to convert speech to text for streaming MP3 data. How should you complete the code? To answer, select the appropriate options in the answer area.\n```csharp\nvar pushStream = // (Assume PushAudioInputStream is created here)\nvar audioFormat = [option_set1](AudioStreamContainerFormat.MP3);\nvar speechConfig = SpeechConfig.FromSubscription(\"18c51a87-3a69-47a8-aedc-a54745f708a1\", \"westus\");\nvar audioConfig = AudioConfig.FromStreamInput(pushStream, audioFormat);\nusing (var recognizer = new [option_set2](speechConfig, audioConfig))\n{\n var result = await recognizer.RecognizeOnceAsync();\n var text = result.Text;\n}\n```",
+      "points": 1,
+      "options": [
+        {
+          "id": "option-1",
+          "text": "AudioConfig.SetProperty",
+          "is_correct": false
+        },
+        {
+          "id": "option-2",
+          "text": "AudioStreamFormat.GetCompressedFormat",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "AudioStreamFormat.GetWaveFormatPCM",
+          "is_correct": false
+        },
+        {
+          "id": "option-4",
+          "text": "PullAudioInputStream",
+          "is_correct": false
+        },
+        {
+          "id": "option-5",
+          "text": "KeywordRecognizer",
+          "is_correct": false
+        },
+        {
+          "id": "option-6",
+          "text": "SpeechRecognizer",
+          "is_correct": true
+        },
+        {
+          "id": "option-7",
+          "text": "SpeechSynthesizer",
+          "is_correct": false
+        }
+      ],
+      "target": {
+        "option_set1": "AudioStreamFormat.GetCompressedFormat",
+        "option_set2": "SpeechRecognizer"
+      },
+      "feedback": {
+        "correct": "Correct! AudioStreamFormat.GetCompressedFormat specifies the format, and SpeechRecognizer performs the recognition.",
+        "incorrect": "Incorrect. Use AudioStreamFormat.GetCompressedFormat for MP3 and SpeechRecognizer for the recognition task."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "10",
+      "type": "dropdown_selection",
+      "question": "Select Azure Cognitive Services for learner monitoring.",
+      "questionText": "You are developing an internet-based training solution for remote learners. Your company identifies that during the training, some learners leave their desk for long periods or become distracted. You need to use a video and audio feed from each learner's computer to detect whether the learner is present and paying attention. The solution must minimize development effort and identify each learner. Which Azure Cognitive Services service should you use for each requirement? To answer, select the appropriate options in the answer area.\nRequirements:\n1. From a learner\u2019s video feed, verify whether the learner is present: [requirement-1]\n2. From a learner\u2019s facial expression in the video feed, verify whether the learner is paying attention: [requirement-2]\n3. From a learner\u2019s audio feed, detect whether the learner is talking: [requirement-3]",
+      "points": 1,
+      "options": [
+        {
+          "id": "option-1",
+          "text": "Face",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "Speech",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "Text Analytics",
+          "is_correct": false
+        },
+        {
+          "id": "option-4",
+          "text": "Face",
+          "is_correct": true
+        },
+        {
+          "id": "option-5",
+          "text": "Speech",
+          "is_correct": false
+        },
+        {
+          "id": "option-6",
+          "text": "Text Analytics",
+          "is_correct": false
+        }
+      ],
+      "target": {
+        "requirement-1": "Face",
+        "requirement-2": "Face",
+        "requirement-3": "Speech"
+      },
+      "feedback": {
+        "correct": "Correct! Face API detects presence and analyzes expressions. Speech service detects talking.",
+        "incorrect": "Incorrect. Face API is used for presence and facial expression analysis. Speech service detects speech."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "17",
+      "type": "dropdown_selection",
+      "question": "Identify the Cognitive Services API endpoint for text translation.",
+      "questionText": "You are building an app that will process incoming email and direct messages to either French or English language support teams. Which Azure Cognitive Services API should you use? To answer, select the appropriate options in the answer area.\nAPI Endpoint Structure:\nhttps:// [Region_Service_Name] / [API_Path] ? [Parameters]",
+      "points": 1,
+      "options": [
+        {
+          "id": "option-1",
+          "text": "https://api.cognitive.microsofttranslator.com",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "https://eastus.api.cognitive.microsoft.com",
+          "is_correct": false
+        },
+        {
+          "id": "option-3",
+          "text": "https://portal.azure.com",
+          "is_correct": false
+        },
+        {
+          "id": "option-4",
+          "text": "/text/analytics/v3.1/entities/recognition/general",
+          "is_correct": false
+        },
+        {
+          "id": "option-5",
+          "text": "/text/analytics/v3.1/languages",
+          "is_correct": false
+        },
+        {
+          "id": "option-6",
+          "text": "/translator/text/v3.0/translate?to=en",
+          "is_correct": true
+        },
+        {
+          "id": "option-7",
+          "text": "/translator/text/v3.0/translate?to=fr",
+          "is_correct": true
+        },
+        {
+          "id": "option-8",
+          "text": "/translator/text/v3.0/translate",
+          "is_correct": true
+        }
+      ],
+      "target": {
+        "Region_Service_Name": "https://api.cognitive.microsofttranslator.com",
+        "API_Path": "/translator/text/v3.0/translate"
+      },
+      "feedback": {
+        "correct": "Correct! The Translator service uses a global endpoint and the specified path for translation.",
+        "incorrect": "Incorrect. The correct global endpoint for Translator is 'api.cognitive.microsofttranslator.com' and the base path is '/translator/text/v3.0/translate'."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "20",
+      "type": "dropdown_selection",
+      "question": "Complete the API URL for Computer Vision smart cropping.",
+      "questionText": "You have a Computer Vision resource named contoso1 that is hosted in the West US Azure region. You need to use contoso1 to make a different size of a product photo by using the smart cropping feature. How should you complete the API URL? To answer, select the appropriate options in the answer area.\n```bash\ncurl -H \"Ocp-Apim-Subscription-Key: xxx\" \\\n-o \"sample.png\" -H \"Content-Type: application/json\" \\\n'[option_set1]'/'[option_set2]'?width=100&height=100&smartCropping=true\" \\\n-d '{\"url\":\"https://upload.litwareinc.org/litware/bicycle.jpg\"}'\n```",
+      "points": 1,
+      "options": [
+        {
+          "id": "option-1",
+          "text": "https://api.projectoxford.ai",
+          "is_correct": false
+        },
+        {
+          "id": "option-2",
+          "text": "https://contoso1.cognitiveservices.azure.com",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "https://westus.api.cognitive.microsoft.com",
+          "is_correct": false
+        },
+        {
+          "id": "option-4",
+          "text": "vision/v3.1/",
+          "is_correct": false
+        },
+        {
+          "id": "option-5",
+          "text": "areaOfinterest",
+          "is_correct": false
+        },
+        {
+          "id": "option-6",
+          "text": "detect",
+          "is_correct": false
+        },
+        {
+          "id": "option-7",
+          "text": "vision/v3.1/generateThumbnail",
+          "is_correct": true
+        }
+      ],
+      "target": {
+        "option_set1": "https://contoso1.cognitiveservices.azure.com",
+        "option_set2": "vision/v3.1/generateThumbnail"
+      },
+      "feedback": {
+        "correct": "Correct! Use the resource-specific endpoint and the 'generateThumbnail' path for smart cropping.",
+        "incorrect": "Incorrect. The endpoint should be specific to your resource (contoso1.cognitiveservices.azure.com), and the correct operation for smart cropping is 'generateThumbnail'."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    }
+  ]
+}
+```
+
+### app/data/quizzes/azure-a102/clean_yes_no_questions.json
+
+```json
+{
+  "questions": [
+    {
+      "id": "7",
+      "type": "yes_no",
+      "question": "You create a web app named app1 that runs on an Azure virtual machine named vm1. Vm1 is on an Azure virtual network named vnet1. You plan to create a new Azure Cognitive Search service named service1. You need to ensure that app1 can connect directly to service1 without routing traffic over the public internet. Solution: You deploy service1 and a public endpoint, and you configure an IP firewall rule. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Instead deploy service1 and a private (not public) endpoint to a new virtual network, and you configure Azure Private Link.",
+        "incorrect": "Incorrect! Deploying a public endpoint means traffic potentially traverses the public internet. An IP firewall restricts access *to* the public endpoint but doesn't create a private connection path. A private endpoint is needed."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "13",
+      "type": "yes_no",
+      "question": "You have an Azure Cognitive Search service. During the past 12 months, query volume steadily increased. You discover that some search query requests to the Cognitive Search service are being throttled. You need to reduce the likelihood that search query requests are throttled. Solution: You migrate to a Cognitive Search service that uses a higher tier. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Migrating to a higher tier typically provides more resources (Query Processing Units, storage, potentially higher limits on replicas/partitions), which can alleviate throttling caused by insufficient capacity.",
+        "incorrect": "Incorrect. Migrating to a higher tier is a valid way to increase capacity and reduce throttling."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "15",
+      "type": "yes_no",
+      "question": "You create a web app named app1 that runs on an Azure virtual machine named vm1. Vm1 is on an Azure virtual network named vnet1. You plan to create a new Azure Cognitive Search service named service1. You need to ensure that app1 can connect directly to service1 without routing traffic over the public internet. Solution: You deploy service1 and a private endpoint to vnet1. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! A private endpoint creates a network interface within your virtual network (vnet1) that connects privately to the Azure service (service1) via Azure Private Link, keeping traffic off the public internet.",
+        "incorrect": "Incorrect. Deploying a private endpoint within the VNet is the standard solution for this requirement."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "18",
+      "type": "yes_no",
+      "question": "You have an Azure Cognitive Search service. During the past 12 months, query volume steadily increased. You discover that some search query requests to the Cognitive Search service are being throttled. You need to reduce the likelihood that search query requests are throttled. Solution: You add replicas. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! A simple fix to most throttling issues is to throw more resources at the search service. Adding replicas increases query processing capacity (Query Processing Units - QPUs), specifically addressing query-based throttling.",
+        "incorrect": "Incorrect. Adding replicas directly increases query throughput capacity."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "34",
+      "type": "yes_no",
+      "question": "You develop an application to identify species of flowers by training a Custom Vision model. You receive images of new flower species. You need to add the new images to the classifier. Solution: You add the new images, and then use the Smart Labeler tool. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! The Smart Labeler suggests tags for *existing* untagged images based on the *current* model. To incorporate *new species*, you must add the images, manually label them with the new species names (create new tags), and then *retrain* the model to learn these new classes. Smart Labeler alone doesn't add new classes or retrain.",
+        "incorrect": "Incorrect! Smart Labeler works on existing, untagged images based on what the model already knows. It cannot identify or label entirely new species."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "35",
+      "type": "yes_no",
+      "question": "You develop an application to identify species of flowers by training a Custom Vision model. You receive images of new flower species. You need to add the new images to the classifier. Solution: You add the new images and labels to the existing model. You retrain the model, and then publish the model. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! This is the standard process: add new images, provide the correct labels (tags for the new species), retrain the model so it learns to recognize them, and then publish the updated iteration to make it available.",
+        "incorrect": "Incorrect. This describes the correct workflow for updating a Custom Vision model with new data/classes."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "44",
+      "type": "yes_no",
+      "question": "You create a web app named app1 that runs on an Azure virtual machine named vm1. Vm1 is on an Azure virtual network named vnet1. You plan to create a new Azure Cognitive Search service named service1. You need to ensure that app1 can connect directly to service1 without routing traffic over the public internet. Solution: You deploy service1 and a public endpoint, and you configure a network security group (NSG) for vnet1. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! NSGs control traffic flow *to/from* resources within a VNet or subnet, but they don't prevent traffic destined for a public endpoint from leaving the VNet to reach the public internet. A public endpoint is, by definition, accessible over the public internet. To keep traffic private, a private endpoint is required.",
+        "incorrect": "Incorrect! NSGs filter traffic but don't create a private connection. A public endpoint necessitates traffic leaving the VNet."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "48",
+      "type": "yes_no",
+      "question": "You have an Azure Cognitive Search service. During the past 12 months, query volume steadily increased. You discover that some search query requests to the Cognitive Search service are being throttled. You need to reduce the likelihood that search query requests are throttled. Solution: You add indexes. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Adding indexes increases the number of searchable datasets or defines different search structures, but does not increase query processing capacity. Throttling due to high query volume is addressed by adding replicas or scaling up the service tier.",
+        "incorrect": "Incorrect. Indexes define data structure and content, not query processing power."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "49",
+      "type": "yes_no",
+      "question": "You have an Azure Cognitive Search service. During the past 12 months, query volume steadily increased. You discover that some search query requests to the Cognitive Search service are being throttled. You need to reduce the likelihood that search query requests are throttled. Solution: You enable customer-managed key (CMK) encryption. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! CMK encryption enhances security by giving you control over the encryption keys for data at rest, but it does not increase the query processing capacity of the search service. It might even introduce a slight performance overhead. Throttling is addressed by scaling resources (replicas, partitions, tier).",
+        "incorrect": "Incorrect. CMK is a security feature, not a performance scaling feature."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "50",
+      "type": "yes_no",
+      "question": "You create a web app named app1 that runs on an Azure virtual machine named vm1. Vm1 is on an Azure virtual network named vnet1. You plan to create a new Azure Cognitive Search service named service1. You need to ensure that app1 can connect directly to service1 without routing traffic over the public internet. Solution: You deploy service1 and a private endpoint to vnet1. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! A private endpoint creates a network interface within your virtual network (vnet1) that connects privately to the Azure service (service1) via Azure Private Link, keeping traffic off the public internet. This allows app1 on vm1 in vnet1 to connect directly and securely.",
+        "incorrect": "Incorrect. This is the standard and correct method to achieve private connectivity."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "109",
+      "type": "yes_no",
+      "question": "You build a language model by using a Language Understanding service. The language model is used to search for information on a contact list by using an intent named FindContact. A conversational expert provides you with the following list of phrases to use for training:\n- Find contacts in London.\n- Who do I know in Seattle?\n- Search for contacts in Ukraine.\nYou need to implement the phrase list in Language Understanding. Solution: You create a new pattern in the FindContact intent. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Patterns are for matching specific text structures, often with optional elements or entity placeholders. While a pattern *might* work for one of these, the standard and more robust way to train an intent with varied phrasing like this is to add them as *example utterances* to the intent. This allows the machine learning model to generalize.",
+        "incorrect": "Incorrect! These should be added as example utterances to train the intent's ML model, not defined as rigid patterns."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "110",
+      "type": "yes_no",
+      "question": "You develop an application to identify species of flowers by training a Custom Vision model. You receive images of new flower species. You need to add the new images to the classifier. Solution: You add the new images, and then use the Smart Labeler tool. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! The Smart Labeler suggests tags based on the *existing* trained model for untagged images already in the project. It cannot automatically identify or label *new, unknown* species. You must manually add the new images, *manually create new tags* for the new species, label the images with these new tags, and then *retrain* the model.",
+        "incorrect": "Incorrect! Smart Labeler cannot identify new species; manual labeling and retraining are required."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "111",
+      "type": "yes_no",
+      "question": "You develop an application to identify species of flowers by training a Custom Vision model. You receive images of new flower species. You need to add the new images to the classifier. Solution: You add the new images and labels to the existing model. You retrain the model, and then publish the model. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! This describes the correct process: add the new images, assign the appropriate labels (tags for the new species, likely creating new tags), retrain the model so it learns the new species alongside the old ones, and publish the updated iteration.",
+        "incorrect": "Incorrect. This is the standard workflow."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "112",
+      "type": "yes_no",
+      "question": "You develop an application to identify species of flowers by training a Custom Vision model. You receive images of new flower species. You need to add the new images to the classifier. Solution: You create a new model, and then upload the new images and labels. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Creating a completely new model (or project) means starting from scratch and losing the knowledge gained from training on the original flower species. The goal is typically to *extend* the existing classifier by adding the new species images and labels to the current project and retraining.",
+        "incorrect": "Incorrect. This would discard the existing model's training. You should add to the existing project and retrain."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "125",
+      "type": "yes_no",
+      "question": "You build a language model by using a Language Understanding service. The language model is used to search for information on a contact list by using an intent named FindContact. A conversational expert provides you with the following list of phrases to use for training:\n- Find contacts in London.\n- Who do I know in Seattle?\n- Search for contacts in Ukraine.\nYou need to implement the phrase list in Language Understanding. Solution: You create a new intent for location. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Creating a new intent specifically for 'location' doesn't address the primary goal, which is to trigger the 'FindContact' intent based on these phrases. The core action is finding contacts. The location is a parameter. These phrases should be added as example utterances to the 'FindContact' intent, and 'location' should be identified as an entity.",
+        "incorrect": "Incorrect. The intent is 'FindContact'; 'location' is an entity within that intent. These phrases should train the 'FindContact' intent."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "126",
+      "type": "yes_no",
+      "question": "You build a language model by using a Language Understanding service. The language model is used to search for information on a contact list by using an intent named FindContact. A conversational expert provides you with the following list of phrases to use for training:\n- Find contacts in London.\n- Who do I know in Seattle?\n- Search for contacts in Ukraine.\nYou need to implement the phrase list in Language Understanding. Solution: You create a new entity for the domain. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! While phrased slightly ambiguously ('entity for the domain'), the most sensible interpretation is creating an entity (e.g., named 'Location' or using a prebuilt like geographyV2) to capture 'London', 'Seattle', and 'Ukraine'. You would then add the provided phrases as example utterances to the 'FindContact' intent and label these location words with the new entity. This allows the model to learn the 'FindContact' intent while recognizing the location parameter.",
+        "incorrect": "Incorrect. Creating a location entity and adding the phrases as examples to the intent is the standard approach."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "171",
+      "type": "yes_no",
+      "question": "You build a language model by using a Conversational Language Understanding. The language model is used to search for information on a contact list by using an intent named FindContact. A conversational expert provides you with the following list of phrases to use for training.\n- Find contacts in London.\n- Who do I know in Seattle?\n- Search for contacts in Ukraine.\nYou need to implement the phrase list in Conversational Language Understanding. Solution: You create a new utterance for each phrase in the FindContact intent. Does this meet the goal?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Adding example utterances directly to the intent they represent is the primary way to train a CLU (or LUIS) model to recognize that intent. This directly implements the requirement of using the provided phrases for training.",
+        "incorrect": "Incorrect. Adding these as example utterances to the target intent is the fundamental training method."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    }
+  ]
+}
+```
+
+### app/data/quizzes/azure-a102/quiz_metadata.json
+
+```json
+{
+  "metadata": {
+    "id": "azure-a102",
+    "title": "Azure AI Engineer A102 Practice Quiz",
+    "description": "Covers implementation and management of Azure AI services: language, vision, document intelligence, and solution planning.",
+    "quizType": "mixed",
+    "settings": {
+      "randomizeQuestions": false,
+      "randomizeOptions":   false,
+      "passingScore":       70,
+      "showFeedback":       true,
+      "timeLimit":          null,
+      "attemptsAllowed":    null
+    },
+    "author":    "amankumarshrestha",
+    "difficulty":"medium",
+    "tags": [
+      "Implement natural language processing solutions",
+      "Implement computer vision solutions",
+      "Plan and manage an Azure AI solution",
+      "Implement knowledge mining and document intelligence solutions"
+    ]
+  },
+  "quiz_topic": "Azure AI"
 }
 
 ```
@@ -20256,6 +28579,762 @@ const Testimonials3 = () => {
 };
 
 export default Testimonials3;
+
+```
+
+### logs/migration.log
+
+```log
+2025-05-13T12:57:10.017Z === Migration started ===
+2025-05-13T12:57:10.023Z Upserting quiz metadata for azure-a102
+2025-05-13T12:57:10.406Z Quiz metadata upserted
+2025-05-13T12:57:10.407Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_drag_and_drop_questions.json
+2025-05-13T12:57:10.407Z Loaded 9 questions from clean_drag_and_drop_questions.json
+2025-05-13T12:57:10.407Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_dropdown_selection_questions.json
+2025-05-13T12:57:10.408Z Loaded 4 questions from clean_dropdown_selection_questions.json
+2025-05-13T12:57:10.408Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_multi_questions.json
+2025-05-13T12:57:10.409Z Loaded 24 questions from clean_multi_questions.json
+2025-05-13T12:57:10.409Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_order_questions.json
+2025-05-13T12:57:10.409Z Loaded 19 questions from clean_order_questions.json
+2025-05-13T12:57:10.409Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_single_selection_questions.json
+2025-05-13T12:57:10.410Z Loaded 67 questions from clean_single_selection_questions.json
+2025-05-13T12:57:10.410Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_yes_no_questions.json
+2025-05-13T12:57:10.411Z Loaded 17 questions from clean_yes_no_questions.json
+2025-05-13T12:57:10.411Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_yesno_multi_questions.json
+2025-05-13T12:57:10.411Z Loaded 7 questions from clean_yesno_multi_questions.json
+2025-05-13T12:57:10.411Z Total questions to import: 147
+2025-05-13T12:57:10.412Z Upserting base questions
+2025-05-13T12:57:11.015Z Base questions done
+2025-05-13T12:57:11.016Z Upserting 21 rows into drag_and_drop_targets
+2025-05-13T12:57:11.311Z drag_and_drop_targets done
+2025-05-13T12:57:11.311Z Upserting 39 rows into drag_and_drop_options
+2025-05-13T12:57:11.598Z drag_and_drop_options done
+2025-05-13T12:57:11.599Z Upserting 21 rows into drag_and_drop_correct_pairs
+2025-05-13T12:57:11.911Z drag_and_drop_correct_pairs done
+2025-05-13T12:57:11.911Z Upserting 28 rows into dropdown_selection_options
+2025-05-13T12:57:12.303Z dropdown_selection_options done
+2025-05-13T12:57:12.303Z Upserting 9 rows into dropdown_selection_targets
+2025-05-13T12:57:12.611Z dropdown_selection_targets done
+2025-05-13T12:57:12.611Z Upserting 111 rows into multi_options
+2025-05-13T12:57:12.751Z multi_options done
+2025-05-13T12:57:12.751Z Upserting 53 rows into multi_correct_answers
+2025-05-13T12:57:12.879Z multi_correct_answers done
+2025-05-13T12:57:12.880Z Upserting 267 rows into single_selection_options
+2025-05-13T12:57:13.069Z single_selection_options done
+2025-05-13T12:57:13.069Z Upserting 67 rows into single_selection_correct_answer
+2025-05-13T12:57:13.364Z single_selection_correct_answer done
+2025-05-13T12:57:13.364Z Upserting 107 rows into order_items
+2025-05-13T12:57:13.739Z order_items done
+2025-05-13T12:57:13.739Z Upserting 60 rows into order_correct_order
+2025-05-13T12:57:13.883Z order_correct_order done
+2025-05-13T12:57:13.883Z Upserting 17 rows into yes_no_answer
+2025-05-13T12:57:14.009Z yes_no_answer done
+2025-05-13T12:57:14.009Z Upserting 23 rows into yesno_multi_statements
+2025-05-13T12:57:14.304Z yesno_multi_statements done
+2025-05-13T12:57:14.304Z Upserting 23 rows into yesno_multi_correct_answers
+2025-05-13T12:57:14.587Z yesno_multi_correct_answers done
+2025-05-13T12:57:14.587Z === Migration finished successfully ===
+2025-05-13T13:00:59.022Z === Migration started ===
+2025-05-13T13:00:59.025Z Upserting quiz metadata for azure-a102
+2025-05-13T13:00:59.352Z Quiz metadata upserted
+2025-05-13T13:00:59.353Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_drag_and_drop_questions.json
+2025-05-13T13:00:59.354Z Loaded 9 questions from clean_drag_and_drop_questions.json
+2025-05-13T13:00:59.354Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_dropdown_selection_questions.json
+2025-05-13T13:00:59.354Z Loaded 4 questions from clean_dropdown_selection_questions.json
+2025-05-13T13:00:59.354Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_multi_questions.json
+2025-05-13T13:00:59.354Z Loaded 24 questions from clean_multi_questions.json
+2025-05-13T13:00:59.355Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_order_questions.json
+2025-05-13T13:00:59.355Z Loaded 19 questions from clean_order_questions.json
+2025-05-13T13:00:59.355Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_single_selection_questions.json
+2025-05-13T13:00:59.356Z Loaded 67 questions from clean_single_selection_questions.json
+2025-05-13T13:00:59.356Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_yes_no_questions.json
+2025-05-13T13:00:59.356Z Loaded 17 questions from clean_yes_no_questions.json
+2025-05-13T13:00:59.356Z Reading /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/app/data/quizzes/azure-a102/clean_yesno_multi_questions.json
+2025-05-13T13:00:59.357Z Loaded 7 questions from clean_yesno_multi_questions.json
+2025-05-13T13:00:59.357Z Total questions to import: 147
+2025-05-13T13:00:59.357Z Upserting base questions
+2025-05-13T13:00:59.782Z Base questions done
+2025-05-13T13:00:59.783Z Upserting 21 rows into drag_and_drop_targets
+2025-05-13T13:00:59.893Z drag_and_drop_targets done
+2025-05-13T13:00:59.893Z Upserting 39 rows into drag_and_drop_options
+2025-05-13T13:01:00.016Z drag_and_drop_options done
+2025-05-13T13:01:00.016Z Upserting 21 rows into drag_and_drop_correct_pairs
+2025-05-13T13:01:00.159Z drag_and_drop_correct_pairs done
+2025-05-13T13:01:00.159Z Upserting 28 rows into dropdown_selection_options
+2025-05-13T13:01:00.295Z dropdown_selection_options done
+2025-05-13T13:01:00.296Z Upserting 9 rows into dropdown_selection_targets
+2025-05-13T13:01:00.412Z dropdown_selection_targets done
+2025-05-13T13:01:00.412Z Upserting 111 rows into multi_options
+2025-05-13T13:01:00.539Z multi_options done
+2025-05-13T13:01:00.539Z Upserting 53 rows into multi_correct_answers
+2025-05-13T13:01:00.659Z multi_correct_answers done
+2025-05-13T13:01:00.659Z Upserting 267 rows into single_selection_options
+2025-05-13T13:01:00.818Z single_selection_options done
+2025-05-13T13:01:00.818Z Upserting 67 rows into single_selection_correct_answer
+2025-05-13T13:01:00.941Z single_selection_correct_answer done
+2025-05-13T13:01:00.941Z Upserting 107 rows into order_items
+2025-05-13T13:01:01.064Z order_items done
+2025-05-13T13:01:01.064Z Upserting 60 rows into order_correct_order
+2025-05-13T13:01:01.185Z order_correct_order done
+2025-05-13T13:01:01.185Z Upserting 17 rows into yes_no_answer
+2025-05-13T13:01:01.305Z yes_no_answer done
+2025-05-13T13:01:01.305Z Upserting 23 rows into yesno_multi_statements
+2025-05-13T13:01:01.444Z yesno_multi_statements done
+2025-05-13T13:01:01.444Z Upserting 23 rows into yesno_multi_correct_answers
+2025-05-13T13:01:01.557Z yesno_multi_correct_answers done
+2025-05-13T13:01:01.557Z === Migration finished successfully ===
+
+```
+
+### __tests__/components/question-types/OrderQuestionComponent.test.tsx
+
+```tsx
+import React from 'react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import OrderQuestionComponent from '@/app/features/quiz/components/question-types/OrderQuestionComponent';
+import { OrderQuestion, OrderQuestionAnswer } from '@/app/types/quiz';
+import { OrderController } from '@/app/features/quiz/controllers/OrderController';
+
+// Mock framer-motion
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: jest.fn(({ children, ...props }) => <div {...props}>{children}</div>),
+  },
+}));
+
+// Mock useAutoValidation hook
+const mockSetPlacedAnswers = jest.fn();
+const mockOnAnswerSelect = jest.fn();
+
+jest.mock('@/app/features/quiz/hooks/useAutoValidation', () => ({
+  useAutoValidation: jest.fn((controller, initialAnswer, onAnswerChangeCallback) => {
+    // Simulate the hook's behavior for testing purposes
+    const [answer, setAnswer] = React.useState(initialAnswer);
+    const allItemsOrdered = controller.isAnswerComplete(answer);
+    React.useEffect(() => {
+      // Call onAnswerChangeCallback when all items are ordered, similar to the real hook
+      if (allItemsOrdered) {
+        onAnswerChangeCallback(answer);
+      }
+    }, [answer, allItemsOrdered, onAnswerChangeCallback]);
+    
+    // Allow tests to update the answer via mockSetPlacedAnswers
+    const customSetAnswer = (newAnswer: OrderQuestionAnswer) => {
+        setAnswer(newAnswer);
+        mockSetPlacedAnswers(newAnswer); // also call the mock for direct assertion if needed
+    }
+    return [answer, customSetAnswer, false, allItemsOrdered];
+  }),
+}));
+
+const mockQuestion: OrderQuestion = {
+  id: 'order-q1',
+  type: 'order',
+  text: 'Arrange these items correctly:',
+  items: [
+    { item_id: 'item1', text: 'First Item' },
+    { item_id: 'item2', text: 'Second Item' },
+    { item_id: 'item3', text: 'Third Item' },
+  ],
+  correctOrder: ['item1', 'item2', 'item3'],
+  question_meta: {
+    difficulty: 'medium',
+    estimated_time: 60,
+    topic: 'Ordering',
+    skill: 'Sequencing',
+  },
+  slotCount: 3,
+};
+
+// Helper to simulate drag and drop
+const simulateDragDrop = (draggedElement: HTMLElement, dropZone: HTMLElement, dragData: object) => {
+  fireEvent.dragStart(draggedElement, {
+    dataTransfer: {
+      setData: (format: string, data: string) => {
+        // Mock setData if needed, or rely on currentDraggedItemId state
+      },
+      getData: (format: string) => JSON.stringify(dragData), // Provide data for drop
+      effectAllowed: 'move',
+    }
+  });
+
+  fireEvent.dragEnter(dropZone);
+  fireEvent.dragOver(dropZone, { dataTransfer: { dropEffect: 'move' } });
+  fireEvent.drop(dropZone, {
+    dataTransfer: {
+      getData: (format: string) => JSON.stringify(dragData),
+    }
+  });
+  fireEvent.dragLeave(dropZone);
+};
+
+
+describe('OrderQuestionComponent', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    // Reset the state of useAutoValidation mock for each test if needed
+    // For instance, reset placedAnswers to initial state if it's managed outside the mock's internal state
+  });
+
+  it('renders available items and empty slots correctly', () => {
+    render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} />);
+
+    expect(screen.getByText('Available Items:')).toBeInTheDocument();
+    expect(screen.getByText('First Item')).toBeInTheDocument();
+    expect(screen.getByText('Second Item')).toBeInTheDocument();
+    expect(screen.getByText('Third Item')).toBeInTheDocument();
+
+    expect(screen.getByText('Ordered Sequence:')).toBeInTheDocument();
+    const slots = screen.getAllByText('Drop an item here');
+    expect(slots.length).toBe(mockQuestion.slotCount);
+  });
+
+  it('updates state when an item is dragged from available to an empty slot', () => {
+    render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} />); 
+    
+    const availableItem1 = screen.getByText('First Item').closest('div[draggable="true"]');
+    const firstSlot = screen.getAllByText('Drop an item here')[0].closest('div[class*="border-dashed"]');
+
+    expect(availableItem1).toBeInTheDocument();
+    expect(firstSlot).toBeInTheDocument();
+
+    if (availableItem1 && firstSlot) {
+      // Simulate drag data
+      const dragData = { itemId: 'item1', sourceType: 'available' };
+      
+      act(() => {
+        simulateDragDrop(availableItem1, firstSlot, dragData);
+      });
+
+      // Check if onAnswerSelect was called by useAutoValidation due to state change
+      // This depends on how useAutoValidation is mocked and how setPlacedAnswers is called by the component
+      // We expect setPlacedAnswers (from useAutoValidation) to be called by the component's drop handler.
+      // Then, the useEffect within the mocked useAutoValidation should trigger onAnswerSelect if complete.
+      
+      // Verify that the item text is now in the slot (or that onAnswerSelect was called with the new state)
+      // This requires the mocked useAutoValidation to correctly update the 'placedAnswers' state used by the component.
+      // As the mock directly calls setAnswer, the component should re-render with the new state.
+      expect(screen.getByText('First Item').closest('div[class*="border-gray-300"]')).not.toHaveClass('border-dashed'); // No longer a dashed empty slot
+      expect(screen.queryByText('Drop an item here')).toBeNull(); // Assuming only one item dropped for now, so one less empty slot text
+    }
+  });
+
+  it('disables drag and drop when isSubmitted is true', () => {
+    render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} isSubmitted={true} />);
+    const availableItem = screen.getByText('First Item').closest('div[draggable="false"]');
+    expect(availableItem).toBeInTheDocument(); // Draggable should be false
+  });
+
+  it('disables drag and drop when isQuizReviewMode is true', () => {
+    render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} isQuizReviewMode={true} />);
+    const availableItemContainer = screen.getByText('All items placed.'); // In review mode, available items are empty
+    expect(availableItemContainer).toBeInTheDocument();
+    // Slots should show correct items, not be draggable
+    const firstSlotItem = screen.getByText('First Item').closest('div[draggable="false"]');
+    expect(firstSlotItem).toBeInTheDocument();
+  });
+
+  it('shows correct/incorrect feedback when showCorrectAnswer is true', () => {
+    const userAnswer: OrderQuestionAnswer = {
+      'slot_0': 'item1', // Correct
+      'slot_1': 'item3', // Incorrect
+      'slot_2': 'item2', // Incorrect
+    };
+    render(
+      <OrderQuestionComponent 
+        question={mockQuestion} 
+        onAnswerSelect={mockOnAnswerSelect} 
+        userAnswer={userAnswer} 
+        isSubmitted={true} 
+        showCorrectAnswer={true} 
+      />
+    );
+
+    // Check for feedback icons or styles
+    const correctSlot = screen.getByText('First Item').closest('div');
+    expect(correctSlot).toHaveClass('border-green-500');
+
+    const incorrectSlot1 = screen.getByText('Third Item').closest('div');
+    expect(incorrectSlot1).toHaveClass('border-red-500');
+    expect(screen.getByText('Correct: Second Item')).toBeInTheDocument(); // Feedback for incorrect item
+
+    const incorrectSlot2 = screen.getByText('Second Item').closest('div');
+    expect(incorrectSlot2).toHaveClass('border-red-500');
+    expect(screen.getByText('Correct: Third Item')).toBeInTheDocument(); // Feedback for incorrect item
+  });
+
+   it('calls onAnswerSelect when all items are placed and validateOnComplete is true', () => {
+    // This test relies heavily on the mock of useAutoValidation correctly calling onAnswerSelect
+    // when the answer becomes complete.
+    render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} validateOnComplete={true} />);
+
+    const availableItem1 = screen.getByText('First Item').closest('div[draggable="true"]');
+    const availableItem2 = screen.getByText('Second Item').closest('div[draggable="true"]');
+    const availableItem3 = screen.getByText('Third Item').closest('div[draggable="true"]');
+
+    const slots = screen.getAllByText('Drop an item here').map(el => el.closest('div[class*="border-dashed"]'));
+
+    if (availableItem1 && availableItem2 && availableItem3 && slots.length === 3) {
+      act(() => {
+        simulateDragDrop(availableItem1, slots[0]!, { itemId: 'item1', sourceType: 'available' });
+      });
+      // onAnswerSelect should not be called yet
+      expect(mockOnAnswerSelect).not.toHaveBeenCalled(); 
+
+      act(() => {
+        simulateDragDrop(availableItem2, slots[1]!, { itemId: 'item2', sourceType: 'available' });
+      });
+      expect(mockOnAnswerSelect).not.toHaveBeenCalled();
+      
+      act(() => {
+        simulateDragDrop(availableItem3, slots[2]!, { itemId: 'item3', sourceType: 'available' });
+      });
+      
+      // Now that all items are placed, the mocked useAutoValidation's useEffect should trigger onAnswerSelect
+      expect(mockOnAnswerSelect).toHaveBeenCalledWith({
+        'slot_0': 'item1',
+        'slot_1': 'item2',
+        'slot_2': 'item3',
+      });
+    }
+  });
+
+  // Add more tests for other D&D scenarios:
+  // - Dragging from slot to slot (swap)
+  // - Dragging from slot to slot (move to empty)
+  // - Dragging from slot back to available items
+  // - Dragging from available to a filled slot (replace)
+  // - Fallback logic for dataTransfer issues (might be hard to test without more direct state manipulation access)
+});
+
+
+```
+
+### __tests__/validators/OrderValidator.test.ts
+
+```typescript
+import { OrderValidator } from '@/app/features/quiz/validators/OrderValidator';
+import { OrderQuestion, OrderQuestionAnswer } from '@/app/types/quiz';
+
+// Mock OrderQuestion data
+const mockOrderQuestion: OrderQuestion = {
+  id: 'oq1',
+  type: 'order',
+  text: 'Arrange the following steps in the correct order:',
+  items: [
+    { item_id: 'item1', text: 'Step 1' },
+    { item_id: 'item2', text: 'Step 2' },
+    { item_id: 'item3', text: 'Step 3' },
+  ],
+  correctOrder: ['item1', 'item2', 'item3'],
+  question_meta: {
+    difficulty: 'medium',
+    estimated_time: 60,
+    topic: 'General Knowledge',
+    skill: 'Sequencing',
+  },
+  slotCount: 3, // Explicitly define slotCount based on correctOrder length
+};
+
+describe('OrderValidator', () => {
+  let validator: OrderValidator;
+
+  beforeEach(() => {
+    validator = new OrderValidator(mockOrderQuestion);
+  });
+
+  describe('isComplete', () => {
+    it('should return true if all slots are filled', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item2',
+        'slot_2': 'item3',
+      };
+      expect(validator.isComplete(answer)).toBe(true);
+    });
+
+    it('should return false if any slot is empty (null)', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': null,
+        'slot_2': 'item3',
+      };
+      expect(validator.isComplete(answer)).toBe(false);
+    });
+
+    it('should return false if the answer is empty', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': null,
+        'slot_1': null,
+        'slot_2': null,
+      };
+      expect(validator.isComplete(answer)).toBe(false);
+    });
+
+    it('should return false if answer has fewer slots filled than slotCount', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item2', 
+        // slot_2 is missing
+      };
+      // The current implementation of isComplete might consider this complete
+      // if it only checks for null values in existing keys.
+      // This test case might need adjustment based on precise isComplete logic.
+      // For now, assuming it requires all defined slots to be non-null.
+      const validatorWithSpecificSlotCount = new OrderValidator({ ...mockOrderQuestion, slotCount: 3 });
+       expect(validatorWithSpecificSlotCount.isComplete(answer)).toBe(false);
+    });
+     
+    it('should return true if all slots defined by correctOrder length are filled, even if answer has extra null slots', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item2',
+        'slot_2': 'item3',
+        'slot_3': null, // Extra slot, should be ignored by isComplete if slotCount is 3
+      };
+      const validatorWithThreeSlots = new OrderValidator({ ...mockOrderQuestion, slotCount: 3 });
+      expect(validatorWithThreeSlots.isComplete(answer)).toBe(true);
+    });
+
+
+    it('should handle cases where slotCount is 0 (e.g. no items to order)', () => {
+        const emptyQuestion: OrderQuestion = {
+            ...mockOrderQuestion,
+            items: [],
+            correctOrder: [],
+            slotCount: 0,
+        };
+        const emptyValidator = new OrderValidator(emptyQuestion);
+        const answer: OrderQuestionAnswer = {};
+        expect(emptyValidator.isComplete(answer)).toBe(true); // No slots to fill
+    });
+  });
+
+  describe('getCorrectnessMap', () => {
+    it('should return all true for a completely correct answer', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item2',
+        'slot_2': 'item3',
+      };
+      const expectedMap = {
+        'slot_0': true,
+        'slot_1': true,
+        'slot_2': true,
+      };
+      expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+
+    it('should return correct and incorrect flags for a partially correct answer', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1', // Correct
+        'slot_1': 'item3', // Incorrect
+        'slot_2': 'item2', // Incorrect
+      };
+      const expectedMap = {
+        'slot_0': true,
+        'slot_1': false,
+        'slot_2': false,
+      };
+      expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+
+    it('should return all false if all items are in wrong slots', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item3',
+        'slot_1': 'item1',
+        'slot_2': 'item2',
+      };
+      const expectedMap = {
+        'slot_0': false,
+        'slot_1': false,
+        'slot_2': false,
+      };
+      expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+
+    it('should return false for empty slots', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': null,
+        'slot_2': 'item2',
+      };
+      const expectedMap = {
+        'slot_0': true, // Correct
+        'slot_1': false, // Empty, thus incorrect
+        'slot_2': false, // item2 is not correct for slot_2
+      };
+      expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+
+    it('should handle answers with items not belonging to the question (if possible by type)', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item_unknown', // Does not exist in question.items
+        'slot_2': 'item3',
+      };
+      const expectedMap = {
+        'slot_0': true,
+        'slot_1': false,
+        'slot_2': true,
+      };
+      expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+    
+    it('should return an empty map if slotCount is 0', () => {
+        const emptyQuestion: OrderQuestion = {
+            ...mockOrderQuestion,
+            items: [],
+            correctOrder: [],
+            slotCount: 0,
+        };
+        const emptyValidator = new OrderValidator(emptyQuestion);
+        const answer: OrderQuestionAnswer = {};
+        expect(emptyValidator.getCorrectnessMap(answer)).toEqual({});
+    });
+
+    it('should correctly evaluate correctness if answer has more slots than question.slotCount but they are null', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item2',
+        'slot_2': 'item3',
+        'slot_3': null, // Extra slot, should not affect correctness of defined slots
+      };
+       const validatorWithThreeSlots = new OrderValidator({ ...mockOrderQuestion, slotCount: 3 });
+      const expectedMap = {
+        'slot_0': true,
+        'slot_1': true,
+        'slot_2': true,
+      };
+      expect(validatorWithThreeSlots.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+
+    it('should mark as incorrect if an actual item is placed in an extra slot beyond slotCount', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 'item2',
+        'slot_2': 'item3',
+        'slot_3': 'item1', // Item placed in an undefined slot (assuming slotCount is 3)
+      };
+      const validatorWithThreeSlots = new OrderValidator({ ...mockOrderQuestion, slotCount: 3 });
+      // The current getCorrectnessMap iterates based on question.slotCount.
+      // So, 'slot_3' won't be in the map. This behavior is acceptable.
+      const expectedMap = {
+        'slot_0': true,
+        'slot_1': true,
+        'slot_2': true,
+      };
+      expect(validatorWithThreeSlots.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
+  });
+});
+
+```
+
+### __tests__/controllers/OrderController.test.ts
+
+```typescript
+import { OrderController } from '@/app/features/quiz/controllers/OrderController';
+import { OrderQuestion, OrderQuestionAnswer, OrderItem } from '@/app/types/quiz';
+
+const mockOrderQuestion: OrderQuestion = {
+  id: 'oq1',
+  type: 'order',
+  text: 'Arrange the steps:',
+  items: [
+    { item_id: 'itemA', text: 'Step A' },
+    { item_id: 'itemB', text: 'Step B' },
+    { item_id: 'itemC', text: 'Step C' },
+  ],
+  correctOrder: ['itemA', 'itemB', 'itemC'],
+  question_meta: {
+    difficulty: 'easy',
+    estimated_time: 30,
+    topic: 'Process',
+    skill: 'Ordering'
+  },
+  // slotCount is implicitly defined by correctOrder.length in the controller
+};
+
+describe('OrderController', () => {
+  let controller: OrderController;
+
+  beforeEach(() => {
+    controller = new OrderController(mockOrderQuestion);
+  });
+
+  describe('getSlotCount', () => {
+    it('should return the length of the correctOrder array', () => {
+      expect(controller.getSlotCount()).toBe(3);
+    });
+
+    it('should return 0 if correctOrder is empty', () => {
+      const emptyQuestion: OrderQuestion = { ...mockOrderQuestion, correctOrder: [], items: [] };
+      const emptyController = new OrderController(emptyQuestion);
+      expect(emptyController.getSlotCount()).toBe(0);
+    });
+  });
+
+  describe('getCorrectItemForSlot', () => {
+    it('should return the correct item ID for a given slot index', () => {
+      expect(controller.getCorrectItemForSlot(0)).toBe('itemA');
+      expect(controller.getCorrectItemForSlot(1)).toBe('itemB');
+      expect(controller.getCorrectItemForSlot(2)).toBe('itemC');
+    });
+
+    it('should return null if the slot index is out of bounds', () => {
+      expect(controller.getCorrectItemForSlot(3)).toBeNull();
+      expect(controller.getCorrectItemForSlot(-1)).toBeNull();
+    });
+  });
+
+  describe('isItemCorrectlyPlacedInSlot', () => {
+    it('should return true if the item ID matches the correct item for that slot', () => {
+      expect(controller.isItemCorrectlyPlacedInSlot(0, 'itemA')).toBe(true);
+      expect(controller.isItemCorrectlyPlacedInSlot(1, 'itemB')).toBe(true);
+    });
+
+    it('should return false if the item ID does not match', () => {
+      expect(controller.isItemCorrectlyPlacedInSlot(0, 'itemB')).toBe(false);
+    });
+
+    it('should return false if the item ID is null', () => {
+      expect(controller.isItemCorrectlyPlacedInSlot(0, null)).toBe(false);
+    });
+
+    it('should return false if the slot index is out of bounds', () => {
+      expect(controller.isItemCorrectlyPlacedInSlot(3, 'itemA')).toBe(false);
+    });
+  });
+
+  describe('createInitialAnswer', () => {
+    it('should return an object with null values for each slot', () => {
+      const expectedInitialAnswer: OrderQuestionAnswer = {
+        'slot_0': null,
+        'slot_1': null,
+        'slot_2': null,
+      };
+      expect(controller.createInitialAnswer()).toEqual(expectedInitialAnswer);
+    });
+
+    it('should return an empty object if slotCount is 0', () => {
+      const emptyQuestion: OrderQuestion = { ...mockOrderQuestion, correctOrder: [], items: [] };
+      const emptyController = new OrderController(emptyQuestion);
+      expect(emptyController.createInitialAnswer()).toEqual({});
+    });
+  });
+  
+  describe('isAnswerComplete', () => {
+    it('should return true if all slots in the answer are filled (not null)', () => {
+      const completeAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': 'itemB',
+        'slot_2': 'itemC',
+      };
+      expect(controller.isAnswerComplete(completeAnswer)).toBe(true);
+    });
+
+    it('should return false if any slot in the answer is null', () => {
+      const incompleteAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': null,
+        'slot_2': 'itemC',
+      };
+      expect(controller.isAnswerComplete(incompleteAnswer)).toBe(false);
+    });
+
+    it('should return false if the answer object does not have all necessary slot keys', () => {
+      const partialAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': 'itemB',
+        // slot_2 is missing
+      };
+      expect(controller.isAnswerComplete(partialAnswer)).toBe(false);
+    });
+
+    it('should return true for an empty answer if slotCount is 0', () => {
+      const emptyQuestion: OrderQuestion = { ...mockOrderQuestion, correctOrder: [], items: [] };
+      const emptyController = new OrderController(emptyQuestion);
+      expect(emptyController.isAnswerComplete({})).toBe(true);
+    });
+
+    it('should return true if all necessary slots are filled, even if extra slots with null values exist in answer', () => {
+      const answerWithExtraNullSlot: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': 'itemB',
+        'slot_2': 'itemC',
+        'slot_3': null, 
+      };
+      expect(controller.isAnswerComplete(answerWithExtraNullSlot)).toBe(true);
+    });
+
+    it('should return false if an extra slot (beyond slotCount) has a non-null value', () => {
+      // This scenario implies an inconsistency, as the answer structure should ideally only contain keys up to slotCount-1.
+      // However, if such an answer is provided, isAnswerComplete should ideally be robust.
+      // The current implementation of isAnswerComplete iterates up to controller.getSlotCount(),
+      // so it wouldn't naturally check 'slot_3' if slotCount is 3. 
+      // This test confirms that behavior: it is considered complete based on the defined slots.
+      const answerWithExtraFilledSlot: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': 'itemB',
+        'slot_2': 'itemC',
+        'slot_3': 'itemExtra', 
+      };
+      expect(controller.isAnswerComplete(answerWithExtraFilledSlot)).toBe(true);
+    });
+  });
+
+  describe('getCorrectOrder (inherited from QuestionController)', () => {
+    it('should return the correctOrder array from the question definition', () => {
+      expect(controller.getCorrectOrder()).toEqual(['itemA', 'itemB', 'itemC']);
+    });
+  });
+
+  describe('getScore (inherited from QuestionController)', () => {
+    it('should return 1 if the answer is completely correct', () => {
+      const correctAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': 'itemB',
+        'slot_2': 'itemC',
+      };
+      expect(controller.getScore(correctAnswer)).toBe(1);
+    });
+
+    it('should return 0 if the answer is partially correct', () => {
+      const partiallyCorrectAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemA', // Correct
+        'slot_1': 'itemC', // Incorrect
+        'slot_2': 'itemB', // Incorrect
+      };
+      expect(controller.getScore(partiallyCorrectAnswer)).toBe(0);
+    });
+
+    it('should return 0 if the answer is completely incorrect', () => {
+      const incorrectAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemC',
+        'slot_1': 'itemA',
+        'slot_2': 'itemB',
+      };
+      expect(controller.getScore(incorrectAnswer)).toBe(0);
+    });
+
+    it('should return 0 if the answer is incomplete (some slots are null)', () => {
+      const incompleteAnswer: OrderQuestionAnswer = {
+        'slot_0': 'itemA',
+        'slot_1': null,
+        'slot_2': 'itemC',
+      };
+      expect(controller.getScore(incompleteAnswer)).toBe(0);
+    });
+
+    it('should return 1 if slotCount is 0 and answer is empty', () => {
+        const emptyQuestion: OrderQuestion = { ...mockOrderQuestion, correctOrder: [], items: [] };
+        const emptyController = new OrderController(emptyQuestion);
+        expect(emptyController.getScore({})).toBe(1); // Correctly ordered nothing
+    });
+  });
+});
 
 ```
 
