@@ -114,6 +114,18 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                 >
                   Order
                 </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/yes_no`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'yes_no' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  Yes/No
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/yesno_multi`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'yesno_multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  Yes/No Multi
+                </Link>
               </div>
               <div className="mt-2">
                 <Link 
@@ -202,6 +214,18 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             >
               Order
             </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/yes_no`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'yes_no' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+            >
+              Yes/No
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/yesno_multi`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'yesno_multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+            >
+              Yes/No Multi
+            </Link>
           </div>
           
           <QuizProgress 
@@ -229,5 +253,7 @@ export const availableQuestionTypes = [
   { type: 'multi', name: 'Multiple Selection' },
   { type: 'drag_and_drop', name: 'Drag and Drop' },
   { type: 'dropdown_selection', name: 'Dropdown' },
-  { type: 'order', name: 'Order' }
+  { type: 'order', name: 'Order' },
+  { type: 'yes_no', name: 'Yes/No' },
+  { type: 'yesno_multi', name: 'Yes/No Multi' }
 ];

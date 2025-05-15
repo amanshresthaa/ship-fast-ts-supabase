@@ -58,6 +58,40 @@ const questionTypeSamples = [
       { option_id: 'D', text: 'Google Cloud' }
     ],
     correctAnswerOptionIds: ['A', 'B', 'D']
+  },
+  {
+    id: 'yes-no-demo',
+    type: 'yes_no',
+    question: 'Is AWS (Amazon Web Services) a cloud service provider?',
+    points: 1,
+    quiz_tag: 'question-types-demo',
+    difficulty: 'easy',
+    explanation: 'AWS (Amazon Web Services) is indeed a cloud service provider.',
+    feedback_correct: 'Correct! AWS is a cloud service provider.',
+    feedback_incorrect: 'Incorrect. AWS is one of the leading cloud service providers.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    correctAnswer: true // 'yes' is the correct answer
+  },
+  {
+    id: 'yes-no-multi-demo',
+    type: 'yesno_multi',
+    question: 'Identify which of the following are cloud service providers:',
+    points: 2,
+    quiz_tag: 'question-types-demo',
+    difficulty: 'medium',
+    explanation: 'AWS and Google Cloud are cloud service providers, while Windows 11 is an operating system and Firefox is a web browser.',
+    feedback_correct: 'Correct! You correctly identified the cloud service providers.',
+    feedback_incorrect: 'Incorrect. Review which companies provide cloud services vs other types of software.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    statements: [
+      { statement_id: '1', text: 'AWS is a cloud service provider' },
+      { statement_id: '2', text: 'Windows 11 is a cloud service provider' },
+      { statement_id: '3', text: 'Google Cloud is a cloud service provider' },
+      { statement_id: '4', text: 'Firefox is a cloud service provider' }
+    ],
+    correctAnswers: [true, false, true, false]
   }
   // More question types can be added here
 ];
@@ -105,13 +139,13 @@ const QuestionTypesPage: React.FC = () => {
       type: 'yes_no',
       name: 'Yes/No',
       description: 'User answers a question with yes or no.',
-      available: false
+      available: true
     },
     {
       type: 'yesno_multi',
       name: 'Multiple Yes/No',
       description: 'User answers multiple statements with yes or no.',
-      available: false
+      available: true
     }
   ];
   

@@ -4,6 +4,8 @@ import {
   DragAndDropQuestion, 
   DropdownSelectionQuestion,
   OrderQuestion,
+  YesNoQuestion,
+  YesNoMultiQuestion,
   AnyQuestion 
 } from "@/app/types/quiz";
 import { SingleSelectionController } from "./SingleSelectionController";
@@ -11,6 +13,8 @@ import { MultiChoiceController } from "./MultiChoiceController";
 import { DragAndDropController } from "./DragAndDropController";
 import { DropdownSelectionController } from "./DropdownSelectionController";
 import { OrderController } from "./OrderController";
+import { YesNoController } from "./YesNoController";
+import { YesNoMultiController } from "./YesNoMultiController";
 import { QuestionController } from "./QuestionController";
 
 /**
@@ -30,7 +34,11 @@ export function createQuestionController(question: AnyQuestion): QuestionControl
       return new DropdownSelectionController(question as DropdownSelectionQuestion);
     case 'order':
       return new OrderController(question as OrderQuestion);
+    case 'yes_no':
+      return new YesNoController(question as YesNoQuestion);
+    case 'yesno_multi':
+      return new YesNoMultiController(question as YesNoMultiQuestion);
     default:
-      throw new Error(`No controller available for question type: ${question.type}`);
+      throw new Error(`No controller available for question type: ${(question as any).type}`);
   }
 }

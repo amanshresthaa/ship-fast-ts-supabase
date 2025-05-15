@@ -53,6 +53,24 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
       return;
     }
     
+    // For yes_no, submit immediately when an answer is selected
+    if (question.type === 'yes_no') {
+      // The answerPayload will be true (Yes) or false (No)
+      await submitAndScoreAnswer(question, answerPayload);
+      return;
+    }
+    
+    // For yesno_multi, check if all statements are answered before submitting
+    if (question.type === 'yesno_multi') {
+      // Only submit if all statements are answered
+      const allStatements = (question as any).statements || [];
+      if (Array.isArray(answerPayload) && answerPayload.length === allStatements.length && 
+          !answerPayload.includes(null) && !answerPayload.includes(undefined)) {
+        await submitAndScoreAnswer(question, answerPayload);
+      }
+      return;
+    }
+    
     // For other question types like single selection, submit immediately
     await submitAndScoreAnswer(question, answerPayload);
   };

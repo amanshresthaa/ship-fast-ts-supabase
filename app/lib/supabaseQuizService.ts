@@ -14,6 +14,9 @@ import {
   DropdownSelectionQuestion,
   OrderQuestion,
   OrderItem,
+  YesNoQuestion,
+  YesNoMultiQuestion,
+  YesNoStatement,
   Quiz
 } from '../types/quiz';
 
@@ -339,6 +342,100 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching order question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'yes_no') {
+    try {
+      // Fetch the correct answer for the yes/no question
+      const { data: correctAnswerData, error: correctAnswerError } = await supabase
+        .from('yes_no_answer')
+        .select('correct_answer')
+        .eq('question_id', baseQuestion.id)
+        .single();
+
+      if (correctAnswerError) {
+        if (correctAnswerError.code === 'PGRST116') {
+          console.warn(`No correct answer found for yes_no question ${baseQuestion.id}. (PGRST116)`);
+        } else {
+          console.error(`Error fetching correct answer for yes_no question ${baseQuestion.id}:`, correctAnswerError.message);
+        }
+        return null;
+      }
+
+      if (!correctAnswerData) {
+        console.warn(`No correct answer data returned for yes_no question ${baseQuestion.id} despite no error.`);
+        return null;
+      }
+
+      const yesNoQuestion: YesNoQuestion = {
+        ...baseQuestion,
+        type: 'yes_no',
+        correctAnswer: correctAnswerData.correct_answer
+      };
+      return yesNoQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching yes_no question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'yesno_multi') {
+    try {
+      // Fetch statements for the multi-statement yes/no question
+      const { data: statementsData, error: statementsError } = await supabase
+        .from('yesno_multi_statements')
+        .select('statement_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (statementsError) {
+        console.error(`Error fetching statements for yesno_multi question ${baseQuestion.id}:`, statementsError.message);
+        return null;
+      }
+
+      // Fetch correct answers for each statement
+      const { data: correctAnswersData, error: correctAnswersError } = await supabase
+        .from('yesno_multi_correct_answers')
+        .select('statement_id, correct_answer')
+        .eq('question_id', baseQuestion.id);
+
+      if (correctAnswersError) {
+        console.error(`Error fetching correct answers for yesno_multi question ${baseQuestion.id}:`, correctAnswersError.message);
+        return null;
+      }
+
+      const statements: YesNoStatement[] = (statementsData || []).map((stmt: any) => ({
+        statement_id: stmt.statement_id,
+        text: stmt.text,
+      }));
+
+      // Sort the statements by statement_id to ensure the correct answers array matches
+      statements.sort((a, b) => a.statement_id.localeCompare(b.statement_id));
+
+      // Create an array of correct answers that matches the statements array order
+      const correctAnswers: boolean[] = statements.map(stmt => {
+        const matchingAnswer = correctAnswersData?.find((ans: any) => ans.statement_id === stmt.statement_id);
+        return matchingAnswer ? matchingAnswer.correct_answer : false;
+      });
+
+      if (!statements.length) {
+        console.warn(`No statements found for yesno_multi question ${baseQuestion.id}`);
+        return null;
+      }
+
+      if (correctAnswers.length !== statements.length) {
+        console.warn(`Mismatch between statements and correct answers for yesno_multi question ${baseQuestion.id}`);
+        return null;
+      }
+
+      const yesNoMultiQuestion: YesNoMultiQuestion = {
+        ...baseQuestion,
+        type: 'yesno_multi',
+        statements,
+        correctAnswers
+      };
+      return yesNoMultiQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching yesno_multi question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {

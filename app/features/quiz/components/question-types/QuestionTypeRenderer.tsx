@@ -1,9 +1,11 @@
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion, OrderQuestion } from '../../../../types/quiz';
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion, OrderQuestion, YesNoQuestion, YesNoMultiQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
 import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
 import DropdownSelectionComponent from './DropdownSelectionComponent';
+import YesNoComponent from './YesNoComponent';
+import YesNoMultiComponent from './YesNoMultiComponent';
 import OrderQuestionComponent from './OrderQuestionComponent';
 import { createQuestionController } from '../../controllers/QuestionControllerFactory';
 
@@ -97,6 +99,26 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           showCorrectAnswer={shouldApplyFeedbackStyling}
           isQuizReviewMode={isQuizReviewMode}
           validateOnComplete={true}
+        />
+      );
+    case 'yes_no':
+      return (
+        <YesNoComponent
+          question={question as YesNoQuestion}
+          onAnswerSelect={onAnswerSelect}
+          selectedAnswer={selectedAnswer as boolean | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
+        />
+      );
+    case 'yesno_multi':
+      return (
+        <YesNoMultiComponent
+          question={question as YesNoMultiQuestion}
+          onAnswerSelect={onAnswerSelect}
+          selectedAnswers={selectedAnswer as boolean[] | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
         />
       );
     default:

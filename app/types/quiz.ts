@@ -108,13 +108,33 @@ export interface DropdownSelectionQuestion extends BaseQuestion {
   placeholderTargets: Record<string, DropdownPlaceholderTarget>; // Maps placeholder key to its correct target details
 }
 
+// Yes/No question where user selects a single yes or no answer
+export interface YesNoQuestion extends BaseQuestion {
+  type: 'yes_no';
+  correctAnswer: boolean; // true for 'yes', false for 'no'
+}
+
+// Multi-statement Yes/No question where user answers yes or no to each statement
+export interface YesNoMultiQuestion extends BaseQuestion {
+  type: 'yesno_multi';
+  statements: YesNoStatement[];
+  correctAnswers: boolean[]; // Array of boolean values (true for 'yes', false for 'no')
+}
+
+export interface YesNoStatement {
+  statement_id: string;
+  text: string;
+}
+
 // AnyQuestion will be a union of all specific question types
 export type AnyQuestion = 
   | SingleSelectionQuestion 
   | MultiChoiceQuestion 
   | DragAndDropQuestion
   | DropdownSelectionQuestion
-  | OrderQuestion; // Added OrderQuestion
+  | OrderQuestion // Added OrderQuestion
+  | YesNoQuestion
+  | YesNoMultiQuestion;
 
 export interface Quiz {
   id: string; // e.g. azure-a102

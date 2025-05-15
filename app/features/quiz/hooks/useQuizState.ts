@@ -40,6 +40,8 @@ export type QuizAction =
         correctAnswerOptionIds?: string[]; // For multi
         correctDropdownAnswers?: Record<string, string>; // For dropdown_selection
         correctOrder?: string[]; // For order
+        correctYesNoAnswer?: boolean; // For yes_no
+        correctYesNoMultiAnswers?: boolean[]; // For yesno_multi
       }
     }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
@@ -141,6 +143,21 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
           }
         }
         isClientCorrect = allCorrect;
+      } else if (action.payload.questionType === 'yes_no' && action.payload.correctYesNoAnswer !== undefined) {
+        // Simple comparison for yes_no questions
+        isClientCorrect = action.payload.answer === action.payload.correctYesNoAnswer;
+      } else if (action.payload.questionType === 'yesno_multi' && action.payload.correctYesNoMultiAnswers) {
+        // Compare each answer for yesno_multi questions
+        const userAnswers = action.payload.answer as boolean[];
+        const correctAnswers = action.payload.correctYesNoMultiAnswers;
+        
+        // Make sure arrays are the same length
+        if (userAnswers.length !== correctAnswers.length) {
+          isClientCorrect = false;
+        } else {
+          // Check each answer
+          isClientCorrect = userAnswers.every((answer, index) => answer === correctAnswers[index]);
+        }
       }
 
       return {

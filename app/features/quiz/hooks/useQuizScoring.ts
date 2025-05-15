@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { AnyQuestion } from '../../../types/quiz';
+import { AnyQuestion, YesNoQuestion, YesNoMultiQuestion } from '../../../types/quiz';
 import { QuizAction } from './useQuizState';
 
 // Initialize Supabase client for Edge Function calls
@@ -30,22 +30,35 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
     };
 
     // Add specific correct answer details for client-side validation
-    if (question.type === 'single_selection') {
-      submitPayload.payload.correctAnswerOptionId = question.correctAnswerOptionId;
-    } else if (question.type === 'multi') {
-      submitPayload.payload.correctAnswerOptionIds = question.correctAnswerOptionIds;
-    } else if (question.type === 'dropdown_selection') {
-      // For dropdown, map placeholderTargets to the expected format for client-side validation
-      const correctDropdownAnswers: Record<string, string> = {};
-      if (question.placeholderTargets) {
-        for (const key in question.placeholderTargets) {
-          correctDropdownAnswers[key] = question.placeholderTargets[key].correctOptionText;
+    switch(question.type) {
+      case 'single_selection':
+        submitPayload.payload.correctAnswerOptionId = (question as any).correctAnswerOptionId;
+        break;
+      case 'multi':
+        submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
+        break;
+      case 'dropdown_selection':
+        // For dropdown, map placeholderTargets to the expected format for client-side validation
+        const correctDropdownAnswers: Record<string, string> = {};
+        if ((question as any).placeholderTargets) {
+          for (const key in (question as any).placeholderTargets) {
+            correctDropdownAnswers[key] = (question as any).placeholderTargets[key].correctOptionText;
+          }
         }
-      }
-      submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
-    } else if (question.type === 'order') {
-      // For 'order' questions, pass the correctOrder array for client-side validation
-      submitPayload.payload.correctOrder = question.correctOrder;
+        submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
+        break;
+      case 'order':
+        // For 'order' questions, pass the correctOrder array for client-side validation
+        submitPayload.payload.correctOrder = (question as any).correctOrder;
+        break;
+      case 'yes_no':
+        // For yes/no questions
+        submitPayload.payload.correctYesNoAnswer = (question as YesNoQuestion).correctAnswer;
+        break;
+      case 'yesno_multi':
+        // For multi-statement yes/no questions
+        submitPayload.payload.correctYesNoMultiAnswers = (question as YesNoMultiQuestion).correctAnswers;
+        break;
     }
 
     // First update the UI immediately with client-side validation results
@@ -77,6 +90,12 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
             isCorrect: scoreData.isCorrect,
             serverVerifiedCorrectAnswer: scoreData.correctAnswer 
           }
+        });
+        
+        // Show feedback after answer submission
+        dispatch({
+          type: 'SHOW_FEEDBACK',
+          payload: { questionId: question.id }
         });
       } else {
         console.error('Score data mismatch or missing from Edge Function response:', scoreData);
