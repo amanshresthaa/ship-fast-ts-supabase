@@ -64,8 +64,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     if (question.type === 'yesno_multi') {
       // Only submit if all statements are answered
       const allStatements = (question as any).statements || [];
-      if (Array.isArray(answerPayload) && answerPayload.length === allStatements.length && 
-          !answerPayload.includes(null) && !answerPayload.includes(undefined)) {
+      const allAnswered = Array.isArray(answerPayload) && 
+                         answerPayload.length === allStatements.length && 
+                         answerPayload.every(answer => answer === true || answer === false);
+                         
+      if (allAnswered) {
         await submitAndScoreAnswer(question, answerPayload);
       }
       return;
@@ -94,12 +97,13 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
         
         {/* Question Type-specific Component */}
         <QuestionTypeRenderer
+          key={question.id} // Ensure remount when question changes
           question={question}
           onAnswerSelect={handleLocalAnswerSelection}
           selectedAnswer={selectedAnswerForThisQuestion}
           isSubmitted={isSubmittedForThisQuestion}
-          shouldApplyFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop
-          isQuizReviewMode={state.isQuizComplete} // Pass new prop
+          shouldApplyFeedbackStyling={shouldApplyFeedbackStyling}
+          isQuizReviewMode={state.isQuizComplete}
         />
 
         {/* Explanation Box */}

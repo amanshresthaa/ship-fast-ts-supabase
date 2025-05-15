@@ -25,10 +25,25 @@ export function useAutoValidation<Q extends AnyQuestion, A>(
   // to avoid duplicate submissions
   const hasSubmittedRef = useRef<boolean>(false);
   
+  // To distinguish between initial render and user interactions
+  const isInitialRender = useRef<boolean>(true);
+  
+  // If initialAnswer changes (new question), reset submission status
+  useEffect(() => {
+    hasSubmittedRef.current = false;
+    isInitialRender.current = true;
+  }, [controller]);
+  
   // Check completeness whenever answer changes
   useEffect(() => {
     const isComplete = controller.isAnswerComplete(answer);
     setAllComplete(isComplete);
+    
+    // Skip auto-validation on initial render (when loading previous answers)
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
     
     // If answer is complete, not already submitted, and validateOnComplete is true
     // trigger validation and submission

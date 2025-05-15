@@ -12,7 +12,7 @@ interface DragAndDropQuestionComponentProps {
   isSubmitted?: boolean;
   showFeedbackStyling?: boolean; // Used for styling
   isQuizReviewMode?: boolean; // New prop for review mode
-  validateOnDrop?: boolean; // Auto-validate when all targets are filled
+  validateOnDrop?: boolean; // Auto-validate when all targets are filledx
 }
 
 /**

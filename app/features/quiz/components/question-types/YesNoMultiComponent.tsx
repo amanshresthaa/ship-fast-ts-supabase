@@ -36,38 +36,46 @@ const YesNoMultiComponent: React.FC<YesNoMultiComponentProps> = ({
   // Get statements from controller
   const statements = controller.getStatements();
   
-  // Calculate initial answers based on either provided answers or create new array
-  const initialAnswers = selectedAnswers || controller.createInitialAnswer();
+  // Calculate initial answers based on provided answers or create a new array with null values
+  // Use null instead of undefined to ensure proper reset between questions
+  const initialAnswers = selectedAnswers && selectedAnswers.length === controller.getStatements().length
+    ? selectedAnswers
+    : new Array(controller.getStatements().length).fill(null);
   
-  // Use auto-validation hook
-  const [answers, setAnswers, isValidating, allComplete] = useAutoValidation<
-    YesNoMultiQuestion, 
-    boolean[]
-  >(
+  // Use auto-validation hook with auto-submit and immediate feedback
+  const [answers, setAnswers, isValidating, isComplete] = useAutoValidation(
     controller,
     initialAnswers,
-    onAnswerSelect,
-    true // Auto-validate when complete
+    (ans) => {
+      if (ans.every(a => a === true || a === false)) onAnswerSelect(ans);
+    },
+    true // validateOnComplete: auto-submit when all answers are complete
   );
+
+  
+  // Reset answers when question changes
+  useEffect(() => {
+    // Clear any previous answers on new question
+    setAnswers(new Array(controller.getStatements().length).fill(null));
+  }, [question.id]);
 
   // Handle changing a single statement's answer
   const handleAnswerChange = (index: number, value: boolean) => {
     if (isSubmitted) return;
-    
     const newAnswers = [...answers];
     newAnswers[index] = value;
     setAnswers(newAnswers);
+    
+    // Check if all statements are answered after this change
+    const allAnswered = newAnswers.every(a => a === true || a === false);
+    if (allAnswered) {
+      // Explicitly call onAnswerSelect to ensure immediate feedback
+      onAnswerSelect(newAnswers);
+    }
   };
 
-  // Sync external selectedAnswers with our internal state when they change
-  useEffect(() => {
-    if (selectedAnswers && JSON.stringify(selectedAnswers) !== JSON.stringify(answers)) {
-      setAnswers(selectedAnswers);
-    }
-  }, [selectedAnswers]);
-
   return (
-    <div className="mb-8">
+    <div key={question.id} className="mb-8">
       <div className="space-y-6">
         {statements.map((statement, index) => (
           <div key={statement.statement_id} className="bg-white p-5 rounded-rounded-md-ref shadow-shadow-1">
@@ -160,7 +168,7 @@ const YesNoMultiComponent: React.FC<YesNoMultiComponentProps> = ({
         ))}
       </div>
       
-      {!isSubmitted && !allComplete && (
+      {!isSubmitted && answers.some(a => a !== true && a !== false) && (
         <div className="text-sm text-gray-500 mt-4">
           Please answer all statements to continue.
         </div>

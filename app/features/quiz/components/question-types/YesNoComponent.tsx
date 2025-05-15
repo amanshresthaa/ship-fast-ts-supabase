@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { YesNoQuestion } from '@/app/types/quiz';
 import { YesNoController } from '../../controllers/YesNoController';
@@ -32,31 +32,31 @@ const YesNoComponent: React.FC<YesNoComponentProps> = ({
 }) => {
   // Create controller instance
   const controller = new YesNoController(question);
-  
-  // Use auto-validation hook
-  const [currentSelection, setCurrentSelection, isValidating, allComplete] = useAutoValidation<
-    YesNoQuestion, 
-    boolean | null
-  >(
+
+  // Use auto-validation hook with auto-submit and immediate feedback
+  const [currentSelection, setCurrentSelection, isValidating, isComplete] = useAutoValidation(
     controller,
-    selectedAnswer || null,
-    onAnswerSelect,
-    true // Auto-validate when complete
+    selectedAnswer ?? null,
+    (answer) => {
+      if (answer !== null) onAnswerSelect(answer);
+    },
+    true // validateOnComplete: auto-submit when answer is complete
   );
-  
+
+  // Reset selection when question changes
+  React.useEffect(() => {
+    // Clear current selection on new question
+    setCurrentSelection(null);
+  }, [question.id]);
+
   // Handle option selection
   const handleOptionClick = (answer: boolean) => {
     if (!isSubmitted) {
       setCurrentSelection(answer);
+      // Explicitly call onAnswerSelect to ensure immediate feedback
+      onAnswerSelect(answer);
     }
   };
-  
-  // Sync external selectedAnswer with our internal state
-  useEffect(() => {
-    if (selectedAnswer !== undefined && selectedAnswer !== currentSelection) {
-      setCurrentSelection(selectedAnswer);
-    }
-  }, [selectedAnswer]);
 
   return (
     <div className="options-container grid grid-cols-2 gap-4 mb-8">

@@ -54,4 +54,19 @@ export class YesNoMultiController extends QuestionController<YesNoMultiQuestion,
     // Return an array filled with nulls matching the length of statements
     return new Array(this.question.statements.length).fill(null);
   }
+  
+  /**
+   * Checks if the answer is complete (all statements have been answered)
+   * @param answer Array of boolean answers
+   * @returns True if all statements have been answered
+   */
+  isAnswerComplete(answer: boolean[]): boolean {
+    if (!answer || !Array.isArray(answer)) return false;
+    
+    // Make sure we have the right number of answers
+    if (answer.length !== this.question.statements.length) return false;
+    
+    // Make sure each answer is a boolean (not null or undefined)
+    return answer.every(item => item === true || item === false);
+  }
 }

@@ -104,6 +104,7 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
     case 'yes_no':
       return (
         <YesNoComponent
+          key={question.id}
           question={question as YesNoQuestion}
           onAnswerSelect={onAnswerSelect}
           selectedAnswer={selectedAnswer as boolean | undefined}
@@ -114,6 +115,7 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
     case 'yesno_multi':
       return (
         <YesNoMultiComponent
+          key={question.id}
           question={question as YesNoMultiQuestion}
           onAnswerSelect={onAnswerSelect}
           selectedAnswers={selectedAnswer as boolean[] | undefined}

@@ -18,8 +18,8 @@ export class YesNoMultiValidator extends AnswerValidator<YesNoMultiQuestion, boo
     // The answers array should match the number of statements in the question
     if (answers.length !== this.question.statements.length) return false;
     
-    // Each statement must have an answer (not null or undefined)
-    return answers.every(answer => answer !== null && answer !== undefined);
+    // Each statement must have an answer that is explicitly true or false (not null or undefined)
+    return answers.every(answer => answer === true || answer === false);
   }
   
   /**
