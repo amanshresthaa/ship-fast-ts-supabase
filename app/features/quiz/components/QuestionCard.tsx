@@ -1,7 +1,7 @@
 // app/features/quiz/components/QuestionCard.tsx
 'use client';
 
-import React from 'react'; // Removed useEffect, useState
+import React, { useCallback, useMemo, memo } from 'react';
 import { AnyQuestion } from '../../../types/quiz';
 import { useQuiz } from '../context/QuizContext';
 import QuestionHeader from '../components/QuestionHeader';
@@ -13,27 +13,37 @@ interface QuestionCardProps {
   question: AnyQuestion;
 }
 
-const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
+const QuestionCard: React.FC<QuestionCardProps> = memo(({ question }) => {
   const { state, submitAndScoreAnswer } = useQuiz();
   
-  const userAnswerDetails = state.userAnswers[question.id];
+  // Use useMemo for derived state from context to prevent unnecessary recalculations
+  const userAnswerDetails = useMemo(() => 
+    state.userAnswers[question.id], 
+    [state.userAnswers, question.id]
+  );
+  
   // selectedAnswerForThisQuestion is the answer already processed or null/undefined if not answered.
-  const selectedAnswerForThisQuestion = userAnswerDetails?.answer; 
+  const selectedAnswerForThisQuestion = useMemo(() => 
+    userAnswerDetails?.answer, 
+    [userAnswerDetails]
+  );
 
   const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
-  const shouldApplyFeedbackStyling = state.isQuizComplete || 
-    (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
+  
+  const shouldApplyFeedbackStyling = useMemo(() => 
+    state.isQuizComplete || (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion),
+    [state.isQuizComplete, state.showFeedbackForCurrentQuestion, isSubmittedForThisQuestion]
+  );
     
-  const handleAnswerSubmission = async (answerPayload: any) => {
+  const handleAnswerSubmission = useCallback(async (answerPayload: any) => {
     // The answerPayload received here is already deemed "complete" by the child component's 
     // useAutoValidation hook (for types like multi-choice, dropdown, order)
     // or it's an immediate selection (for single_selection, yes_no).
     
     // A guard to prevent re-submission if the exact same answer is submitted again,
     // or if already fully processed (isCorrect is defined).
-    // This can be refined, but the main idea is to prevent redundant processing if state hasn't meaningfully changed.
     if (isSubmittedForThisQuestion && 
-        userAnswerDetails.isCorrect !== undefined &&
+        userAnswerDetails?.isCorrect !== undefined &&
         JSON.stringify(userAnswerDetails.answer) === JSON.stringify(answerPayload)
     ) {
         // Potentially, if isCorrect is undefined, it means server validation is pending.
@@ -46,7 +56,38 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
     }
 
     await submitAndScoreAnswer(question, answerPayload);
-  };
+  }, [isSubmittedForThisQuestion, userAnswerDetails, submitAndScoreAnswer, question]);
+
+  // Memoize the feedback sections to prevent unnecessary re-renders
+  const explanationFeedback = useMemo(() => {
+    if (((state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion) || state.isQuizComplete) && 
+         question.explanation) {
+      return (
+        <FeedbackSection 
+          type="explanation" 
+          content={question.explanation} 
+        />
+      );
+    }
+    return null;
+  }, [state.showFeedbackForCurrentQuestion, isSubmittedForThisQuestion, state.isQuizComplete, question.explanation]);
+
+  const answerFeedback = useMemo(() => {
+    if (state.showFeedbackForCurrentQuestion && 
+        isSubmittedForThisQuestion && 
+        userAnswerDetails?.isCorrect !== undefined) {
+      return (
+        <FeedbackSection
+          type={userAnswerDetails.isCorrect ? "correct" : "incorrect"}
+          content={userAnswerDetails.isCorrect 
+            ? question.feedback_correct 
+            : question.feedback_incorrect
+          }
+        />
+      );
+    }
+    return null;
+  }, [state.showFeedbackForCurrentQuestion, isSubmittedForThisQuestion, userAnswerDetails, question.feedback_correct, question.feedback_incorrect]);
 
   return (
     <div className="bg-white rounded-rounded-lg-ref shadow-shadow-strong p-7 md:p-10 mb-8 relative overflow-hidden animate-card-appear">
@@ -72,28 +113,11 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
           isQuizReviewMode={state.isQuizComplete}
         />
 
-        {((state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion) || state.isQuizComplete) && 
-          question.explanation && (
-            <FeedbackSection 
-              type="explanation" 
-              content={question.explanation} 
-            />
-        )}
-        
-        {state.showFeedbackForCurrentQuestion && 
-         isSubmittedForThisQuestion && 
-         userAnswerDetails?.isCorrect !== undefined && (
-          <FeedbackSection
-            type={userAnswerDetails.isCorrect ? "correct" : "incorrect"}
-            content={userAnswerDetails.isCorrect 
-              ? question.feedback_correct 
-              : question.feedback_incorrect
-            }
-          />
-        )}
+        {explanationFeedback}
+        {answerFeedback}
       </div>
     </div>
   );
-};
+});
 
 export default QuestionCard;

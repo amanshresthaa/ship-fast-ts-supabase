@@ -29,14 +29,21 @@ console.log('Supabase Environment Variables:');
 console.log('URL:', supabaseUrl ? 'Defined' : 'Undefined');
 console.log('Service Role Key:', supabaseServiceRoleKey ? 'Defined' : 'Undefined');
 
-// No need to check for undefined since we're using hardcoded values
-// if (!supabaseUrl || !supabaseServiceRoleKey) {
-//   throw new Error('Supabase URL or Service Role Key is not defined in environment variables.');
-// }
-
-const supabase: SupabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: { persistSession: false } // Recommended for server-side clients
 });
+
+// Export all helper functions for testing
+export {
+  enrichSingleSelectionQuestions,
+  enrichMultiChoiceQuestions,
+  enrichDragAndDropQuestions,
+  enrichDropdownSelectionQuestions,
+  enrichOrderQuestions,
+  enrichYesNoQuestions,
+  enrichYesNoMultiQuestions,
+  groupQuestionsByType,
+};
 
 export async function enrichQuestionWithDetails(
   baseQuestion: BaseQuestion
@@ -487,21 +494,56 @@ export async function fetchQuizById(
       console.error(`Error fetching questions for quiz ${quizId}:`, questionsError.message);
       return null;
     }
+    
+    if (!baseQuestionsData || baseQuestionsData.length === 0) {
+      return {
+        ...(quizData as Quiz),
+        questions: [],
+      };
+    }
 
-    // 3. Enrich each question with its specific details
-    const enrichedQuestionsPromises = (baseQuestionsData || []).map(bq => 
-      enrichQuestionWithDetails(bq as BaseQuestion)
-    );
-    const resolvedQuestions = await Promise.all(enrichedQuestionsPromises);
-    const successfullyEnrichedQuestions = resolvedQuestions.filter(q => q !== null) as AnyQuestion[];
+    // Group questions by type for batch processing
+    const questionsByType = groupQuestionsByType(baseQuestionsData as BaseQuestion[]);
 
-    if (baseQuestionsData && successfullyEnrichedQuestions.length !== baseQuestionsData.length) {
+    // Enrich questions by type in parallel
+    const enrichmentPromises: Promise<AnyQuestion[]>[] = [];
+
+    // Process each question type in parallel
+    if (questionsByType['single_selection']?.length) {
+      enrichmentPromises.push(enrichSingleSelectionQuestions(questionsByType['single_selection']));
+    }
+    if (questionsByType['multi']?.length) {
+      enrichmentPromises.push(enrichMultiChoiceQuestions(questionsByType['multi']));
+    }
+    if (questionsByType['drag_and_drop']?.length) {
+      enrichmentPromises.push(enrichDragAndDropQuestions(questionsByType['drag_and_drop']));
+    }
+    if (questionsByType['dropdown_selection']?.length) {
+      enrichmentPromises.push(enrichDropdownSelectionQuestions(questionsByType['dropdown_selection']));
+    }
+    if (questionsByType['order']?.length) {
+      enrichmentPromises.push(enrichOrderQuestions(questionsByType['order']));
+    }
+    if (questionsByType['yes_no']?.length) {
+      enrichmentPromises.push(enrichYesNoQuestions(questionsByType['yes_no']));
+    }
+    if (questionsByType['yesno_multi']?.length) {
+      enrichmentPromises.push(enrichYesNoMultiQuestions(questionsByType['yesno_multi']));
+    }
+
+    // Wait for all enrichment operations to complete
+    const enrichedQuestionArrays = await Promise.all(enrichmentPromises);
+
+    // Flatten the arrays of enriched questions into a single array
+    const allEnrichedQuestions = enrichedQuestionArrays.flat();
+
+    if (baseQuestionsData.length !== allEnrichedQuestions.length) {
       console.warn(`Not all questions for quiz ${quizId} could be successfully enriched.`);
     }
 
     return {
-      ...(quizData as Quiz), // Spread fetched quiz metadata
-      questions: successfullyEnrichedQuestions, // Add the array of enriched questions
+      ...(quizData as Quiz),
+      questions: allEnrichedQuestions,
     };
 
   } catch (error: any) {
@@ -562,5 +604,552 @@ export async function fetchRandomQuestionByTypeAndFilters(
   } catch (error: any) {
     console.error(`Unexpected error in fetchRandomQuestionByTypeAndFilters for type ${type}:`, error.message || error);
     return null;
+  }
+}
+
+// Helper to group questions by type
+function groupQuestionsByType(baseQuestions: BaseQuestion[]): Record<string, BaseQuestion[]> {
+  return baseQuestions.reduce((acc, q) => {
+    if (!acc[q.type]) {
+      acc[q.type] = [];
+    }
+    acc[q.type].push(q);
+    return acc;
+  }, {} as Record<string, BaseQuestion[]>);
+}
+
+// Batch fetch for single selection questions
+async function enrichSingleSelectionQuestions(questions: BaseQuestion[]): Promise<SingleSelectionQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch all options for these questions in one query
+    const { data: optionsData, error: optionsError } = await supabase
+      .from('single_selection_options')
+      .select('option_id, text, question_id')
+      .in('question_id', questionIds);
+
+    if (optionsError) {
+      console.error('Error fetching single selection options:', optionsError.message);
+      return [];
+    }
+
+    // Fetch all correct answers in one query
+    const { data: correctAnswersData, error: correctAnswersError } = await supabase
+      .from('single_selection_correct_answer')
+      .select('option_id, question_id')
+      .in('question_id', questionIds);
+
+    if (correctAnswersError) {
+      console.error('Error fetching single selection correct answers:', correctAnswersError.message);
+      return [];
+    }
+
+    // Group options by question_id
+    const optionsByQuestion = optionsData?.reduce((acc, opt) => {
+      if (!acc[opt.question_id]) {
+        acc[opt.question_id] = [];
+      }
+      acc[opt.question_id].push({
+        option_id: opt.option_id,
+        text: opt.text,
+      });
+      return acc;
+    }, {} as Record<string, SelectionOption[]>) || {};
+
+    // Create a map of question_id to correct_option_id
+    const correctAnswerMap = correctAnswersData?.reduce((acc, ans) => {
+      acc[ans.question_id] = ans.option_id;
+      return acc;
+    }, {} as Record<string, string>) || {};
+
+    // Build enriched questions
+    return questions.map(q => {
+      const options = optionsByQuestion[q.id] || [];
+      const correctAnswerId = correctAnswerMap[q.id];
+
+      if (!options.length || !correctAnswerId) {
+        console.warn(`Incomplete data for single selection question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'single_selection',
+        options,
+        correctAnswerOptionId: correctAnswerId,
+      } as SingleSelectionQuestion;
+    }).filter(q => q !== null) as SingleSelectionQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichSingleSelectionQuestions:', error.message);
+    return [];
+  }
+}
+
+// Batch fetch for multi choice questions
+async function enrichMultiChoiceQuestions(questions: BaseQuestion[]): Promise<MultiChoiceQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch all options for these questions in one query
+    const { data: optionsData, error: optionsError } = await supabase
+      .from('multi_options')
+      .select('option_id, text, question_id')
+      .in('question_id', questionIds);
+
+    if (optionsError) {
+      console.error('Error fetching multi choice options:', optionsError.message);
+      return [];
+    }
+
+    // Fetch all correct answers in one query
+    const { data: correctAnswersData, error: correctAnswersError } = await supabase
+      .from('multi_correct_answers')
+      .select('option_id, question_id')
+      .in('question_id', questionIds);
+
+    if (correctAnswersError) {
+      console.error('Error fetching multi choice correct answers:', correctAnswersError.message);
+      return [];
+    }
+
+    // Group options by question_id
+    const optionsByQuestion = optionsData?.reduce((acc, opt) => {
+      if (!acc[opt.question_id]) {
+        acc[opt.question_id] = [];
+      }
+      acc[opt.question_id].push({
+        option_id: opt.option_id,
+        text: opt.text,
+      });
+      return acc;
+    }, {} as Record<string, SelectionOption[]>) || {};
+
+    // Group correct answers by question_id
+    const correctAnswersByQuestion = correctAnswersData?.reduce((acc, ans) => {
+      if (!acc[ans.question_id]) {
+        acc[ans.question_id] = [];
+      }
+      acc[ans.question_id].push(ans.option_id);
+      return acc;
+    }, {} as Record<string, string[]>) || {};
+
+    // Build enriched questions
+    return questions.map(q => {
+      const options = optionsByQuestion[q.id] || [];
+      const correctAnswerIds = correctAnswersByQuestion[q.id] || [];
+
+      if (!options.length || !correctAnswerIds.length) {
+        console.warn(`Incomplete data for multi choice question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'multi',
+        options,
+        correctAnswerOptionIds: correctAnswerIds,
+      } as MultiChoiceQuestion;
+    }).filter(q => q !== null) as MultiChoiceQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichMultiChoiceQuestions:', error.message);
+    return [];
+  }
+}
+
+// Batch fetch for drag and drop questions
+async function enrichDragAndDropQuestions(questions: BaseQuestion[]): Promise<DragAndDropQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch all targets, options, and correct pairs in parallel
+    const [targetsResult, optionsResult, correctPairsResult] = await Promise.all([
+      supabase
+        .from('drag_and_drop_targets')
+        .select('target_id, text, question_id')
+        .in('question_id', questionIds),
+      supabase
+        .from('drag_and_drop_options')
+        .select('option_id, text, question_id')
+        .in('question_id', questionIds),
+      supabase
+        .from('drag_and_drop_correct_pairs')
+        .select('option_id, target_id, question_id')
+        .in('question_id', questionIds)
+    ]);
+
+    if (targetsResult.error) {
+      console.error('Error fetching drag and drop targets:', targetsResult.error.message);
+      return [];
+    }
+    if (optionsResult.error) {
+      console.error('Error fetching drag and drop options:', optionsResult.error.message);
+      return [];
+    }
+    if (correctPairsResult.error) {
+      console.error('Error fetching drag and drop correct pairs:', correctPairsResult.error.message);
+      return [];
+    }
+
+    // Group data by question_id
+    const targetsByQuestion = (targetsResult.data || []).reduce((acc, target) => {
+      if (!acc[target.question_id]) {
+        acc[target.question_id] = [];
+      }
+      acc[target.question_id].push({
+        target_id: target.target_id,
+        text: target.text,
+      });
+      return acc;
+    }, {} as Record<string, DragAndDropTarget[]>);
+
+    const optionsByQuestion = (optionsResult.data || []).reduce((acc, option) => {
+      if (!acc[option.question_id]) {
+        acc[option.question_id] = [];
+      }
+      acc[option.question_id].push({
+        option_id: option.option_id,
+        text: option.text,
+      });
+      return acc;
+    }, {} as Record<string, DragAndDropOption[]>);
+
+    const correctPairsByQuestion = (correctPairsResult.data || []).reduce((acc, pair) => {
+      if (!acc[pair.question_id]) {
+        acc[pair.question_id] = [];
+      }
+      acc[pair.question_id].push({
+        option_id: pair.option_id,
+        target_id: pair.target_id,
+      });
+      return acc;
+    }, {} as Record<string, DragAndDropCorrectPair[]>);
+
+    // Build enriched questions
+    return questions.map(q => {
+      const targets = targetsByQuestion[q.id] || [];
+      const options = optionsByQuestion[q.id] || [];
+      const correctPairs = correctPairsByQuestion[q.id] || [];
+
+      if (!targets.length || !options.length || !correctPairs.length) {
+        console.warn(`Incomplete data for drag and drop question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'drag_and_drop',
+        targets,
+        options,
+        correctPairs,
+      } as DragAndDropQuestion;
+    }).filter(q => q !== null) as DragAndDropQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichDragAndDropQuestions:', error.message);
+    return [];
+  }
+}
+
+// Batch fetch for dropdown selection questions
+async function enrichDropdownSelectionQuestions(questions: BaseQuestion[]): Promise<DropdownSelectionQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch all options and targets in parallel
+    const [optionsResult, targetsResult] = await Promise.all([
+      supabase
+        .from('dropdown_selection_options')
+        .select('option_id, text, is_correct, question_id')
+        .in('question_id', questionIds),
+      supabase
+        .from('dropdown_selection_targets')
+        .select('key, value, question_id')
+        .in('question_id', questionIds)
+    ]);
+
+    if (optionsResult.error) {
+      console.error('Error fetching dropdown selection options:', optionsResult.error.message);
+      return [];
+    }
+    if (targetsResult.error) {
+      console.error('Error fetching dropdown selection targets:', targetsResult.error.message);
+      return [];
+    }
+
+    // Group data by question_id
+    const optionsByQuestion = (optionsResult.data || []).reduce((acc, opt) => {
+      if (!acc[opt.question_id]) {
+        acc[opt.question_id] = [];
+      }
+      acc[opt.question_id].push({
+        option_id: opt.option_id,
+        text: opt.text,
+        is_correct: opt.is_correct,
+      });
+      return acc;
+    }, {} as Record<string, DropdownOption[]>);
+
+    const targetsByQuestion = (targetsResult.data || []).reduce((acc, target) => {
+      if (!acc[target.question_id]) {
+        acc[target.question_id] = {};
+      }
+      acc[target.question_id][target.key] = {
+        key: target.key,
+        correctOptionText: target.value,
+      };
+      return acc;
+    }, {} as Record<string, Record<string, DropdownPlaceholderTarget>>);
+
+    // Build enriched questions
+    return questions.map(q => {
+      const options = optionsByQuestion[q.id] || [];
+      const placeholderTargets = targetsByQuestion[q.id] || {};
+
+      if (!options.length || Object.keys(placeholderTargets).length === 0) {
+        console.warn(`Incomplete data for dropdown selection question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'dropdown_selection',
+        options,
+        placeholderTargets,
+      } as DropdownSelectionQuestion;
+    }).filter(q => q !== null) as DropdownSelectionQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichDropdownSelectionQuestions:', error.message);
+    return [];
+  }
+}
+
+// Batch fetch for order questions
+async function enrichOrderQuestions(questions: BaseQuestion[]): Promise<OrderQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch items and correct order in parallel
+    const [itemsResult, correctOrderResult] = await Promise.all([
+      supabase
+        .from('order_items')
+        .select('item_id, text, question_id')
+        .in('question_id', questionIds),
+      supabase
+        .from('order_correct_order')
+        .select('item_id, position, question_id')
+        .in('question_id', questionIds)
+    ]);
+
+    if (itemsResult.error) {
+      console.error('Error fetching order items:', itemsResult.error.message);
+      return [];
+    }
+    if (correctOrderResult.error) {
+      console.error('Error fetching order correct sequence:', correctOrderResult.error.message);
+      return [];
+    }
+
+    // Group items by question_id
+    const itemsByQuestion = (itemsResult.data || []).reduce((acc, item) => {
+      if (!acc[item.question_id]) {
+        acc[item.question_id] = [];
+      }
+      acc[item.question_id].push({
+        item_id: item.item_id,
+        text: item.text,
+      });
+      return acc;
+    }, {} as Record<string, OrderItem[]>);
+
+    // Group and sort correct order by question_id
+    const correctOrderByQuestion = (correctOrderResult.data || []).reduce((acc, order) => {
+      if (!acc[order.question_id]) {
+        acc[order.question_id] = [];
+      }
+      acc[order.question_id].push({
+        item_id: order.item_id,
+        position: order.position,
+      });
+      return acc;
+    }, {} as Record<string, { item_id: string; position: number }[]>);
+
+    // Sort the correct order arrays by position and extract item_ids
+    for (const questionId in correctOrderByQuestion) {
+      correctOrderByQuestion[questionId].sort((a, b) => a.position - b.position);
+    }
+    const sortedCorrectOrderByQuestion = Object.fromEntries(
+      Object.entries(correctOrderByQuestion).map(([questionId, orderArray]) => [
+        questionId,
+        orderArray.map(item => item.item_id)
+      ])
+    );
+
+    // Build enriched questions
+    return questions.map(q => {
+      const items = itemsByQuestion[q.id] || [];
+      const correctOrder = sortedCorrectOrderByQuestion[q.id] || [];
+
+      if (!items.length || !correctOrder.length) {
+        console.warn(`Incomplete data for order question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'order',
+        items,
+        correctOrder,
+      } as OrderQuestion;
+    }).filter(q => q !== null) as OrderQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichOrderQuestions:', error.message);
+    return [];
+  }
+}
+
+// Batch fetch for yes/no questions
+async function enrichYesNoQuestions(questions: BaseQuestion[]): Promise<YesNoQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch all correct answers in one query
+    const { data: correctAnswersData, error: correctAnswersError } = await supabase
+      .from('yes_no_answer')
+      .select('question_id, correct_answer')
+      .in('question_id', questionIds);
+
+    if (correctAnswersError) {
+      console.error('Error fetching yes/no answers:', correctAnswersError.message);
+      return [];
+    }
+
+    // Create a map of question_id to correct_answer
+    const correctAnswerMap = (correctAnswersData || []).reduce((acc, ans) => {
+      acc[ans.question_id] = ans.correct_answer;
+      return acc;
+    }, {} as Record<string, boolean>);
+
+    // Build enriched questions
+    return questions.map(q => {
+      const correctAnswer = correctAnswerMap[q.id];
+
+      if (correctAnswer === undefined) {
+        console.warn(`No correct answer found for yes/no question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'yes_no',
+        correctAnswer,
+      } as YesNoQuestion;
+    }).filter(q => q !== null) as YesNoQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichYesNoQuestions:', error.message);
+    return [];
+  }
+}
+
+// Batch fetch for yes/no multi questions
+async function enrichYesNoMultiQuestions(questions: BaseQuestion[]): Promise<YesNoMultiQuestion[]> {
+  if (!questions.length) return [];
+  
+  const questionIds = questions.map(q => q.id);
+  
+  try {
+    // Fetch statements and correct answers in parallel
+    const [statementsResult, correctAnswersResult] = await Promise.all([
+      supabase
+        .from('yesno_multi_statements')
+        .select('statement_id, text, question_id')
+        .in('question_id', questionIds),
+      supabase
+        .from('yesno_multi_correct_answers')
+        .select('statement_id, correct_answer, question_id')
+        .in('question_id', questionIds)
+    ]);
+
+    if (statementsResult.error) {
+      console.error('Error fetching yesno_multi statements:', statementsResult.error.message);
+      return [];
+    }
+    if (correctAnswersResult.error) {
+      console.error('Error fetching yesno_multi correct answers:', correctAnswersResult.error.message);
+      return [];
+    }
+
+    // Group statements by question_id
+    const statementsByQuestion = (statementsResult.data || []).reduce((acc, stmt) => {
+      if (!acc[stmt.question_id]) {
+        acc[stmt.question_id] = [];
+      }
+      acc[stmt.question_id].push({
+        statement_id: stmt.statement_id,
+        text: stmt.text,
+      });
+      return acc;
+    }, {} as Record<string, YesNoStatement[]>);
+
+    // Group correct answers by question_id
+    const correctAnswersByQuestion = (correctAnswersResult.data || []).reduce((acc, ans) => {
+      if (!acc[ans.question_id]) {
+        acc[ans.question_id] = new Map<string, boolean>();
+      }
+      acc[ans.question_id].set(ans.statement_id, ans.correct_answer);
+      return acc;
+    }, {} as Record<string, Map<string, boolean>>);
+
+    // Build enriched questions
+    return questions.map(q => {
+      const statements = statementsByQuestion[q.id] || [];
+      const correctAnswersMap = correctAnswersByQuestion[q.id];
+
+      if (!statements.length || !correctAnswersMap) {
+        console.warn(`Incomplete data for yesno_multi question ${q.id}`);
+        return null;
+      }
+
+      // Sort statements by statement_id
+      statements.sort((a, b) => a.statement_id.localeCompare(b.statement_id));
+
+      // Create the correctAnswers array matching the statements order
+      const correctAnswers = statements.map(stmt => 
+        correctAnswersMap.get(stmt.statement_id) || false
+      );
+
+      if (correctAnswers.length !== statements.length) {
+        console.warn(`Mismatch between statements and correct answers for yesno_multi question ${q.id}`);
+        return null;
+      }
+
+      return {
+        ...q,
+        type: 'yesno_multi',
+        statements,
+        correctAnswers,
+      } as YesNoMultiQuestion;
+    }).filter(q => q !== null) as YesNoMultiQuestion[];
+
+  } catch (error: any) {
+    console.error('Error in enrichYesNoMultiQuestions:', error.message);
+    return [];
   }
 }

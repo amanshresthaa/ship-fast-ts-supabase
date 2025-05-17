@@ -5,15 +5,7 @@ import { motion } from 'framer-motion';
 import { YesNoMultiQuestion } from '@/app/types/quiz';
 import { YesNoMultiController } from '../../controllers/YesNoMultiController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
-
-// Icons for feedback
-const CorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
-));
-
-const IncorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>
-));
+import { CorrectIcon, IncorrectIcon } from './FeedbackIcons';
 
 interface YesNoMultiComponentProps {
   question: YesNoMultiQuestion;

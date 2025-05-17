@@ -6,14 +6,7 @@ import { motion } from 'framer-motion';
 import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
 import { MultiChoiceController } from '../../controllers/MultiChoiceController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
-
-const CorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
-));
-
-const IncorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>
-));
+import { CorrectIcon, IncorrectIcon } from './FeedbackIcons';
 
 interface MultiChoiceComponentProps {
   question: MultiChoiceQuestion;

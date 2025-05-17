@@ -1,6 +1,6 @@
 # Cognitive Quiz Codebase
 
-Generated on: 2025-05-14 01:10:48
+Generated on: 2025-05-17 21:14:50
 
 ## Project Structure
 
@@ -39,6 +39,7 @@ app/blog/author/[authorId]/page.tsx
 app/blog/category/[categoryId]/page.tsx
 app/blog/layout.tsx
 app/blog/page.tsx
+app/components/LazyImage.tsx
 app/components/QuizCTA.tsx
 app/dashboard/layout.tsx
 app/dashboard/page.tsx
@@ -52,19 +53,24 @@ app/data/quizzes/azure-a102/clean_yesno_multi_questions.json
 app/data/quizzes/azure-a102/quiz_metadata.json
 app/debug-components/page.tsx
 app/error.tsx
+app/features/quiz/components/DynamicModalWrapper.tsx
 app/features/quiz/components/FeedbackSection.tsx
 app/features/quiz/components/QuestionCard.tsx
 app/features/quiz/components/QuestionContent.tsx
 app/features/quiz/components/QuestionHeader.tsx
 app/features/quiz/components/QuizCompletionSummary.tsx
+app/features/quiz/components/QuizFeedbackModal.tsx
 app/features/quiz/components/QuizNavigation.tsx
 app/features/quiz/components/QuizProgress.tsx
 app/features/quiz/components/question-types/DragAndDropQuestionComponent.tsx
 app/features/quiz/components/question-types/DropdownSelectionComponent.tsx
+app/features/quiz/components/question-types/FeedbackIcons.tsx
 app/features/quiz/components/question-types/MultiChoiceComponent.tsx
 app/features/quiz/components/question-types/OrderQuestionComponent.tsx
 app/features/quiz/components/question-types/QuestionTypeRenderer.tsx
 app/features/quiz/components/question-types/SingleSelectionComponent.tsx
+app/features/quiz/components/question-types/YesNoComponent.tsx
+app/features/quiz/components/question-types/YesNoMultiComponent.tsx
 app/features/quiz/context/QuizContext.tsx
 app/features/quiz/controllers/DragAndDropController.ts
 app/features/quiz/controllers/DropdownSelectionController.ts
@@ -73,6 +79,8 @@ app/features/quiz/controllers/OrderController.ts
 app/features/quiz/controllers/QuestionController.ts
 app/features/quiz/controllers/QuestionControllerFactory.ts
 app/features/quiz/controllers/SingleSelectionController.ts
+app/features/quiz/controllers/YesNoController.ts
+app/features/quiz/controllers/YesNoMultiController.ts
 app/features/quiz/hooks/useAutoValidation.ts
 app/features/quiz/hooks/useQuizScoring.ts
 app/features/quiz/hooks/useQuizState.ts
@@ -97,7 +105,13 @@ app/features/quiz/validators/DropdownSelectionValidator.ts
 app/features/quiz/validators/MultiChoiceValidator.ts
 app/features/quiz/validators/OrderValidator.ts
 app/features/quiz/validators/SingleSelectionValidator.ts
+app/features/quiz/validators/YesNoMultiValidator.ts
+app/features/quiz/validators/YesNoValidator.ts
 app/globals.css
+app/hooks/useDebounce.ts
+app/hooks/useIntersectionObserver.ts
+app/hooks/useMemoizedCallback.ts
+app/hooks/useThrottle.ts
 app/layout.tsx
 app/lib/supabaseQuizService.ts
 app/not-found.tsx
@@ -117,6 +131,7 @@ app/quiz-test/[quizId]/page.tsx.bak
 app/quiz-test/[quizId]/questions/[type]/page.tsx
 app/quiz-test/[quizId]/questions/page.tsx
 app/quiz-test/[quizId]/type-client-page.tsx
+app/quiz-test/layout.tsx
 app/quiz-type-filters/layout.tsx
 app/quiz-type-filters/page.tsx
 app/signin/layout.tsx
@@ -10420,6 +10435,40 @@ const questionTypeSamples = [
       { option_id: 'D', text: 'Google Cloud' }
     ],
     correctAnswerOptionIds: ['A', 'B', 'D']
+  },
+  {
+    id: 'yes-no-demo',
+    type: 'yes_no',
+    question: 'Is AWS (Amazon Web Services) a cloud service provider?',
+    points: 1,
+    quiz_tag: 'question-types-demo',
+    difficulty: 'easy',
+    explanation: 'AWS (Amazon Web Services) is indeed a cloud service provider.',
+    feedback_correct: 'Correct! AWS is a cloud service provider.',
+    feedback_incorrect: 'Incorrect. AWS is one of the leading cloud service providers.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    correctAnswer: true // 'yes' is the correct answer
+  },
+  {
+    id: 'yes-no-multi-demo',
+    type: 'yesno_multi',
+    question: 'Identify which of the following are cloud service providers:',
+    points: 2,
+    quiz_tag: 'question-types-demo',
+    difficulty: 'medium',
+    explanation: 'AWS and Google Cloud are cloud service providers, while Windows 11 is an operating system and Firefox is a web browser.',
+    feedback_correct: 'Correct! You correctly identified the cloud service providers.',
+    feedback_incorrect: 'Incorrect. Review which companies provide cloud services vs other types of software.',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    statements: [
+      { statement_id: '1', text: 'AWS is a cloud service provider' },
+      { statement_id: '2', text: 'Windows 11 is a cloud service provider' },
+      { statement_id: '3', text: 'Google Cloud is a cloud service provider' },
+      { statement_id: '4', text: 'Firefox is a cloud service provider' }
+    ],
+    correctAnswers: [true, false, true, false]
   }
   // More question types can be added here
 ];
@@ -10467,13 +10516,13 @@ const QuestionTypesPage: React.FC = () => {
       type: 'yes_no',
       name: 'Yes/No',
       description: 'User answers a question with yes or no.',
-      available: false
+      available: true
     },
     {
       type: 'yesno_multi',
       name: 'Multiple Yes/No',
       description: 'User answers multiple statements with yes or no.',
-      available: false
+      available: true
     }
   ];
   
@@ -10654,13 +10703,33 @@ export interface DropdownSelectionQuestion extends BaseQuestion {
   placeholderTargets: Record<string, DropdownPlaceholderTarget>; // Maps placeholder key to its correct target details
 }
 
+// Yes/No question where user selects a single yes or no answer
+export interface YesNoQuestion extends BaseQuestion {
+  type: 'yes_no';
+  correctAnswer: boolean; // true for 'yes', false for 'no'
+}
+
+// Multi-statement Yes/No question where user answers yes or no to each statement
+export interface YesNoMultiQuestion extends BaseQuestion {
+  type: 'yesno_multi';
+  statements: YesNoStatement[];
+  correctAnswers: boolean[]; // Array of boolean values (true for 'yes', false for 'no')
+}
+
+export interface YesNoStatement {
+  statement_id: string;
+  text: string;
+}
+
 // AnyQuestion will be a union of all specific question types
 export type AnyQuestion = 
   | SingleSelectionQuestion 
   | MultiChoiceQuestion 
   | DragAndDropQuestion
   | DropdownSelectionQuestion
-  | OrderQuestion; // Added OrderQuestion
+  | OrderQuestion // Added OrderQuestion
+  | YesNoQuestion
+  | YesNoMultiQuestion;
 
 export interface Quiz {
   id: string; // e.g. azure-a102
@@ -12226,12 +12295,120 @@ export default QuestionContent;
 
 ```
 
-### app/features/quiz/components/QuestionCard.tsx
+### app/features/quiz/components/QuizFeedbackModal.tsx
 
 ```tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { CorrectIcon, IncorrectIcon } from './question-types/FeedbackIcons';
+
+interface QuizFeedbackModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  score: {
+    correct: number;
+    total: number;
+    percentage: number;
+  };
+  timeSpent: string;
+  isPassing: boolean;
+}
+
+/**
+ * QuizFeedbackModal - Shows detailed quiz results in a modal overlay
+ * This is a good candidate for dynamic importing since it's only shown at the end of a quiz
+ */
+const QuizFeedbackModal: React.FC<QuizFeedbackModalProps> = ({
+  isOpen,
+  onClose,
+  score,
+  timeSpent,
+  isPassing
+}) => {
+  if (!isOpen) return null;
+  
+  return (
+    <motion.div 
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div 
+        className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+      >
+        <div className="text-center mb-6">
+          <div className="mb-4">
+            {isPassing ? (
+              <div className="w-16 h-16 mx-auto">
+                <CorrectIcon />
+              </div>
+            ) : (
+              <div className="w-16 h-16 mx-auto">
+                <IncorrectIcon />
+              </div>
+            )}
+          </div>
+          
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            {isPassing ? "Congratulations!" : "Try Again"}
+          </h2>
+          
+          <p className="text-gray-600 mb-4">
+            {isPassing 
+              ? "You've passed the quiz successfully!" 
+              : "You didn't pass this time, but don't give up!"}
+          </p>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Score:</span>
+            <span className="font-semibold">{score.correct} / {score.total} ({score.percentage}%)</span>
+          </div>
+          
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Time spent:</span>
+            <span className="font-semibold">{timeSpent}</span>
+          </div>
+          
+          <div className="flex justify-between items-center py-2 border-b">
+            <span className="text-gray-600">Status:</span>
+            <span className={`font-semibold ${isPassing ? 'text-green-600' : 'text-red-600'}`}>
+              {isPassing ? 'Passed' : 'Failed'}
+            </span>
+          </div>
+        </div>
+        
+        <div className="flex justify-center">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-custom-primary text-white rounded-md shadow-md hover:bg-primary-dark transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default QuizFeedbackModal;
+
+```
+
+### app/features/quiz/components/QuestionCard.tsx
+
+```tsx
+// app/features/quiz/components/QuestionCard.tsx
+'use client';
+
+import React from 'react'; // Removed useEffect, useState
 import { AnyQuestion } from '../../../types/quiz';
 import { useQuiz } from '../context/QuizContext';
 import QuestionHeader from '../components/QuestionHeader';
@@ -12245,77 +12422,63 @@ interface QuestionCardProps {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const { state, submitAndScoreAnswer } = useQuiz();
-  // For multi-choice questions, we need to track selections locally before submission
-  const [multiChoiceSelections, setMultiChoiceSelections] = useState<string[]>([]);
   
   const userAnswerDetails = state.userAnswers[question.id];
-  const selectedAnswerForThisQuestion = userAnswerDetails?.answer || 
-    (question.type === 'multi' ? multiChoiceSelections : undefined);
+  // selectedAnswerForThisQuestion is the answer already processed or null/undefined if not answered.
+  const selectedAnswerForThisQuestion = userAnswerDetails?.answer; 
+
   const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
-  // Renamed from showCorrectAnswerStyling
   const shouldApplyFeedbackStyling = state.isQuizComplete || 
     (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
     
-  // Reset selections when question changes
-  useEffect(() => {
-    setMultiChoiceSelections([]);
-  }, [question.id]);
-  
-  // Update local selections when user answer is available from context
-  useEffect(() => {
-    if (question.type === 'multi' && userAnswerDetails?.answer) {
-      setMultiChoiceSelections(userAnswerDetails.answer);
+  const handleAnswerSubmission = async (answerPayload: any) => {
+    // The answerPayload received here is already deemed "complete" by the child component's 
+    // useAutoValidation hook (for types like multi-choice, dropdown, order)
+    // or it's an immediate selection (for single_selection, yes_no).
+    
+    // A guard to prevent re-submission if the exact same answer is submitted again,
+    // or if already fully processed (isCorrect is defined).
+    // This can be refined, but the main idea is to prevent redundant processing if state hasn't meaningfully changed.
+    if (isSubmittedForThisQuestion && 
+        userAnswerDetails.isCorrect !== undefined &&
+        JSON.stringify(userAnswerDetails.answer) === JSON.stringify(answerPayload)
+    ) {
+        // Potentially, if isCorrect is undefined, it means server validation is pending.
+        // We might allow resubmission if the answer changes.
+        // For now, if it's submitted and has a correctness status, and answer is same, don't re-process.
+        // console.log("QuestionCard: Answer already submitted and scored. Payload:", answerPayload);
+        // return; // This might be too aggressive if we want to allow changing mind before next Q.
+                  // The `hasSubmittedRef` in useAutoValidation should handle most cases of duplicate calls
+                  // for the exact same answer instance.
     }
-  }, [question.type, userAnswerDetails]);
 
-  const handleLocalAnswerSelection = async (answerPayload: any) => {
-    // For all question types, submit immediately when ready
-    if (isSubmittedForThisQuestion && userAnswerDetails.isCorrect !== undefined) return;
-    
-    // For multi-choice, we need to check if we've reached the required selections
-    if (question.type === 'multi') {
-      setMultiChoiceSelections(answerPayload);
-      
-      // If we reached the exact number of correct answers needed, submit automatically
-      const correctAnswersCount = (question as any).correctAnswerOptionIds?.length || 0;
-      if (Array.isArray(answerPayload) && answerPayload.length === correctAnswersCount) {
-        await submitAndScoreAnswer(question, answerPayload);
-      }
-      return;
-    }
-    
-    // For other question types like single selection, submit immediately
     await submitAndScoreAnswer(question, answerPayload);
   };
 
   return (
     <div className="bg-white rounded-rounded-lg-ref shadow-shadow-strong p-7 md:p-10 mb-8 relative overflow-hidden animate-card-appear">
-      {/* Card Decoration */}
       <div className="card-decoration absolute top-0 right-0 w-24 h-24 md:w-36 md:h-36 bg-primary-gradient opacity-5 rounded-bl-full z-0"></div>
 
       <div className="relative z-10">
-        {/* Question Metadata */}
         <QuestionHeader 
           points={question.points} 
           difficulty={question.difficulty} 
         />
 
-        {/* Question Content - Don't show standard question content for dropdown_selection type since it's shown in the component */}
         {question.type !== 'dropdown_selection' && (
           <QuestionContent question={question.question} />
         )}
         
-        {/* Question Type-specific Component */}
         <QuestionTypeRenderer
+          key={question.id} 
           question={question}
-          onAnswerSelect={handleLocalAnswerSelection}
+          onAnswerSelect={handleAnswerSubmission}
           selectedAnswer={selectedAnswerForThisQuestion}
           isSubmitted={isSubmittedForThisQuestion}
-          shouldApplyFeedbackStyling={shouldApplyFeedbackStyling} // Pass renamed prop
-          isQuizReviewMode={state.isQuizComplete} // Pass new prop
+          shouldApplyFeedbackStyling={shouldApplyFeedbackStyling}
+          isQuizReviewMode={state.isQuizComplete}
         />
 
-        {/* Explanation Box */}
         {((state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion) || state.isQuizComplete) && 
           question.explanation && (
             <FeedbackSection 
@@ -12324,7 +12487,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
             />
         )}
         
-        {/* Feedback Message Box (Correct/Incorrect) */}
         {state.showFeedbackForCurrentQuestion && 
          isSubmittedForThisQuestion && 
          userAnswerDetails?.isCorrect !== undefined && (
@@ -12342,6 +12504,98 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
 };
 
 export default QuestionCard;
+```
+
+### app/features/quiz/components/DynamicModalWrapper.tsx
+
+```tsx
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
+
+// Dynamically import the QuizFeedbackModal component
+// This implements code splitting so this component is only loaded when needed
+const DynamicQuizFeedbackModal = dynamic(
+  () => import('./QuizFeedbackModal'),
+  {
+    loading: () => (
+      <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <div className="animate-pulse flex space-x-4">
+            <div className="flex-1 space-y-6 py-1">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="h-4 bg-gray-200 rounded col-span-2"></div>
+                  <div className="h-4 bg-gray-200 rounded col-span-1"></div>
+                </div>
+                <div className="h-4 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    ),
+    ssr: false, // This component doesn't need server-side rendering
+  }
+);
+
+interface DynamicModalWrapperProps {
+  isOpen: boolean;
+  onClose: () => void;
+  score: {
+    correct: number;
+    total: number;
+    percentage: number;
+  };
+  timeSpent: string;
+  passingPercentage?: number;
+}
+
+/**
+ * DynamicModalWrapper - Handles loading state and dynamic import of QuizFeedbackModal
+ * Implements code splitting pattern from the performance checklist
+ */
+const DynamicModalWrapper: React.FC<DynamicModalWrapperProps> = ({
+  isOpen,
+  onClose,
+  score,
+  timeSpent,
+  passingPercentage = 70,
+}) => {
+  // Track if the component should be loaded
+  const [shouldLoad, setShouldLoad] = useState(false);
+  
+  // Determine if the user passed based on their percentage
+  const isPassing = score.percentage >= passingPercentage;
+  
+  useEffect(() => {
+    // Only load the modal component if it's going to be shown
+    // This prevents unnecessary loading when the modal is closed
+    if (isOpen && !shouldLoad) {
+      setShouldLoad(true);
+    }
+  }, [isOpen, shouldLoad]);
+  
+  // Don't render anything until the modal should be shown
+  if (!shouldLoad) return null;
+  
+  return (
+    <Suspense fallback={<div>Loading results...</div>}>
+      <DynamicQuizFeedbackModal
+        isOpen={isOpen}
+        onClose={onClose}
+        score={score}
+        timeSpent={timeSpent}
+        isPassing={isPassing}
+      />
+    </Suspense>
+  );
+};
+
+export default DynamicModalWrapper;
 
 ```
 
@@ -12655,22 +12909,15 @@ export default QuizProgress;
 ### app/features/quiz/components/question-types/MultiChoiceComponent.tsx
 
 ```tsx
+// app/features/quiz/components/question-types/MultiChoiceComponent.tsx
 'use client';
 
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
 import { MultiChoiceController } from '../../controllers/MultiChoiceController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
-
-// Icons for options
-const CorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
-));
-
-const IncorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>
-));
+import { CorrectIcon, IncorrectIcon } from './FeedbackIcons';
 
 interface MultiChoiceComponentProps {
   question: MultiChoiceQuestion;
@@ -12683,58 +12930,49 @@ interface MultiChoiceComponentProps {
 const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   question,
   onAnswerSelect,
-  selectedOptionIds = [],
+  selectedOptionIds,
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
-  // Create controller instance
   const controller = new MultiChoiceController(question);
+  const initialSelections = selectedOptionIds || [];
   
-  // Use auto-validation hook
-  const [currentSelections, setCurrentSelections, isValidating, allComplete] = useAutoValidation<
+  const [currentSelections, setCurrentSelectionsInternal] = useAutoValidation<
     MultiChoiceQuestion, 
     string[]
   >(
     controller,
-    selectedOptionIds,
+    initialSelections,
     onAnswerSelect,
-    true // Auto-validate when complete
+    true
   );
   
-  // Determine the correct number of answers to select
   const correctAnswersCount = controller.getRequiredSelectionCount();
   
-  // Handle option selection/deselection
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
       let newSelectedOptions: string[];
       
-      // If option is already selected, allow deselecting it
       if (currentSelections.includes(optionId)) {
         newSelectedOptions = currentSelections.filter(id => id !== optionId);
       } 
-      // If we haven't reached the limit yet, allow selecting the option
       else if (currentSelections.length < correctAnswersCount) {
         newSelectedOptions = [...currentSelections, optionId];
       }
-      // If we've reached the limit, don't allow more selections
       else {
         return;
       }
       
-      // Update selections through our hook
-      setCurrentSelections(newSelectedOptions);
+      setCurrentSelectionsInternal(newSelectedOptions);
+      
+      // If all required selections are made, directly trigger the answer submission
+      // This is consistent with SingleSelectionComponent and YesNoComponent
+      if (newSelectedOptions.length === correctAnswersCount) {
+        onAnswerSelect(newSelectedOptions);
+      }
     }
   };
   
-  // Sync external selectedOptionIds with our internal state
-  useEffect(() => {
-    if (selectedOptionIds && 
-        JSON.stringify(selectedOptionIds) !== JSON.stringify(currentSelections)) {
-      setCurrentSelections(selectedOptionIds);
-    }
-  }, [selectedOptionIds]);
-
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       <p className="text-sm text-gray-500 mb-2 font-medium">
@@ -12746,12 +12984,10 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
         const isCorrect = controller.isOptionCorrect(option.option_id);
         const optionLetter = String.fromCharCode(65 + index);
         
-        // Determine option styles
         let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
         let stateStyle = "border-custom-gray-3"; 
         let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
         
-        // Apply feedback styling if necessary
         if (isSubmitted || showCorrectAnswer) {
           if (isCorrect) {
             stateStyle = "border-custom-success bg-green-500/[.05]";
@@ -12777,7 +13013,6 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
             whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
             layout
           >
-            {/* Accent border */}
             <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${
               isSelected ? 'bg-custom-primary' : 
               isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : 
@@ -12791,14 +13026,12 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
                 {option.text}
               </div>
               
-              {/* Checkbox indicator */}
               <div className={`w-6 h-6 border-2 rounded flex items-center justify-center mr-2 ${
                 isSelected ? 'bg-custom-primary border-custom-primary' : 'border-gray-300'
               }`}>
                 {isSelected && <span className="text-white">✓</span>}
               </div>
               
-              {/* Show feedback icons when appropriate */}
               {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
               {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
             </div>
@@ -12809,9 +13042,7 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   );
 };
 
-// Memoize to prevent unnecessary re-renders
 export default memo(MultiChoiceComponent);
-
 ```
 
 ### app/features/quiz/components/question-types/DragAndDropQuestionComponent.tsx
@@ -12831,7 +13062,7 @@ interface DragAndDropQuestionComponentProps {
   isSubmitted?: boolean;
   showFeedbackStyling?: boolean; // Used for styling
   isQuizReviewMode?: boolean; // New prop for review mode
-  validateOnDrop?: boolean; // Auto-validate when all targets are filled
+  validateOnDrop?: boolean; // Auto-validate when all targets are filledx
 }
 
 /**
@@ -13173,25 +13404,229 @@ export default DragAndDropQuestionComponent;
 
 ```
 
-### app/features/quiz/components/question-types/SingleSelectionComponent.tsx
+### app/features/quiz/components/question-types/YesNoComponent.tsx
 
 ```tsx
 'use client';
 
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
+import { motion } from 'framer-motion';
+import { YesNoQuestion } from '@/app/types/quiz';
+import { YesNoController } from '../../controllers/YesNoController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
+import { CorrectIcon, IncorrectIcon } from './FeedbackIcons';
+
+interface YesNoComponentProps {
+  question: YesNoQuestion;
+  onAnswerSelect: (answer: boolean) => void;
+  selectedAnswer?: boolean | null;
+  isSubmitted?: boolean;
+  showCorrectAnswer?: boolean;
+}
+
+const YesNoComponent: React.FC<YesNoComponentProps> = ({
+  question,
+  onAnswerSelect,
+  selectedAnswer = null,
+  isSubmitted = false,
+  showCorrectAnswer = false,
+}) => {
+  // Create controller instance
+  const controller = new YesNoController(question);
+
+  // Use auto-validation hook with auto-submit and immediate feedback
+  const [currentSelection, setCurrentSelection, isValidating, isComplete] = useAutoValidation(
+    controller,
+    selectedAnswer ?? null,
+    (answer) => {
+      if (answer !== null) onAnswerSelect(answer);
+    },
+    true // validateOnComplete: auto-submit when answer is complete
+  );
+
+  // Reset selection when question changes
+  React.useEffect(() => {
+    // Clear current selection on new question
+    setCurrentSelection(null);
+  }, [question.id]);
+
+  // Handle option selection
+  const handleOptionClick = (answer: boolean) => {
+    if (!isSubmitted) {
+      setCurrentSelection(answer);
+      // Explicitly call onAnswerSelect to ensure immediate feedback
+      onAnswerSelect(answer);
+    }
+  };
+
+  return (
+    <div className="options-container grid grid-cols-2 gap-4 mb-8">
+      {/* Yes button */}
+      <motion.button
+        type="button"
+        onClick={() => handleOptionClick(true)}
+        className={`
+          relative text-left p-5 border-2 rounded-rounded-md-ref bg-white 
+          transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden
+          ${isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary"}
+          ${currentSelection === true 
+            ? "border-custom-primary ring-2 ring-custom-primary shadow-shadow-2" 
+            : "border-custom-gray-3"}
+          ${(isSubmitted || showCorrectAnswer) && controller.getCorrectAnswer() === true 
+            ? "border-custom-success bg-green-500/[.05]" 
+            : ""}
+          ${(isSubmitted || showCorrectAnswer) && currentSelection === true && controller.getCorrectAnswer() !== true 
+            ? "border-custom-error bg-red-500/[.05]" 
+            : ""}
+          ${(isSubmitted || showCorrectAnswer) && currentSelection !== true 
+            ? "bg-gray-50 opacity-70" 
+            : ""}
+        `}
+        disabled={isSubmitted}
+        aria-pressed={currentSelection === true}
+        whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
+        whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
+        layout
+      >
+        {/* Accent border */}
+        <span 
+          className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out 
+            ${currentSelection === true ? 'bg-custom-primary' : ''}
+            ${(isSubmitted || showCorrectAnswer) && controller.getCorrectAnswer() === true ? 'bg-custom-success' : ''}
+            ${(isSubmitted || showCorrectAnswer) && currentSelection === true && controller.getCorrectAnswer() !== true ? 'bg-custom-error' : ''}
+            ${!(currentSelection === true || ((isSubmitted || showCorrectAnswer) && controller.getCorrectAnswer() === true)) ? 'bg-custom-gray-3' : ''}
+          `}
+        ></span>
+
+        <div className="option-content flex items-center justify-between pl-4">
+          <div className="option-text text-base md:text-lg font-medium text-custom-gray-1">
+            Yes
+          </div>
+          {/* Show feedback icon when submitted or in show correct answer mode */}
+          {(isSubmitted || showCorrectAnswer) && (
+            <div className="ml-3">
+              {controller.getCorrectAnswer() === true ? (
+                <CorrectIcon />
+              ) : (
+                currentSelection === true && <IncorrectIcon />
+              )}
+            </div>
+          )}
+        </div>
+      </motion.button>
+
+      {/* No button */}
+      <motion.button
+        type="button"
+        onClick={() => handleOptionClick(false)}
+        className={`
+          relative text-left p-5 border-2 rounded-rounded-md-ref bg-white 
+          transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden
+          ${isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary"}
+          ${currentSelection === false 
+            ? "border-custom-primary ring-2 ring-custom-primary shadow-shadow-2" 
+            : "border-custom-gray-3"}
+          ${(isSubmitted || showCorrectAnswer) && controller.getCorrectAnswer() === false 
+            ? "border-custom-success bg-green-500/[.05]" 
+            : ""}
+          ${(isSubmitted || showCorrectAnswer) && currentSelection === false && controller.getCorrectAnswer() !== false 
+            ? "border-custom-error bg-red-500/[.05]" 
+            : ""}
+          ${(isSubmitted || showCorrectAnswer) && currentSelection !== false 
+            ? "bg-gray-50 opacity-70" 
+            : ""}
+        `}
+        disabled={isSubmitted}
+        aria-pressed={currentSelection === false}
+        whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
+        whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
+        layout
+      >
+        {/* Accent border */}
+        <span 
+          className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out 
+            ${currentSelection === false ? 'bg-custom-primary' : ''}
+            ${(isSubmitted || showCorrectAnswer) && controller.getCorrectAnswer() === false ? 'bg-custom-success' : ''}
+            ${(isSubmitted || showCorrectAnswer) && currentSelection === false && controller.getCorrectAnswer() !== false ? 'bg-custom-error' : ''}
+            ${!(currentSelection === false || ((isSubmitted || showCorrectAnswer) && controller.getCorrectAnswer() === false)) ? 'bg-custom-gray-3' : ''}
+          `}
+        ></span>
+
+        <div className="option-content flex items-center justify-between pl-4">
+          <div className="option-text text-base md:text-lg font-medium text-custom-gray-1">
+            No
+          </div>
+          {/* Show feedback icon when submitted or in show correct answer mode */}
+          {(isSubmitted || showCorrectAnswer) && (
+            <div className="ml-3">
+              {controller.getCorrectAnswer() === false ? (
+                <CorrectIcon />
+              ) : (
+                currentSelection === false && <IncorrectIcon />
+              )}
+            </div>
+          )}
+        </div>
+      </motion.button>
+    </div>
+  );
+};
+
+// Memoize to prevent unnecessary re-renders
+export default memo(YesNoComponent);
+
+```
+
+### app/features/quiz/components/question-types/FeedbackIcons.tsx
+
+```tsx
+// app/features/quiz/components/question-types/FeedbackIcons.tsx
+'use client';
+
+import React, { memo } from 'react';
+
+/**
+ * CorrectIcon - Displays a checkmark inside a green circle
+ * Used to indicate a correct answer in quizzes
+ */
+export const CorrectIcon = memo(() => (
+  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">
+    ✓
+  </span>
+));
+
+/**
+ * IncorrectIcon - Displays an X inside a red circle
+ * Used to indicate an incorrect answer in quizzes
+ */
+export const IncorrectIcon = memo(() => (
+  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">
+    ✗
+  </span>
+));
+
+// Default export for convenience when importing both
+const FeedbackIcons = {
+  CorrectIcon,
+  IncorrectIcon
+};
+
+export default FeedbackIcons;
+
+```
+
+### app/features/quiz/components/question-types/SingleSelectionComponent.tsx
+
+```tsx
+// app/features/quiz/components/question-types/SingleSelectionComponent.tsx
+'use client';
+
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { SingleSelectionQuestion, SelectionOption } from '../../../../types/quiz';
 import { SingleSelectionController } from '../../controllers/SingleSelectionController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
-
-// Icons for options
-const CorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
-));
-
-const IncorrectIcon = memo(() => (
-  <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-error-gradient shadow-md">✗</span>
-));
+import { CorrectIcon, IncorrectIcon } from './FeedbackIcons';
 
 interface SingleSelectionComponentProps {
   question: SingleSelectionQuestion;
@@ -13208,34 +13643,26 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
-  // Create controller instance
   const controller = new SingleSelectionController(question);
   
-  // Use auto-validation hook
-  const [currentSelection, setCurrentSelection, isValidating, allComplete] = useAutoValidation<
-    SingleSelectionQuestion, 
+  const [currentSelection, setCurrentSelectionInternal] = useAutoValidation<
+    SingleSelectionQuestion,
     string | null
   >(
     controller,
-    selectedOptionId || null,
-    onAnswerSelect,
-    true // Auto-validate when complete
+    selectedOptionId || null, 
+    onAnswerSelect,           
+    true                      
   );
   
-  // Handle manual selection change
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
-      setCurrentSelection(optionId);
+      setCurrentSelectionInternal(optionId);
+      // Directly trigger the feedback and submission process
+      onAnswerSelect(optionId);
     }
   };
   
-  // Sync external selectedOptionId with our internal state
-  useEffect(() => {
-    if (selectedOptionId !== currentSelection && selectedOptionId !== undefined) {
-      setCurrentSelection(selectedOptionId);
-    }
-  }, [selectedOptionId]);
-
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       {question.options.map((option: SelectionOption, index: number) => {
@@ -13243,12 +13670,10 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
         const isCorrect = question.correctAnswerOptionId === option.option_id;
         const optionLetter = String.fromCharCode(65 + index);
         
-        // Determine option styles
         let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
         let stateStyle = "border-custom-gray-3"; 
         let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
         
-        // Apply feedback styling if necessary
         if (isSubmitted || showCorrectAnswer) {
           if (isCorrect) {
             stateStyle = "border-custom-success bg-green-500/[.05]";
@@ -13274,7 +13699,6 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
             whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
             layout
           >
-            {/* Accent border */}
             <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${
               isSelected ? 'bg-custom-primary' : 
               isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : 
@@ -13288,7 +13712,6 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
                 {option.text}
               </div>
               
-              {/* Show feedback icons when appropriate */}
               {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
               {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
             </div>
@@ -13299,8 +13722,185 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   );
 };
 
-// Memoize to prevent unnecessary re-renders
 export default memo(SingleSelectionComponent);
+```
+
+### app/features/quiz/components/question-types/YesNoMultiComponent.tsx
+
+```tsx
+'use client';
+
+import React, { memo, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { YesNoMultiQuestion } from '@/app/types/quiz';
+import { YesNoMultiController } from '../../controllers/YesNoMultiController';
+import { useAutoValidation } from '../../hooks/useAutoValidation';
+import { CorrectIcon, IncorrectIcon } from './FeedbackIcons';
+
+interface YesNoMultiComponentProps {
+  question: YesNoMultiQuestion;
+  onAnswerSelect: (answers: boolean[]) => void;
+  selectedAnswers?: boolean[] | undefined;
+  isSubmitted?: boolean;
+  showCorrectAnswer?: boolean;
+}
+
+const YesNoMultiComponent: React.FC<YesNoMultiComponentProps> = ({
+  question,
+  onAnswerSelect,
+  selectedAnswers,
+  isSubmitted = false,
+  showCorrectAnswer = false,
+}) => {
+  // Create controller instance
+  const controller = new YesNoMultiController(question);
+  
+  // Get statements from controller
+  const statements = controller.getStatements();
+  
+  // Calculate initial answers based on provided answers or create a new array with null values
+  // Use null instead of undefined to ensure proper reset between questions
+  const initialAnswers = selectedAnswers && selectedAnswers.length === controller.getStatements().length
+    ? selectedAnswers
+    : new Array(controller.getStatements().length).fill(null);
+  
+  // Use auto-validation hook with auto-submit and immediate feedback
+  const [answers, setAnswers, isValidating, isComplete] = useAutoValidation(
+    controller,
+    initialAnswers,
+    (ans) => {
+      if (ans.every(a => a === true || a === false)) onAnswerSelect(ans);
+    },
+    true // validateOnComplete: auto-submit when all answers are complete
+  );
+
+  
+  // Reset answers when question changes
+  useEffect(() => {
+    // Clear any previous answers on new question
+    setAnswers(new Array(controller.getStatements().length).fill(null));
+  }, [question.id]);
+
+  // Handle changing a single statement's answer
+  const handleAnswerChange = (index: number, value: boolean) => {
+    if (isSubmitted) return;
+    const newAnswers = [...answers];
+    newAnswers[index] = value;
+    setAnswers(newAnswers);
+    
+    // Check if all statements are answered after this change
+    const allAnswered = newAnswers.every(a => a === true || a === false);
+    if (allAnswered) {
+      // Explicitly call onAnswerSelect to ensure immediate feedback
+      onAnswerSelect(newAnswers);
+    }
+  };
+
+  return (
+    <div key={question.id} className="mb-8">
+      <div className="space-y-6">
+        {statements.map((statement, index) => (
+          <div key={statement.statement_id} className="bg-white p-5 rounded-rounded-md-ref shadow-shadow-1">
+            <h3 className="text-base font-medium text-custom-gray-1 mb-3">
+              {statement.text}
+            </h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              {/* Yes button */}
+              <motion.button
+                type="button"
+                onClick={() => handleAnswerChange(index, true)}
+                className={`
+                  relative text-left p-4 border-2 rounded-rounded-md-ref bg-white 
+                  transition-all duration-200 ease-in-out overflow-hidden
+                  ${isSubmitted ? "cursor-default" : "cursor-pointer hover:shadow-shadow-2 hover:border-custom-primary"}
+                  ${answers[index] === true 
+                    ? "border-custom-primary shadow-shadow-2" 
+                    : "border-custom-gray-3"}
+                  ${(isSubmitted || showCorrectAnswer) && controller.isStatementAnswerCorrect(index, true) 
+                    ? "border-custom-success bg-green-500/[.05]" 
+                    : ""}
+                  ${(isSubmitted || showCorrectAnswer) && answers[index] === true && !controller.isStatementAnswerCorrect(index, true) 
+                    ? "border-custom-error bg-red-500/[.05]" 
+                    : ""}
+                `}
+                disabled={isSubmitted}
+                aria-pressed={answers[index] === true}
+                whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
+                whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
+                layout
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium text-custom-gray-1">Yes</span>
+                  
+                  {/* Show feedback icon when submitted or in show correct answer mode */}
+                  {(isSubmitted || showCorrectAnswer) && (
+                    <div className="ml-3">
+                      {controller.isStatementAnswerCorrect(index, true) ? (
+                        <CorrectIcon />
+                      ) : (
+                        answers[index] === true && <IncorrectIcon />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+
+              {/* No button */}
+              <motion.button
+                type="button"
+                onClick={() => handleAnswerChange(index, false)}
+                className={`
+                  relative text-left p-4 border-2 rounded-rounded-md-ref bg-white 
+                  transition-all duration-200 ease-in-out overflow-hidden
+                  ${isSubmitted ? "cursor-default" : "cursor-pointer hover:shadow-shadow-2 hover:border-custom-primary"}
+                  ${answers[index] === false 
+                    ? "border-custom-primary shadow-shadow-2" 
+                    : "border-custom-gray-3"}
+                  ${(isSubmitted || showCorrectAnswer) && controller.isStatementAnswerCorrect(index, false) 
+                    ? "border-custom-success bg-green-500/[.05]" 
+                    : ""}
+                  ${(isSubmitted || showCorrectAnswer) && answers[index] === false && !controller.isStatementAnswerCorrect(index, false) 
+                    ? "border-custom-error bg-red-500/[.05]" 
+                    : ""}
+                `}
+                disabled={isSubmitted}
+                aria-pressed={answers[index] === false}
+                whileHover={{ scale: isSubmitted ? 1 : 1.02, transition: { duration: 0.15 } }} 
+                whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
+                layout
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-medium text-custom-gray-1">No</span>
+                  
+                  {/* Show feedback icon when submitted or in show correct answer mode */}
+                  {(isSubmitted || showCorrectAnswer) && (
+                    <div className="ml-3">
+                      {controller.isStatementAnswerCorrect(index, false) ? (
+                        <CorrectIcon />
+                      ) : (
+                        answers[index] === false && <IncorrectIcon />
+                      )}
+                    </div>
+                  )}
+                </div>
+              </motion.button>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {!isSubmitted && answers.some(a => a !== true && a !== false) && (
+        <div className="text-sm text-gray-500 mt-4">
+          Please answer all statements to continue.
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Memoize to prevent unnecessary re-renders
+export default memo(YesNoMultiComponent);
 
 ```
 
@@ -13369,7 +13969,7 @@ const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({
     validateOnComplete
   );
 
-  // Set up available items and placed items on mount and when userAnswer changes
+  // Initialize or update availableItems & placedAnswers when question or mode/userAnswer change
   useEffect(() => {
     if (isQuizReviewMode) {
       // In review mode, show the correct placement
@@ -13377,24 +13977,26 @@ const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({
       controller.getCorrectOrder().forEach((itemId, index) => {
         correctAnswer[`slot_${index}`] = itemId;
       });
-      setPlacedAnswers(correctAnswer);
-      setAvailableItems([]); // No available items in review mode, all are placed correctly
+      // Update only if different
+      if (JSON.stringify(placedAnswers) !== JSON.stringify(correctAnswer)) {
+        setPlacedAnswers(correctAnswer);
+      }
+      setAvailableItems([]);
     } else {
-      // Start with a fresh arrangement based on userAnswer or initial state
       const answer = userAnswer || controller.createInitialAnswer();
-      
-      // Find which items are placed in slots
+      // Determine available items
       const placedItemIds = Object.values(answer).filter(id => id !== null) as string[];
-      
-      // Available items are those not yet placed in slots
       const availableItemsList = question.items.filter(
         item => !placedItemIds.includes(item.item_id)
       );
-      
       setAvailableItems(availableItemsList);
-      setPlacedAnswers(answer);
+      // Update only if different
+      if (JSON.stringify(placedAnswers) !== JSON.stringify(answer)) {
+        setPlacedAnswers(answer);
+      }
     }
-  }, [isQuizReviewMode, userAnswer, question.items, controller, setPlacedAnswers]);
+  // Note: intentionally not including setPlacedAnswers in deps to prevent effect loop
+  }, [isQuizReviewMode, userAnswer, question.items, controller]);
 
   /**
    * Simplified drag start event handler (similar to DragAndDropQuestionComponent)
@@ -13848,11 +14450,13 @@ export default memo(OrderQuestionComponent);
 
 ```tsx
 import React, { memo } from 'react';
-import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion, OrderQuestion } from '../../../../types/quiz';
+import { AnyQuestion, SingleSelectionQuestion, MultiChoiceQuestion, DragAndDropQuestion, DropdownSelectionQuestion, OrderQuestion, YesNoQuestion, YesNoMultiQuestion } from '../../../../types/quiz';
 import SingleSelectionComponent from './SingleSelectionComponent';
 import MultiChoiceComponent from './MultiChoiceComponent';
 import DragAndDropQuestionComponent from './DragAndDropQuestionComponent';
 import DropdownSelectionComponent from './DropdownSelectionComponent';
+import YesNoComponent from './YesNoComponent';
+import YesNoMultiComponent from './YesNoMultiComponent';
 import OrderQuestionComponent from './OrderQuestionComponent';
 import { createQuestionController } from '../../controllers/QuestionControllerFactory';
 
@@ -13948,6 +14552,28 @@ const QuestionTypeRenderer: React.FC<QuestionTypeRendererProps> = ({
           validateOnComplete={true}
         />
       );
+    case 'yes_no':
+      return (
+        <YesNoComponent
+          key={question.id}
+          question={question as YesNoQuestion}
+          onAnswerSelect={onAnswerSelect}
+          selectedAnswer={selectedAnswer as boolean | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
+        />
+      );
+    case 'yesno_multi':
+      return (
+        <YesNoMultiComponent
+          key={question.id}
+          question={question as YesNoMultiQuestion}
+          onAnswerSelect={onAnswerSelect}
+          selectedAnswers={selectedAnswer as boolean[] | undefined}
+          isSubmitted={isSubmitted}
+          showCorrectAnswer={shouldApplyFeedbackStyling}
+        />
+      );
     default:
       return (
         <div className="p-4 my-4 border border-red-200 rounded bg-red-50">
@@ -13965,7 +14591,8 @@ export default memo(QuestionTypeRenderer);
 ### app/features/quiz/components/question-types/DropdownSelectionComponent.tsx
 
 ```tsx
-import React, { useState, useEffect, useMemo, memo } from 'react';
+// app/features/quiz/components/question-types/DropdownSelectionComponent.tsx
+import React, { useMemo, memo } from 'react';
 import { DropdownSelectionQuestion, DropdownOption } from '../../../../types/quiz';
 import { DropdownSelectionController } from '../../controllers/DropdownSelectionController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
@@ -13976,7 +14603,7 @@ interface DropdownSelectionComponentProps {
   selectedAnswer?: Record<string, string | null> | null;
   isSubmitted?: boolean;
   showCorrectAnswer?: boolean;
-  validateOnComplete?: boolean; // New prop similar to validateOnDrop in DragAndDrop
+  validateOnComplete?: boolean;
 }
 
 const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
@@ -13985,12 +14612,10 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
   selectedAnswer,
   isSubmitted = false,
   showCorrectAnswer = false,
-  validateOnComplete = true, // Default to true for auto-validation
+  validateOnComplete = true,
 }) => {
-  // Create controller instance
   const controller = new DropdownSelectionController(question);
   
-  // Initialize selections from placeholder keys
   const initialSelections = useMemo(() => {
     const selections: Record<string, string | null> = {};
     controller.getPlaceholderKeys().forEach(key => {
@@ -13999,8 +14624,7 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
     return selections;
   }, [controller, selectedAnswer]);
   
-  // Use auto-validation hook
-  const [currentSelections, setCurrentSelections, autoValidating, allDropdownsFilled] = useAutoValidation<
+  const [currentSelections, setCurrentSelectionsInternal, autoValidating, allDropdownsFilled] = useAutoValidation<
     DropdownSelectionQuestion,
     Record<string, string | null>
   >(
@@ -14010,52 +14634,45 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
     validateOnComplete
   );
   
-  // Handle selection change for a placeholder
   const handleSelectChange = (placeholderKey: string, selectedOptionText: string | null) => {
-    if (isSubmitted) return; // Don't allow changes after submission shown
+    if (isSubmitted && showCorrectAnswer) return;
 
     const newSelections = {
       ...currentSelections,
       [placeholderKey]: selectedOptionText,
     };
     
-    setCurrentSelections(newSelections);
+    setCurrentSelectionsInternal(newSelections);
+    
+    // Check if this selection completes the answer, and if so, directly call onAnswerSelect
+    // This is consistent with the SingleSelectionComponent and YesNoComponent behavior
+    const isAnswerComplete = controller.isAnswerComplete(newSelections);
+    if (isAnswerComplete && validateOnComplete) {
+      onAnswerSelect(newSelections);
+    }
   };
   
-  // Sync with external changes to selectedAnswer
-  useEffect(() => {
-    if (selectedAnswer && JSON.stringify(selectedAnswer) !== JSON.stringify(currentSelections)) {
-      setCurrentSelections({...selectedAnswer});
-    }
-  }, [selectedAnswer]);
-
-  // Memoize parsed parts to avoid re-computation on every render unless question.question changes
   const parsedQuestionParts = useMemo(() => {
     const parts: (string | { placeholder: string })[] = [];
     if (!question.question) return parts;
 
-    // Normalize the question text - convert all escaped brackets to regular brackets
-    // and handle any line breaks properly
     const processedQuestion = question.question
-      .replace(/\\n/g, '\n')
-      .replace(/\\([[\]])/g, '$1');
+      .replace(/\\n/g, '\n') // Ensure newline characters are rendered
+      .replace(/\\([[\\]])/g, '$1'); // Handle escaped brackets if any
     
-    // Regex to find placeholders like [option_set1] or [key_name]
-    const placeholderRegex = /\[([^\]]+)\]/g;
+    // Regex to find placeholders like [key_name] or [option_set1]
+    const placeholderRegex = /\[([a-zA-Z0-9_]+)\]/g; 
     let lastIndex = 0;
     let match;
 
     while ((match = placeholderRegex.exec(processedQuestion)) !== null) {
-      // Add text before the placeholder
       if (match.index > lastIndex) {
         parts.push(processedQuestion.substring(lastIndex, match.index));
       }
-      // Add the placeholder object
-      parts.push({ placeholder: match[1] }); // match[1] is the content inside brackets
+      parts.push({ placeholder: match[1] });
       lastIndex = placeholderRegex.lastIndex;
     }
 
-    // Add any remaining text after the last placeholder
     if (lastIndex < processedQuestion.length) {
       parts.push(processedQuestion.substring(lastIndex));
     }
@@ -14070,45 +14687,35 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
 
   return (
     <div className="text-lg whitespace-pre-line">
-      {/* This component renders the full question text with dropdown fields inline.
-          The QuestionCard is configured to hide the standard question display for
-          dropdown_selection question types to prevent duplication. */}
       <h2 className="text-xl md:text-2xl font-bold text-custom-dark-blue mb-6 relative inline-block pb-1.5">
         Fill in the blanks
         <span className="absolute left-0 bottom-0 w-10 h-0.5 bg-custom-primary rounded-rounded-full"></span>
       </h2>
       {parsedQuestionParts.map((part, index) => {
         if (typeof part === 'string') {
-          // Just render the text as is - whitespace-pre-line CSS will handle line breaks
-          return <React.Fragment key={`${index}`}>{part}</React.Fragment>;
+          return <React.Fragment key={`${index}-text`}>{part}</React.Fragment>;
         } else {
           const placeholderKey = part.placeholder;
           const currentSelectedText = currentSelections[placeholderKey];
-          let borderColor = 'border-gray-300'; // Default border
+          let borderColor = 'border-gray-300';
 
           if (isSubmitted && showCorrectAnswer) {
             const correctAnswerText = controller.getCorrectOptionForPlaceholder(placeholderKey);
-            if (correctAnswerText && currentSelectedText === correctAnswerText) {
-              borderColor = 'border-green-500'; // Correct
-            } else {
-              borderColor = 'border-red-500'; // Incorrect
-            }
-          } else if (isSubmitted && !showCorrectAnswer && currentSelectedText !== null) {
-            // If submitted but not showing correct answer yet (e.g. immediate feedback without revealing)
-            // and user has made a selection, show a neutral "answered" border.
-            borderColor = 'border-custom-blue'; 
+            borderColor = (correctAnswerText && currentSelectedText === correctAnswerText) ? 'border-green-500' : 'border-red-500';
+          } else if (currentSelectedText !== null && currentSelectedText !== "" && currentSelectedText !== undefined) {
+            borderColor = 'border-custom-primary'; 
           }
 
           return (
             <select
-              key={`${placeholderKey}-${index}`}
-              value={currentSelectedText || ""} // Ensure controlled component, default to empty string for "Select..."
+              key={`${placeholderKey}-${index}-select`}
+              value={currentSelectedText || ""}
               onChange={(e) => handleSelectChange(placeholderKey, e.target.value === "" ? null : e.target.value)}
-              disabled={isSubmitted && showCorrectAnswer} // Disable after showing correct answer
+              disabled={isSubmitted && showCorrectAnswer}
               className={`inline-block mx-1 px-2 py-1 border-2 rounded-md shadow-sm focus:ring-custom-blue focus:border-custom-blue text-base ${borderColor} bg-white`}
               aria-label={`Selection for ${placeholderKey}`}
             >
-              <option value="" disabled={currentSelectedText !== null && currentSelectedText !== ""}>Select...</option>
+              <option value="" disabled={currentSelectedText !== null && currentSelectedText !== "" && currentSelectedText !== undefined}>Select...</option>
               {allDropdownOptions.map((opt: DropdownOption) => (
                 <option key={opt.option_id} value={opt.text}>
                   {opt.text}
@@ -14119,14 +14726,12 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
         }
       })}
       
-      {/* Show in-progress validation message */}
       {autoValidating && allDropdownsFilled && !showCorrectAnswer && !isSubmitted && (
         <div className="mt-4 p-2 bg-yellow-100 border border-yellow-300 rounded">
           <p className="text-sm text-yellow-700">All dropdowns filled. Your answer will be submitted.</p>
         </div>
       )}
       
-      {/* Show ready to submit message when all dropdowns filled */}
       {allDropdownsFilled && !autoValidating && !showCorrectAnswer && !isSubmitted && (
         <div className="mt-4 p-2 bg-green-100 border border-green-300 rounded">
           <p className="text-sm text-green-700">All dropdowns filled. Ready to submit.</p>
@@ -14150,7 +14755,6 @@ const DropdownSelectionComponent: React.FC<DropdownSelectionComponentProps> = ({
 };
 
 export default memo(DropdownSelectionComponent);
-
 ```
 
 ### app/features/quiz/hooks/useAutoValidation.ts
@@ -14183,10 +14787,25 @@ export function useAutoValidation<Q extends AnyQuestion, A>(
   // to avoid duplicate submissions
   const hasSubmittedRef = useRef<boolean>(false);
   
+  // To distinguish between initial render and user interactions
+  const isInitialRender = useRef<boolean>(true);
+  
+  // If initialAnswer changes (new question), reset submission status
+  useEffect(() => {
+    hasSubmittedRef.current = false;
+    isInitialRender.current = true;
+  }, [controller]);
+  
   // Check completeness whenever answer changes
   useEffect(() => {
     const isComplete = controller.isAnswerComplete(answer);
     setAllComplete(isComplete);
+    
+    // Skip auto-validation on initial render (when loading previous answers)
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
     
     // If answer is complete, not already submitted, and validateOnComplete is true
     // trigger validation and submission
@@ -14216,7 +14835,7 @@ export function useAutoValidation<Q extends AnyQuestion, A>(
 ```typescript
 import { useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { AnyQuestion } from '../../../types/quiz';
+import { AnyQuestion, YesNoQuestion, YesNoMultiQuestion } from '../../../types/quiz';
 import { QuizAction } from './useQuizState';
 
 // Initialize Supabase client for Edge Function calls
@@ -14246,22 +14865,35 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
     };
 
     // Add specific correct answer details for client-side validation
-    if (question.type === 'single_selection') {
-      submitPayload.payload.correctAnswerOptionId = question.correctAnswerOptionId;
-    } else if (question.type === 'multi') {
-      submitPayload.payload.correctAnswerOptionIds = question.correctAnswerOptionIds;
-    } else if (question.type === 'dropdown_selection') {
-      // For dropdown, map placeholderTargets to the expected format for client-side validation
-      const correctDropdownAnswers: Record<string, string> = {};
-      if (question.placeholderTargets) {
-        for (const key in question.placeholderTargets) {
-          correctDropdownAnswers[key] = question.placeholderTargets[key].correctOptionText;
+    switch(question.type) {
+      case 'single_selection':
+        submitPayload.payload.correctAnswerOptionId = (question as any).correctAnswerOptionId;
+        break;
+      case 'multi':
+        submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
+        break;
+      case 'dropdown_selection':
+        // For dropdown, map placeholderTargets to the expected format for client-side validation
+        const correctDropdownAnswers: Record<string, string> = {};
+        if ((question as any).placeholderTargets) {
+          for (const key in (question as any).placeholderTargets) {
+            correctDropdownAnswers[key] = (question as any).placeholderTargets[key].correctOptionText;
+          }
         }
-      }
-      submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
-    } else if (question.type === 'order') {
-      // For 'order' questions, pass the correctOrder array for client-side validation
-      submitPayload.payload.correctOrder = question.correctOrder;
+        submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
+        break;
+      case 'order':
+        // For 'order' questions, pass the correctOrder array for client-side validation
+        submitPayload.payload.correctOrder = (question as any).correctOrder;
+        break;
+      case 'yes_no':
+        // For yes/no questions
+        submitPayload.payload.correctYesNoAnswer = (question as YesNoQuestion).correctAnswer;
+        break;
+      case 'yesno_multi':
+        // For multi-statement yes/no questions
+        submitPayload.payload.correctYesNoMultiAnswers = (question as YesNoMultiQuestion).correctAnswers;
+        break;
     }
 
     // First update the UI immediately with client-side validation results
@@ -14293,6 +14925,12 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
             isCorrect: scoreData.isCorrect,
             serverVerifiedCorrectAnswer: scoreData.correctAnswer 
           }
+        });
+        
+        // Show feedback after answer submission
+        dispatch({
+          type: 'SHOW_FEEDBACK',
+          payload: { questionId: question.id }
         });
       } else {
         console.error('Score data mismatch or missing from Edge Function response:', scoreData);
@@ -14352,6 +14990,8 @@ export type QuizAction =
         correctAnswerOptionIds?: string[]; // For multi
         correctDropdownAnswers?: Record<string, string>; // For dropdown_selection
         correctOrder?: string[]; // For order
+        correctYesNoAnswer?: boolean; // For yes_no
+        correctYesNoMultiAnswers?: boolean[]; // For yesno_multi
       }
     }
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
@@ -14453,6 +15093,21 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
           }
         }
         isClientCorrect = allCorrect;
+      } else if (action.payload.questionType === 'yes_no' && action.payload.correctYesNoAnswer !== undefined) {
+        // Simple comparison for yes_no questions
+        isClientCorrect = action.payload.answer === action.payload.correctYesNoAnswer;
+      } else if (action.payload.questionType === 'yesno_multi' && action.payload.correctYesNoMultiAnswers) {
+        // Compare each answer for yesno_multi questions
+        const userAnswers = action.payload.answer as boolean[];
+        const correctAnswers = action.payload.correctYesNoMultiAnswers;
+        
+        // Make sure arrays are the same length
+        if (userAnswers.length !== correctAnswers.length) {
+          isClientCorrect = false;
+        } else {
+          // Check each answer
+          isClientCorrect = userAnswers.every((answer, index) => answer === correctAnswers[index]);
+        }
       }
 
       return {
@@ -14532,6 +15187,62 @@ export const useQuizState = () => {
     dispatch
   };
 };
+
+```
+
+### app/features/quiz/validators/YesNoMultiValidator.ts
+
+```typescript
+import { YesNoMultiQuestion } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for multi-statement yes/no questions
+ * Works with boolean[] answer type (array of true/false values)
+ */
+export class YesNoMultiValidator extends AnswerValidator<YesNoMultiQuestion, boolean[]> {
+  /**
+   * Checks if all statements have been answered
+   * @param answers Array of boolean answers corresponding to each statement
+   * @returns True if all statements have been answered
+   */
+  isComplete(answers: boolean[]): boolean {
+    // Check if answers array exists and has the expected length
+    if (!answers || !Array.isArray(answers)) return false;
+    
+    // The answers array should match the number of statements in the question
+    if (answers.length !== this.question.statements.length) return false;
+    
+    // Each statement must have an answer that is explicitly true or false (not null or undefined)
+    return answers.every(answer => answer === true || answer === false);
+  }
+  
+  /**
+   * Validates the correctness of each statement's answer
+   * @param answers Array of boolean answers
+   * @returns Map with entries for each statement's correctness
+   */
+  getCorrectnessMap(answers: boolean[]): CorrectnessMap {
+    const correctnessMap: CorrectnessMap = {};
+    
+    // If no answers, return empty map
+    if (!answers || !Array.isArray(answers)) {
+      return correctnessMap;
+    }
+    
+    // Check each answer against the correct answers
+    this.question.statements.forEach((statement, index) => {
+      // Only check items that have been answered and are within range
+      if (index < answers.length && answers[index] !== null && answers[index] !== undefined) {
+        // Compare user answer with correct answer for this statement
+        const isCorrect = answers[index] === this.question.correctAnswers[index];
+        correctnessMap[statement.statement_id] = isCorrect;
+      }
+    });
+    
+    return correctnessMap;
+  }
+}
 
 ```
 
@@ -14758,6 +15469,47 @@ export class DragAndDropValidator extends AnswerValidator<
 
 ```
 
+### app/features/quiz/validators/YesNoValidator.ts
+
+```typescript
+import { YesNoQuestion } from '@/app/types/quiz';
+import { AnswerValidator, CorrectnessMap } from './AnswerValidator';
+
+/**
+ * Validator for yes/no questions
+ * Works with boolean answer type (true for 'yes', false for 'no')
+ */
+export class YesNoValidator extends AnswerValidator<YesNoQuestion, boolean | null> {
+  /**
+   * Checks if an answer has been selected
+   * @param answer The selected answer (true, false, or null)
+   * @returns True if an answer has been selected
+   */
+  isComplete(answer: boolean | null): boolean {
+    return answer !== null && answer !== undefined;
+  }
+  
+  /**
+   * Validates if the selected answer is correct
+   * @param answer The selected answer (true, false, or null)
+   * @returns Map with a single entry for the answer's correctness
+   */
+  getCorrectnessMap(answer: boolean | null): CorrectnessMap {
+    // If no selection, nothing is correct
+    if (answer === null || answer === undefined) {
+      return { 'answer': false };
+    }
+    
+    // Check if selected answer matches the correct answer
+    const isCorrect = answer === this.question.correctAnswer;
+    
+    // Return a map with a key based on the answer
+    return { [answer ? 'yes' : 'no']: isCorrect };
+  }
+}
+
+```
+
 ### app/features/quiz/validators/OrderValidator.ts
 
 ```typescript
@@ -14897,6 +15649,49 @@ export abstract class AnswerValidator<Q extends AnyQuestion, A> {
 
 ```
 
+### app/features/quiz/controllers/YesNoController.ts
+
+```typescript
+import { YesNoQuestion } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { YesNoValidator } from '../validators/YesNoValidator';
+
+/**
+ * Controller for yes/no questions
+ * Manages state and validation for questions where the user selects a single yes or no answer
+ */
+export class YesNoController extends QuestionController<YesNoQuestion, boolean | null> {
+  /**
+   * Creates an instance of YesNoController
+   * @param question The yes/no question
+   */
+  constructor(question: YesNoQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new YesNoValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets the correct answer
+   * @returns The correct answer (true for 'yes', false for 'no')
+   */
+  getCorrectAnswer(): boolean {
+    return this.question.correctAnswer;
+  }
+  
+  /**
+   * Checks if a specific answer is correct
+   * @param answer The answer to check
+   * @returns True if the answer is correct
+   */
+  isAnswerCorrect(answer: boolean | null): boolean {
+    if (answer === null) return false;
+    return answer === this.question.correctAnswer;
+  }
+}
+
+```
+
 ### app/features/quiz/controllers/QuestionControllerFactory.ts
 
 ```typescript
@@ -14906,6 +15701,8 @@ import {
   DragAndDropQuestion, 
   DropdownSelectionQuestion,
   OrderQuestion,
+  YesNoQuestion,
+  YesNoMultiQuestion,
   AnyQuestion 
 } from "@/app/types/quiz";
 import { SingleSelectionController } from "./SingleSelectionController";
@@ -14913,6 +15710,8 @@ import { MultiChoiceController } from "./MultiChoiceController";
 import { DragAndDropController } from "./DragAndDropController";
 import { DropdownSelectionController } from "./DropdownSelectionController";
 import { OrderController } from "./OrderController";
+import { YesNoController } from "./YesNoController";
+import { YesNoMultiController } from "./YesNoMultiController";
 import { QuestionController } from "./QuestionController";
 
 /**
@@ -14932,8 +15731,12 @@ export function createQuestionController(question: AnyQuestion): QuestionControl
       return new DropdownSelectionController(question as DropdownSelectionQuestion);
     case 'order':
       return new OrderController(question as OrderQuestion);
+    case 'yes_no':
+      return new YesNoController(question as YesNoQuestion);
+    case 'yesno_multi':
+      return new YesNoMultiController(question as YesNoMultiQuestion);
     default:
-      throw new Error(`No controller available for question type: ${question.type}`);
+      throw new Error(`No controller available for question type: ${(question as any).type}`);
   }
 }
 
@@ -15328,6 +16131,84 @@ export abstract class QuestionController<Q extends AnyQuestion, A> {
 
 ```
 
+### app/features/quiz/controllers/YesNoMultiController.ts
+
+```typescript
+import { YesNoMultiQuestion, YesNoStatement } from '@/app/types/quiz';
+import { QuestionController } from './QuestionController';
+import { YesNoMultiValidator } from '../validators/YesNoMultiValidator';
+
+/**
+ * Controller for multi-statement yes/no questions
+ * Manages state and validation for questions where the user answers yes/no to multiple statements
+ */
+export class YesNoMultiController extends QuestionController<YesNoMultiQuestion, boolean[]> {
+  /**
+   * Creates an instance of YesNoMultiController
+   * @param question The multi-statement yes/no question
+   */
+  constructor(question: YesNoMultiQuestion) {
+    // Create the validator and pass it to the base controller
+    const validator = new YesNoMultiValidator(question);
+    super(question, validator);
+  }
+  
+  /**
+   * Gets all statements in the question
+   * @returns Array of statements
+   */
+  getStatements(): YesNoStatement[] {
+    return this.question.statements;
+  }
+  
+  /**
+   * Gets the array of correct answers
+   * @returns Array of boolean values representing correct answers
+   */
+  getCorrectAnswers(): boolean[] {
+    return this.question.correctAnswers;
+  }
+  
+  /**
+   * Checks if a specific statement's answer is correct
+   * @param index The index of the statement
+   * @param answer The answer to check
+   * @returns True if the answer is correct for that statement
+   */
+  isStatementAnswerCorrect(index: number, answer: boolean): boolean {
+    if (index < 0 || index >= this.question.correctAnswers.length) {
+      return false;
+    }
+    return answer === this.question.correctAnswers[index];
+  }
+  
+  /**
+   * Creates an initial empty answer array with nulls
+   * @returns An array with null values for each statement
+   */
+  createInitialAnswer(): boolean[] {
+    // Return an array filled with nulls matching the length of statements
+    return new Array(this.question.statements.length).fill(null);
+  }
+  
+  /**
+   * Checks if the answer is complete (all statements have been answered)
+   * @param answer Array of boolean answers
+   * @returns True if all statements have been answered
+   */
+  isAnswerComplete(answer: boolean[]): boolean {
+    if (!answer || !Array.isArray(answer)) return false;
+    
+    // Make sure we have the right number of answers
+    if (answer.length !== this.question.statements.length) return false;
+    
+    // Make sure each answer is a boolean (not null or undefined)
+    return answer.every(item => item === true || item === false);
+  }
+}
+
+```
+
 ### app/features/quiz/controllers/SingleSelectionController.ts
 
 ```typescript
@@ -15489,6 +16370,18 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                 >
                   Order
                 </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/yes_no`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'yes_no' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  Yes/No
+                </Link>
+                <Link 
+                  href={`/quiz-test/${quizId}/yesno_multi`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'yesno_multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  Yes/No Multi
+                </Link>
               </div>
               <div className="mt-2">
                 <Link 
@@ -15577,6 +16470,18 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             >
               Order
             </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/yes_no`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'yes_no' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+            >
+              Yes/No
+            </Link>
+            <Link 
+              href={`/quiz-test/${quizId}/yesno_multi`}
+              className={`px-3 py-1 rounded-full text-sm ${questionType === 'yesno_multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+            >
+              Yes/No Multi
+            </Link>
           </div>
           
           <QuizProgress 
@@ -15604,7 +16509,9 @@ export const availableQuestionTypes = [
   { type: 'multi', name: 'Multiple Selection' },
   { type: 'drag_and_drop', name: 'Drag and Drop' },
   { type: 'dropdown_selection', name: 'Dropdown' },
-  { type: 'order', name: 'Order' }
+  { type: 'order', name: 'Order' },
+  { type: 'yes_no', name: 'Yes/No' },
+  { type: 'yesno_multi', name: 'Yes/No Multi' }
 ];
 
 ```
@@ -17465,6 +18372,88 @@ export default TestOrderQuestionsPage;
 
 ```
 
+### app/components/LazyImage.tsx
+
+```tsx
+'use client';
+
+import React from 'react';
+import Image from 'next/image';
+import useIntersectionObserver from '@/app/hooks/useIntersectionObserver';
+
+interface LazyImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+  priority?: boolean;
+  quality?: number;
+  sizes?: string;
+  placeholder?: 'blur' | 'empty';
+  blurDataURL?: string;
+  onLoad?: () => void;
+}
+
+/**
+ * LazyImage - A component that only loads images when they're about to enter the viewport
+ * Implements efficient image loading from performance checklist
+ */
+const LazyImage: React.FC<LazyImageProps> = ({
+  src,
+  alt,
+  width,
+  height,
+  className = '',
+  priority = false,
+  quality,
+  sizes,
+  placeholder,
+  blurDataURL,
+  onLoad,
+}) => {
+  // Use our intersection observer hook
+  // Images will only start loading when they're close to entering the viewport
+  // freezeOnceVisible ensures we don't stop loading if image scrolls out of view
+  const [ref, isInView] = useIntersectionObserver<HTMLDivElement>({
+    rootMargin: '200px', // Start loading when image is 200px from viewport
+    freezeOnceVisible: true, // Once we start loading, don't stop
+  });
+  
+  return (
+    <div 
+      ref={ref} 
+      className={`relative overflow-hidden ${className}`}
+      style={{ width, height }}
+    >
+      {(isInView || priority) && (
+        <Image
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          className={className}
+          priority={priority}
+          quality={quality}
+          sizes={sizes}
+          placeholder={placeholder}
+          blurDataURL={blurDataURL}
+          onLoad={onLoad}
+        />
+      )}
+      
+      {/* Show placeholder until image is in view */}
+      {!isInView && !priority && (
+        <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      )}
+    </div>
+  );
+};
+
+export default LazyImage;
+
+```
+
 ### app/components/QuizCTA.tsx
 
 ```tsx
@@ -17995,6 +18984,225 @@ export default function Login() {
 
 ```
 
+### app/hooks/useIntersectionObserver.ts
+
+```typescript
+// app/hooks/useIntersectionObserver.ts
+import { useState, useEffect, useRef } from 'react';
+
+interface IntersectionOptions extends IntersectionObserverInit {
+  freezeOnceVisible?: boolean;
+}
+
+/**
+ * A hook to detect when an element enters or leaves the viewport
+ * Implements efficient lazy loading pattern from performance checklist
+ * 
+ * @param options IntersectionObserver options and additional config
+ * @returns [ref, isIntersecting] - Attach ref to the element you want to observe
+ */
+function useIntersectionObserver<T extends Element>({
+  threshold = 0,
+  root = null, 
+  rootMargin = '0%',
+  freezeOnceVisible = false,
+}: IntersectionOptions = {}) {
+  const [entry, setEntry] = useState<IntersectionObserverEntry | null>(null);
+  const elementRef = useRef<T | null>(null);
+  const frozen = useRef<boolean>(false);
+  
+  const isIntersecting = entry?.isIntersecting;
+  
+  // Update the frozen state if needed
+  if (freezeOnceVisible && isIntersecting && !frozen.current) {
+    frozen.current = true;
+  }
+  
+  useEffect(() => {
+    const node = elementRef.current;
+    // Don't observe if element doesn't exist or if frozen and already intersecting
+    if (!node || (freezeOnceVisible && frozen.current)) return;
+    
+    // Create the observer
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setEntry(entry);
+      }, 
+      { threshold, root, rootMargin }
+    );
+    
+    // Start observing
+    observer.observe(node);
+    
+    // Clean up when component unmounts or ref changes
+    return () => {
+      observer.disconnect();
+    };
+  }, [threshold, root, rootMargin, freezeOnceVisible]);
+  
+  return [elementRef, frozen.current ? true : !!isIntersecting] as const;
+}
+
+export default useIntersectionObserver;
+
+```
+
+### app/hooks/useThrottle.ts
+
+```typescript
+// app/hooks/useThrottle.ts
+import { useRef, useEffect, useCallback } from 'react';
+
+/**
+ * A custom hook for throttling function calls
+ * Implements the throttling technique from the performance checklist
+ * 
+ * @param callback The function to throttle
+ * @param delay The minimum time between function calls in milliseconds
+ * @returns A throttled version of the callback
+ */
+function useThrottle<T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number = 200
+): (...args: Parameters<T>) => void {
+  const lastCall = useRef<number>(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastArgs = useRef<Parameters<T> | null>(null);
+
+  // Clean up any pending timeouts when the component unmounts
+  // This prevents memory leaks and unnecessary function calls
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Create the throttled function
+  return useCallback((...args: Parameters<T>) => {
+    const now = Date.now();
+    
+    // Store the latest arguments
+    lastArgs.current = args;
+    
+    // Calculate remaining time until next allowed call
+    const remaining = delay - (now - lastCall.current);
+    
+    // If we've waited long enough, call the function immediately
+    if (remaining <= 0) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      lastCall.current = now;
+      callback(...args);
+    } 
+    // Otherwise, schedule a call with the most recent arguments
+    else if (!timeoutRef.current) {
+      timeoutRef.current = setTimeout(() => {
+        lastCall.current = Date.now();
+        timeoutRef.current = null;
+        if (lastArgs.current) {
+          callback(...lastArgs.current);
+        }
+      }, remaining);
+    }
+  }, [callback, delay]);
+}
+
+export default useThrottle;
+
+```
+
+### app/hooks/useDebounce.ts
+
+```typescript
+// app/hooks/useDebounce.ts
+import { useState, useEffect } from 'react';
+
+/**
+ * A custom hook for debouncing values
+ * Implements the debouncing technique from the performance checklist
+ * 
+ * @param value The value to debounce
+ * @param delay The delay in milliseconds
+ * @returns The debounced value
+ */
+function useDebounce<T>(value: T, delay: number = 500): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  
+  useEffect(() => {
+    // Set up the timeout to update the debounced value after the specified delay
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    // Clean up the timeout if the value changes before the delay has elapsed
+    // This ensures we always use the most recent value
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+
+export default useDebounce;
+
+```
+
+### app/hooks/useMemoizedCallback.ts
+
+```typescript
+// app/hooks/useMemoizedCallback.ts
+import { useCallback, useRef, useEffect } from 'react';
+
+/**
+ * A hook that creates a memoized callback with dependencies tracking
+ * Provides deeper memoization than standard useCallback
+ * 
+ * @param callback The callback function to memoize
+ * @param deps Dependencies array for the callback
+ * @returns A memoized version of the callback that only changes when dependencies change
+ */
+function useMemoizedCallback<T extends (...args: any[]) => any>(
+  callback: T,
+  deps: React.DependencyList
+): T {
+  // Use refs to track the latest callback and dependencies
+  const callbackRef = useRef<T>(callback);
+  const depsRef = useRef<React.DependencyList>(deps);
+  
+  // Check if dependencies have changed
+  let depsChanged = deps.length !== depsRef.current.length;
+  if (!depsChanged) {
+    for (let i = 0; i < deps.length; i++) {
+      if (!Object.is(deps[i], depsRef.current[i])) {
+        depsChanged = true;
+        break;
+      }
+    }
+  }
+  
+  // Update refs if deps changed
+  useEffect(() => {
+    callbackRef.current = callback;
+    depsRef.current = deps;
+  });
+  
+  // Create a stable callback that always uses the latest function
+  return useCallback(
+    ((...args: Parameters<T>) => callbackRef.current(...args)) as T,
+    // Only change the callback identity if deps have changed
+    [depsChanged]
+  );
+}
+
+export default useMemoizedCallback;
+
+```
+
 ### app/lib/supabaseQuizService.ts
 
 ```typescript
@@ -18014,6 +19222,9 @@ import {
   DropdownSelectionQuestion,
   OrderQuestion,
   OrderItem,
+  YesNoQuestion,
+  YesNoMultiQuestion,
+  YesNoStatement,
   Quiz
 } from '../types/quiz';
 
@@ -18339,6 +19550,100 @@ export async function enrichQuestionWithDetails(
 
     } catch (error: any) {
       console.error(`Unexpected error enriching order question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'yes_no') {
+    try {
+      // Fetch the correct answer for the yes/no question
+      const { data: correctAnswerData, error: correctAnswerError } = await supabase
+        .from('yes_no_answer')
+        .select('correct_answer')
+        .eq('question_id', baseQuestion.id)
+        .single();
+
+      if (correctAnswerError) {
+        if (correctAnswerError.code === 'PGRST116') {
+          console.warn(`No correct answer found for yes_no question ${baseQuestion.id}. (PGRST116)`);
+        } else {
+          console.error(`Error fetching correct answer for yes_no question ${baseQuestion.id}:`, correctAnswerError.message);
+        }
+        return null;
+      }
+
+      if (!correctAnswerData) {
+        console.warn(`No correct answer data returned for yes_no question ${baseQuestion.id} despite no error.`);
+        return null;
+      }
+
+      const yesNoQuestion: YesNoQuestion = {
+        ...baseQuestion,
+        type: 'yes_no',
+        correctAnswer: correctAnswerData.correct_answer
+      };
+      return yesNoQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching yes_no question ${baseQuestion.id}:`, error.message || error);
+      return null;
+    }
+  } else if (baseQuestion.type === 'yesno_multi') {
+    try {
+      // Fetch statements for the multi-statement yes/no question
+      const { data: statementsData, error: statementsError } = await supabase
+        .from('yesno_multi_statements')
+        .select('statement_id, text')
+        .eq('question_id', baseQuestion.id);
+
+      if (statementsError) {
+        console.error(`Error fetching statements for yesno_multi question ${baseQuestion.id}:`, statementsError.message);
+        return null;
+      }
+
+      // Fetch correct answers for each statement
+      const { data: correctAnswersData, error: correctAnswersError } = await supabase
+        .from('yesno_multi_correct_answers')
+        .select('statement_id, correct_answer')
+        .eq('question_id', baseQuestion.id);
+
+      if (correctAnswersError) {
+        console.error(`Error fetching correct answers for yesno_multi question ${baseQuestion.id}:`, correctAnswersError.message);
+        return null;
+      }
+
+      const statements: YesNoStatement[] = (statementsData || []).map((stmt: any) => ({
+        statement_id: stmt.statement_id,
+        text: stmt.text,
+      }));
+
+      // Sort the statements by statement_id to ensure the correct answers array matches
+      statements.sort((a, b) => a.statement_id.localeCompare(b.statement_id));
+
+      // Create an array of correct answers that matches the statements array order
+      const correctAnswers: boolean[] = statements.map(stmt => {
+        const matchingAnswer = correctAnswersData?.find((ans: any) => ans.statement_id === stmt.statement_id);
+        return matchingAnswer ? matchingAnswer.correct_answer : false;
+      });
+
+      if (!statements.length) {
+        console.warn(`No statements found for yesno_multi question ${baseQuestion.id}`);
+        return null;
+      }
+
+      if (correctAnswers.length !== statements.length) {
+        console.warn(`Mismatch between statements and correct answers for yesno_multi question ${baseQuestion.id}`);
+        return null;
+      }
+
+      const yesNoMultiQuestion: YesNoMultiQuestion = {
+        ...baseQuestion,
+        type: 'yesno_multi',
+        statements,
+        correctAnswers
+      };
+      return yesNoMultiQuestion;
+
+    } catch (error: any) {
+      console.error(`Unexpected error enriching yesno_multi question ${baseQuestion.id}:`, error.message || error);
       return null;
     }
   } else {
@@ -18916,6 +20221,20 @@ export async function POST(req: NextRequest) {
 
 ```
 
+### app/quiz-test/layout.tsx
+
+```tsx
+'use client';
+
+import { QuizProvider } from '@/app/features/quiz/context/QuizContext';
+import React from 'react';
+
+export default function QuizTestLayout({ children }: { children: React.ReactNode }) {
+  return <QuizProvider>{children}</QuizProvider>;
+}
+
+```
+
 ### app/quiz-test/[quizId]/page-new.tsx
 
 ```tsx
@@ -19193,11 +20512,8 @@ interface ClientQuizPageProps {
 }
 
 export default function ClientQuizPage({ quizId, questionType }: ClientQuizPageProps) {
-  return (
-    <QuizProvider>
-      <QuizPage quizId={quizId} questionType={questionType} />
-    </QuizProvider>
-  );
+  // Don't wrap in QuizProvider here as it's already provided in the layout
+  return <QuizPage quizId={quizId} questionType={questionType} />;
 }
 
 ```
