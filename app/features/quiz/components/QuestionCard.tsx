@@ -1,6 +1,7 @@
+// app/features/quiz/components/QuestionCard.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react'; // Removed useEffect, useState
 import { AnyQuestion } from '../../../types/quiz';
 import { useQuiz } from '../context/QuizContext';
 import QuestionHeader from '../components/QuestionHeader';
@@ -14,99 +15,63 @@ interface QuestionCardProps {
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
   const { state, submitAndScoreAnswer } = useQuiz();
-  // For multi-choice questions, we need to track selections locally before submission
-  const [multiChoiceSelections, setMultiChoiceSelections] = useState<string[]>([]);
   
   const userAnswerDetails = state.userAnswers[question.id];
-  const selectedAnswerForThisQuestion = userAnswerDetails?.answer || 
-    (question.type === 'multi' ? multiChoiceSelections : undefined);
+  // selectedAnswerForThisQuestion is the answer already processed or null/undefined if not answered.
+  const selectedAnswerForThisQuestion = userAnswerDetails?.answer; 
+
   const isSubmittedForThisQuestion = userAnswerDetails !== undefined;
-  // Renamed from showCorrectAnswerStyling
   const shouldApplyFeedbackStyling = state.isQuizComplete || 
     (state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion);
     
-  // Reset selections when question changes
-  useEffect(() => {
-    setMultiChoiceSelections([]);
-  }, [question.id]);
-  
-  // Update local selections when user answer is available from context
-  useEffect(() => {
-    if (question.type === 'multi' && userAnswerDetails?.answer) {
-      setMultiChoiceSelections(userAnswerDetails.answer);
+  const handleAnswerSubmission = async (answerPayload: any) => {
+    // The answerPayload received here is already deemed "complete" by the child component's 
+    // useAutoValidation hook (for types like multi-choice, dropdown, order)
+    // or it's an immediate selection (for single_selection, yes_no).
+    
+    // A guard to prevent re-submission if the exact same answer is submitted again,
+    // or if already fully processed (isCorrect is defined).
+    // This can be refined, but the main idea is to prevent redundant processing if state hasn't meaningfully changed.
+    if (isSubmittedForThisQuestion && 
+        userAnswerDetails.isCorrect !== undefined &&
+        JSON.stringify(userAnswerDetails.answer) === JSON.stringify(answerPayload)
+    ) {
+        // Potentially, if isCorrect is undefined, it means server validation is pending.
+        // We might allow resubmission if the answer changes.
+        // For now, if it's submitted and has a correctness status, and answer is same, don't re-process.
+        // console.log("QuestionCard: Answer already submitted and scored. Payload:", answerPayload);
+        // return; // This might be too aggressive if we want to allow changing mind before next Q.
+                  // The `hasSubmittedRef` in useAutoValidation should handle most cases of duplicate calls
+                  // for the exact same answer instance.
     }
-  }, [question.type, userAnswerDetails]);
 
-  const handleLocalAnswerSelection = async (answerPayload: any) => {
-    // For all question types, submit immediately when ready
-    if (isSubmittedForThisQuestion && userAnswerDetails.isCorrect !== undefined) return;
-    
-    // For multi-choice, we need to check if we've reached the required selections
-    if (question.type === 'multi') {
-      setMultiChoiceSelections(answerPayload);
-      
-      // If we reached the exact number of correct answers needed, submit automatically
-      const correctAnswersCount = (question as any).correctAnswerOptionIds?.length || 0;
-      if (Array.isArray(answerPayload) && answerPayload.length === correctAnswersCount) {
-        await submitAndScoreAnswer(question, answerPayload);
-      }
-      return;
-    }
-    
-    // For yes_no, submit immediately when an answer is selected
-    if (question.type === 'yes_no') {
-      // The answerPayload will be true (Yes) or false (No)
-      await submitAndScoreAnswer(question, answerPayload);
-      return;
-    }
-    
-    // For yesno_multi, check if all statements are answered before submitting
-    if (question.type === 'yesno_multi') {
-      // Only submit if all statements are answered
-      const allStatements = (question as any).statements || [];
-      const allAnswered = Array.isArray(answerPayload) && 
-                         answerPayload.length === allStatements.length && 
-                         answerPayload.every(answer => answer === true || answer === false);
-                         
-      if (allAnswered) {
-        await submitAndScoreAnswer(question, answerPayload);
-      }
-      return;
-    }
-    
-    // For other question types like single selection, submit immediately
     await submitAndScoreAnswer(question, answerPayload);
   };
 
   return (
     <div className="bg-white rounded-rounded-lg-ref shadow-shadow-strong p-7 md:p-10 mb-8 relative overflow-hidden animate-card-appear">
-      {/* Card Decoration */}
       <div className="card-decoration absolute top-0 right-0 w-24 h-24 md:w-36 md:h-36 bg-primary-gradient opacity-5 rounded-bl-full z-0"></div>
 
       <div className="relative z-10">
-        {/* Question Metadata */}
         <QuestionHeader 
           points={question.points} 
           difficulty={question.difficulty} 
         />
 
-        {/* Question Content - Don't show standard question content for dropdown_selection type since it's shown in the component */}
         {question.type !== 'dropdown_selection' && (
           <QuestionContent question={question.question} />
         )}
         
-        {/* Question Type-specific Component */}
         <QuestionTypeRenderer
-          key={question.id} // Ensure remount when question changes
+          key={question.id} 
           question={question}
-          onAnswerSelect={handleLocalAnswerSelection}
+          onAnswerSelect={handleAnswerSubmission}
           selectedAnswer={selectedAnswerForThisQuestion}
           isSubmitted={isSubmittedForThisQuestion}
           shouldApplyFeedbackStyling={shouldApplyFeedbackStyling}
           isQuizReviewMode={state.isQuizComplete}
         />
 
-        {/* Explanation Box */}
         {((state.showFeedbackForCurrentQuestion && isSubmittedForThisQuestion) || state.isQuizComplete) && 
           question.explanation && (
             <FeedbackSection 
@@ -115,7 +80,6 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question }) => {
             />
         )}
         
-        {/* Feedback Message Box (Correct/Incorrect) */}
         {state.showFeedbackForCurrentQuestion && 
          isSubmittedForThisQuestion && 
          userAnswerDetails?.isCorrect !== undefined && (

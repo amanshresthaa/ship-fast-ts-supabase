@@ -1,12 +1,12 @@
+// app/features/quiz/components/question-types/MultiChoiceComponent.tsx
 'use client';
 
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { MultiChoiceQuestion, SelectionOption } from '../../../../types/quiz';
 import { MultiChoiceController } from '../../controllers/MultiChoiceController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
 
-// Icons for options
 const CorrectIcon = memo(() => (
   <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
 ));
@@ -26,58 +26,49 @@ interface MultiChoiceComponentProps {
 const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   question,
   onAnswerSelect,
-  selectedOptionIds = [],
+  selectedOptionIds,
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
-  // Create controller instance
   const controller = new MultiChoiceController(question);
+  const initialSelections = selectedOptionIds || [];
   
-  // Use auto-validation hook
-  const [currentSelections, setCurrentSelections, isValidating, allComplete] = useAutoValidation<
+  const [currentSelections, setCurrentSelectionsInternal] = useAutoValidation<
     MultiChoiceQuestion, 
     string[]
   >(
     controller,
-    selectedOptionIds,
+    initialSelections,
     onAnswerSelect,
-    true // Auto-validate when complete
+    true
   );
   
-  // Determine the correct number of answers to select
   const correctAnswersCount = controller.getRequiredSelectionCount();
   
-  // Handle option selection/deselection
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
       let newSelectedOptions: string[];
       
-      // If option is already selected, allow deselecting it
       if (currentSelections.includes(optionId)) {
         newSelectedOptions = currentSelections.filter(id => id !== optionId);
       } 
-      // If we haven't reached the limit yet, allow selecting the option
       else if (currentSelections.length < correctAnswersCount) {
         newSelectedOptions = [...currentSelections, optionId];
       }
-      // If we've reached the limit, don't allow more selections
       else {
         return;
       }
       
-      // Update selections through our hook
-      setCurrentSelections(newSelectedOptions);
+      setCurrentSelectionsInternal(newSelectedOptions);
+      
+      // If all required selections are made, directly trigger the answer submission
+      // This is consistent with SingleSelectionComponent and YesNoComponent
+      if (newSelectedOptions.length === correctAnswersCount) {
+        onAnswerSelect(newSelectedOptions);
+      }
     }
   };
   
-  // Sync external selectedOptionIds with our internal state
-  useEffect(() => {
-    if (selectedOptionIds && 
-        JSON.stringify(selectedOptionIds) !== JSON.stringify(currentSelections)) {
-      setCurrentSelections(selectedOptionIds);
-    }
-  }, [selectedOptionIds]);
-
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       <p className="text-sm text-gray-500 mb-2 font-medium">
@@ -89,12 +80,10 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
         const isCorrect = controller.isOptionCorrect(option.option_id);
         const optionLetter = String.fromCharCode(65 + index);
         
-        // Determine option styles
         let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
         let stateStyle = "border-custom-gray-3"; 
         let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
         
-        // Apply feedback styling if necessary
         if (isSubmitted || showCorrectAnswer) {
           if (isCorrect) {
             stateStyle = "border-custom-success bg-green-500/[.05]";
@@ -120,7 +109,6 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
             whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
             layout
           >
-            {/* Accent border */}
             <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${
               isSelected ? 'bg-custom-primary' : 
               isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : 
@@ -134,14 +122,12 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
                 {option.text}
               </div>
               
-              {/* Checkbox indicator */}
               <div className={`w-6 h-6 border-2 rounded flex items-center justify-center mr-2 ${
                 isSelected ? 'bg-custom-primary border-custom-primary' : 'border-gray-300'
               }`}>
                 {isSelected && <span className="text-white">✓</span>}
               </div>
               
-              {/* Show feedback icons when appropriate */}
               {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
               {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
             </div>
@@ -152,5 +138,4 @@ const MultiChoiceComponent: React.FC<MultiChoiceComponentProps> = ({
   );
 };
 
-// Memoize to prevent unnecessary re-renders
 export default memo(MultiChoiceComponent);

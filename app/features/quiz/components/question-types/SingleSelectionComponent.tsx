@@ -1,12 +1,12 @@
+// app/features/quiz/components/question-types/SingleSelectionComponent.tsx
 'use client';
 
-import React, { memo, useEffect } from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { SingleSelectionQuestion, SelectionOption } from '../../../../types/quiz';
 import { SingleSelectionController } from '../../controllers/SingleSelectionController';
 import { useAutoValidation } from '../../hooks/useAutoValidation';
 
-// Icons for options
 const CorrectIcon = memo(() => (
   <span className="option-icon inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-success-gradient shadow-md">✓</span>
 ));
@@ -30,34 +30,26 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   isSubmitted = false,
   showCorrectAnswer = false,
 }) => {
-  // Create controller instance
   const controller = new SingleSelectionController(question);
   
-  // Use auto-validation hook
-  const [currentSelection, setCurrentSelection, isValidating, allComplete] = useAutoValidation<
-    SingleSelectionQuestion, 
+  const [currentSelection, setCurrentSelectionInternal] = useAutoValidation<
+    SingleSelectionQuestion,
     string | null
   >(
     controller,
-    selectedOptionId || null,
-    onAnswerSelect,
-    true // Auto-validate when complete
+    selectedOptionId || null, 
+    onAnswerSelect,           
+    true                      
   );
   
-  // Handle manual selection change
   const handleOptionClick = (optionId: string) => {
     if (!isSubmitted) {
-      setCurrentSelection(optionId);
+      setCurrentSelectionInternal(optionId);
+      // Directly trigger the feedback and submission process
+      onAnswerSelect(optionId);
     }
   };
   
-  // Sync external selectedOptionId with our internal state
-  useEffect(() => {
-    if (selectedOptionId !== currentSelection && selectedOptionId !== undefined) {
-      setCurrentSelection(selectedOptionId);
-    }
-  }, [selectedOptionId]);
-
   return (
     <div className="options-container grid grid-cols-1 gap-4 mb-8">
       {question.options.map((option: SelectionOption, index: number) => {
@@ -65,12 +57,10 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
         const isCorrect = question.correctAnswerOptionId === option.option_id;
         const optionLetter = String.fromCharCode(65 + index);
         
-        // Determine option styles
         let baseStyle = "relative text-left p-5 border-2 rounded-rounded-md-ref bg-white transition-all duration-200 ease-in-out shadow-shadow-1 overflow-hidden";
         let stateStyle = "border-custom-gray-3"; 
         let hoverStyle = isSubmitted ? "cursor-default" : "cursor-pointer hover:-translate-y-1 hover:shadow-shadow-2 hover:border-custom-primary";
         
-        // Apply feedback styling if necessary
         if (isSubmitted || showCorrectAnswer) {
           if (isCorrect) {
             stateStyle = "border-custom-success bg-green-500/[.05]";
@@ -96,7 +86,6 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
             whileTap={{ scale: isSubmitted ? 1 : 0.98, transition: { duration: 0.1 } }} 
             layout
           >
-            {/* Accent border */}
             <span className={`absolute top-0 left-0 w-1 h-full transition-all duration-200 ease-in-out ${
               isSelected ? 'bg-custom-primary' : 
               isCorrect && (isSubmitted || showCorrectAnswer) ? 'bg-custom-success' : 
@@ -110,7 +99,6 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
                 {option.text}
               </div>
               
-              {/* Show feedback icons when appropriate */}
               {(isSubmitted || showCorrectAnswer) && isCorrect && <CorrectIcon />}
               {(isSubmitted || showCorrectAnswer) && isSelected && !isCorrect && <IncorrectIcon />}
             </div>
@@ -121,5 +109,4 @@ const SingleSelectionComponent: React.FC<SingleSelectionComponentProps> = ({
   );
 };
 
-// Memoize to prevent unnecessary re-renders
 export default memo(SingleSelectionComponent);
