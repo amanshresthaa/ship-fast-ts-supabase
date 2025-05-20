@@ -78,58 +78,58 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             {/* Filter by question type */}
             <div className="mb-6">
               <div className="flex flex-wrap justify-center gap-2 mb-2">
-                <Link 
-                  href={`/quiz-test/${quizId}`}
+              <Link 
+                  href={`/quiz/${quizId}`} 
                   className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   All Questions
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/single_selection`}
+                  href={`/quiz/${quizId}/type/single_selection`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Single Selection
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/multi`}
+                  href={`/quiz/${quizId}/type/multi`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Multiple Selection
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/drag_and_drop`}
+                  href={`/quiz/${quizId}/type/drag_and_drop`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Drag and Drop
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/dropdown_selection`}
+                  href={`/quiz/${quizId}/type/dropdown_selection`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Dropdown
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/order`}
+                  href={`/quiz/${quizId}/type/order`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Order
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/yes_no`}
+                  href={`/quiz/${quizId}/type/yes_no`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'yes_no' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Yes/No
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/yesno_multi`}
+                  href={`/quiz/${quizId}/type/yesno_multi`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'yesno_multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Yes/No Multi
                 </Link>
               </div>
               <div className="mt-2">
-                <Link 
-                  href={`/quiz-test/${quizId}`}
+              <Link 
+                  href={`/quiz/${quizId}`}
                   className="text-custom-primary text-sm hover:underline flex items-center justify-center"
                 >
                   View all question types

@@ -74,7 +74,7 @@ const QuizCompletionSummary: React.FC<QuizCompletionSummaryProps> = ({ quiz }) =
           </button>
           
           <button 
-            onClick={() => window.location.href = '/quiz-test'} 
+            onClick={() => window.location.href = '/quizzes'} 
             className="btn-primary-custom px-8 py-3 rounded-full"
           >
             Browse All Quizzes

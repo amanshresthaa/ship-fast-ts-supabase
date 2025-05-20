@@ -13,13 +13,13 @@ const QuizCTA = () => {
         </p>
         <div className="flex flex-col md:flex-row justify-center gap-4">
           <Link
-            href="/quiz-test/azure-a102" // Assuming 'azure-a102' is a valid quiz ID
+            href="/quiz/azure-a102" // Updated to new canonical quiz route
             className="inline-block bg-white hover:bg-gray-100 text-purple-700 font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
             Take the Challenge!
           </Link>
           <Link
-            href="/quiz-type-filters"
+            href="/quizzes"
             className="inline-block bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
             Filtered Quizzes
