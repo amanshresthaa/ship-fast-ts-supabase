@@ -18,6 +18,10 @@ const links: {
     label: "Pricing",
   },
   {
+    href: "/quizzes",
+    label: "Quizzes",
+  },
+  {
     href: "/#testimonials",
     label: "Reviews",
   },

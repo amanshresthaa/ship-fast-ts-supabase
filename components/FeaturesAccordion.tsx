@@ -23,35 +23,19 @@ interface Feature {
 // - alt: The alt text of the image (if type is 'image')
 const features = [
   {
-    title: "Emails",
+    title: "Adaptive Learning",
     description:
-      "Send transactional emails, setup your DNS to avoid spam folder (DKIM, DMARC, SPF in subdomain), and listen to webhook to receive & forward emails",
-    type: "video",
-    path: "https://d3m8mk7e1mf7xn.cloudfront.net/app/newsletter.webm",
-    format: "video/webm",
+      "Quiz difficulty adjusts in real time based on your performance, ensuring you stay challenged but not overwhelmed.",
     svg: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25"
-        />
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
     ),
   },
   {
-    title: "Payments",
+    title: "Instant Feedback",
     description:
-      "Create checkout sessions, handle webhooks to update user's account (subscriptions, one-time payments...) and tips to setup your account & reduce chargebacks",
-    type: "image",
-    path: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3540&q=80",
-    alt: "A computer",
+      "Get immediate, detailed explanations after each question to reinforce learning and correct misconceptions.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -70,9 +54,9 @@ const features = [
     ),
   },
   {
-    title: "Authentication",
+    title: "Progress Tracking",
     description:
-      "Magic links setup, login with Google walkthrough, save user in MongoDB/Supabase, private/protected pages & API calls",
+      "Monitor your strengths, weaknesses, and improvements over time with visual performance analytics.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -91,9 +75,9 @@ const features = [
     ),
   },
   {
-    title: "Style",
+    title: "Diverse Question Types",
     description:
-      "Components, animations & sections (like this features section), 20+ themes with daisyUI, automatic dark mode",
+      "Practice with multiple formats—single choice, multiple choice, drag & drop, and more—for a well-rounded learning experience.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"

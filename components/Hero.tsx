@@ -22,14 +22,15 @@ const Hero = () => {
         </a>
 
         <h1 className="font-extrabold text-4xl lg:text-6xl tracking-tight md:-mb-4">
-          Ship your startup in days, not weeks
+          Master Any Topic with Instant, Interactive Quizzes
         </h1>
         <p className="text-lg opacity-80 leading-relaxed">
-          The NextJS boilerplate with all you need to build your SaaS, AI tool,
-          or any other web app. From idea to production in 5 minutes.
+          Boost your learning retention and confidence with our adaptive quiz platform.
+          Choose from multiple question types, track your progress, and get instant feedback
+          to level up your skills.
         </p>
         <button className="btn btn-primary btn-wide">
-          Get {config.appName}
+          Start Your First Quiz
         </button>
 
         <TestimonialsAvatars priority={true} />

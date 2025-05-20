@@ -22,7 +22,7 @@ const QuizCTA = () => {
             href="/quizzes"
             className="inline-block bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
-            Filtered Quizzes
+            Browse Quizzes
           </Link>
         </div>
       </div>

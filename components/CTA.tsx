@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import config from "@/config";
 
 const CTA = () => {
@@ -14,16 +15,18 @@ const CTA = () => {
       <div className="relative hero-content text-center text-neutral-content p-8">
         <div className="flex flex-col items-center max-w-xl p-8 md:p-0">
           <h2 className="font-bold text-3xl md:text-5xl tracking-tight mb-8 md:mb-12">
-            Boost your app, launch, earn
+            Unlock Your Knowledge with Engaging Quizzes
           </h2>
           <p className="text-lg opacity-80 mb-12 md:mb-16">
-            Don&apos;t waste time integrating APIs or designing a pricing
-            section...
+            Dive into interactive quizzes tailored to boost retention,
+            sharpen your skills, and track your progress in real time.
           </p>
 
-          <button className="btn btn-primary btn-wide">
-            Get {config.appName}
-          </button>
+          <Link href="/quizzes">
+            <button className="btn btn-primary btn-wide">
+              Browse Quizzes
+            </button>
+          </Link>
         </div>
       </div>
     </section>
