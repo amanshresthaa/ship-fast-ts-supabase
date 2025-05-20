@@ -1,3 +1,4 @@
+```javascript
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 
@@ -16,10 +17,12 @@ export const config = {
     // Only match routes that need auth session
     '/dashboard/:path*',
     '/api/protected/:path*',
-    // Add other paths that require authentication
-    '/quiz-test/:path*',
+    // Updated path for protected quiz tests
+    '/dev/quiz-test/:path*', 
     
-    // Exclude cached and optimized routes for better performance
-    '/((?!quiz-cached|quiz-optimized|api/quiz/cached|api/admin/cache|_next/static|_next/image|favicon.ico).*)'
+    // Exclude public routes (like /quizzes), static assets, and specific API paths from session refresh.
+    // Add other public top-level routes to this list as needed.
+    '/((?!quizzes|api/quiz/cached|api/admin/cache|_next/static|_next/image|favicon.ico).*)'
   ],
 }
+```
