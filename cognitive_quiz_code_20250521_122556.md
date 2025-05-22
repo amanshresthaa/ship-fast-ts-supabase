@@ -1,6 +1,6 @@
 # Cognitive Quiz Codebase
 
-Generated on: 2025-05-20 22:19:49
+Generated on: 2025-05-21 12:25:57
 
 ## Project Structure
 
@@ -67,6 +67,8 @@ app/data/quizzes/azure-a102/clean_yes_no_questions.json
 app/data/quizzes/azure-a102/clean_yesno_multi_questions.json
 app/data/quizzes/azure-a102/quiz_metadata.json
 app/debug-components/page.tsx
+app/demos/question-types/[type]/page.tsx
+app/demos/question-types/page.tsx
 app/error.tsx
 app/features/quiz/components/DynamicModalWrapper.tsx
 app/features/quiz/components/FeedbackSection.tsx
@@ -133,6 +135,7 @@ app/hooks/useRenderMetrics.tsx
 app/hooks/useThrottle.ts
 app/hooks/useVirtualizedList.tsx
 app/layout.tsx
+app/learn-fast/page.tsx
 app/lib/redisCache.ts
 app/lib/supabaseQuizService.ts
 app/lib/supabaseQuizServiceOptimized.ts
@@ -159,6 +162,11 @@ app/quiz-test/[quizId]/type-client-page.tsx
 app/quiz-test/layout.tsx
 app/quiz-type-filters/layout.tsx
 app/quiz-type-filters/page.tsx
+app/quiz/[quizId]/client-page.tsx
+app/quiz/[quizId]/page.tsx
+app/quiz/[quizId]/results/page.tsx
+app/quiz/[quizId]/type/[questionType]/page.tsx
+app/quizzes/page.tsx
 app/signin/layout.tsx
 app/signin/page.tsx
 app/test-order-questions/page.tsx
@@ -16076,7 +16084,7 @@ const QuizCompletionSummary: React.FC<QuizCompletionSummaryProps> = ({ quiz }) =
           </button>
           
           <button 
-            onClick={() => window.location.href = '/quiz-test'} 
+            onClick={() => window.location.href = '/quizzes'} 
             className="btn-primary-custom px-8 py-3 rounded-full"
           >
             Browse All Quizzes
@@ -19700,58 +19708,58 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             {/* Filter by question type */}
             <div className="mb-6">
               <div className="flex flex-wrap justify-center gap-2 mb-2">
-                <Link 
-                  href={`/quiz-test/${quizId}`}
+              <Link 
+                  href={`/quiz/${quizId}`} 
                   className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   All Questions
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/single_selection`}
+                  href={`/quiz/${quizId}/type/single_selection`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Single Selection
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/multi`}
+                  href={`/quiz/${quizId}/type/multi`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Multiple Selection
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/drag_and_drop`}
+                  href={`/quiz/${quizId}/type/drag_and_drop`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'drag_and_drop' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Drag and Drop
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/dropdown_selection`}
+                  href={`/quiz/${quizId}/type/dropdown_selection`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'dropdown_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Dropdown
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/order`}
+                  href={`/quiz/${quizId}/type/order`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'order' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Order
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/yes_no`}
+                  href={`/quiz/${quizId}/type/yes_no`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'yes_no' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Yes/No
                 </Link>
                 <Link 
-                  href={`/quiz-test/${quizId}/yesno_multi`}
+                  href={`/quiz/${quizId}/type/yesno_multi`}
                   className={`px-3 py-1 rounded-full text-sm ${questionType === 'yesno_multi' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Yes/No Multi
                 </Link>
               </div>
               <div className="mt-2">
-                <Link 
-                  href={`/quiz-test/${quizId}`}
+              <Link 
+                  href={`/quiz/${quizId}`}
                   className="text-custom-primary text-sm hover:underline flex items-center justify-center"
                 >
                   View all question types
@@ -19917,6 +19925,80 @@ export class QuizService {
     return await response.json();
   }
 }
+
+```
+
+### app/quiz/[quizId]/page.tsx
+
+```tsx
+import React from 'react';
+import ClientQuizPage from './client-page';
+
+// Server component for canonical quiz route
+export default async function QuizPage({ params }: { params: { quizId: string } }) {
+  const { quizId } = params;
+  return <ClientQuizPage quizId={quizId} />;
+}
+
+```
+
+### app/quiz/[quizId]/client-page.tsx
+
+```tsx
+'use client';
+
+import React from 'react';
+import { QuizProvider } from '../../features/quiz/context/QuizContext';
+import QuizPage from '../../features/quiz/pages/QuizPage';
+
+interface ClientQuizPageProps {
+  quizId: string;
+  questionType?: string;
+}
+
+export default function ClientQuizPage({ quizId, questionType }: ClientQuizPageProps) {
+  return <QuizProvider quizId={quizId} questionType={questionType}>
+    <QuizPage quizId={quizId} questionType={questionType} />
+  </QuizProvider>;
+}
+
+```
+
+### app/quiz/[quizId]/results/page.tsx
+
+```tsx
+import React from 'react';
+
+// Placeholder for quiz results page
+export default function QuizResultsPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-custom-light-bg">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-custom-dark-blue mb-4">Quiz Results</h1>
+        <p className="text-lg text-gray-700">Detailed results will be displayed here.</p>
+      </div>
+    </div>
+  );
+}
+
+```
+
+### app/quiz/[quizId]/type/[questionType]/page.tsx
+
+```tsx
+import React from 'react';
+import ClientQuizPage from '../../client-page';
+
+export default async function QuizByTypePage({ params }: { params: { quizId: string; questionType: string } }) {
+  const { quizId, questionType } = params;
+  return <ClientQuizPage quizId={quizId} questionType={questionType} />;
+}
+
+```
+
+### app/learn-fast/page.tsx
+
+```tsx
 
 ```
 
@@ -23509,16 +23591,16 @@ const QuizCTA = () => {
         </p>
         <div className="flex flex-col md:flex-row justify-center gap-4">
           <Link
-            href="/quiz-test/azure-a102" // Assuming 'azure-a102' is a valid quiz ID
+            href="/quiz/azure-a102" // Updated to new canonical quiz route
             className="inline-block bg-white hover:bg-gray-100 text-purple-700 font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
             Take the Challenge!
           </Link>
           <Link
-            href="/quiz-type-filters"
+            href="/quizzes"
             className="inline-block bg-blue-800 hover:bg-blue-900 text-white font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
-            Filtered Quizzes
+            Browse Quizzes
           </Link>
         </div>
       </div>
@@ -34601,6 +34683,232 @@ export default DebugComponentsPage;
 
 ```
 
+### app/quizzes/page.tsx
+
+```tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { availableQuestionTypes } from '../features/quiz/pages/QuizPage';
+
+// Sample quizzes - replace with API fetch as needed
+const SAMPLE_QUIZZES = [
+  { id: 'azure-a102', title: 'Microsoft Azure A102 Certification' },
+  { id: 'aws-fundamentals', title: 'AWS Cloud Fundamentals' },
+  { id: 'react-basics', title: 'React Basics Quiz' },
+];
+
+export default function QuizzesPage() {
+  const [quizzes, setQuizzes] = useState(SAMPLE_QUIZZES);
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-custom-light-bg flex items-center justify-center">
+        <p className="text-xl text-custom-dark-blue">Loading quizzes...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-custom-light-bg py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-8 text-custom-dark-blue">
+          Quizzes with Question Type Filtering
+        </h1>
+        {quizzes.map((quiz) => (
+          <div key={quiz.id} className="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-semibold mb-4 text-custom-primary">{quiz.title}</h2>
+            <div className="mb-6">
+              <h3 className="text-lg font-medium mb-2 text-gray-700">Take quiz with all question types:</h3>
+              <Link
+                href={`/quiz/${quiz.id}`}
+                className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mr-4"
+              >
+                All Questions
+              </Link>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2 text-gray-700">Filter by question type:</h3>
+              <div className="flex flex-wrap gap-2">
+                {availableQuestionTypes.map((type) => (
+                  <Link
+                    key={type.type}
+                    href={`/quiz/${quiz.id}/type/${type.type}`}
+                    className="px-3 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                  >
+                    {type.name} Questions
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+```
+
+### app/demos/question-types/page.tsx
+
+```tsx
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useQuiz } from '../../features/quiz/context/QuizContext';
+import { Quiz, QuestionType } from '../../types/quiz';
+
+// Mock quiz metadata
+const mockQuiz: Quiz = {
+  id: 'question-types-demo',
+  title: 'Question Types Demo',
+  description: 'Demonstration of all available question types',
+  difficulty: 'medium',
+  quiz_topic: 'question-types-demo',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  questions: [],
+};
+
+// Sample questions for each type
+const questionTypeSamples = [
+  // ... same as original samples
+];
+
+const QuestionTypesDemoPage: React.FC = () => {
+  const [selectedType, setSelectedType] = useState<QuestionType | null>(null);
+  
+  const availableTypes: Array<{
+    type: QuestionType;
+    name: string;
+    description: string;
+    available: boolean;
+  }> = [
+    {
+      type: 'single_selection',
+      name: 'Single Selection',
+      description: 'User selects one correct answer from multiple choices.',
+      available: true
+    },
+    {
+      type: 'multi',
+      name: 'Multiple Selection',
+      description: 'User selects multiple correct answers from multiple choices.',
+      available: true
+    },
+    {
+      type: 'drag_and_drop',
+      name: 'Drag and Drop',
+      description: 'User matches items by dragging them to their corresponding targets.',
+      available: false
+    },
+    {
+      type: 'dropdown_selection',
+      name: 'Dropdown Selection',
+      description: 'User selects answers from dropdown menus within text.',
+      available: true
+    },
+    {
+      type: 'order',
+      name: 'Ordering',
+      description: 'User arranges items in the correct sequence.',
+      available: true
+    },
+    {
+      type: 'yes_no',
+      name: 'Yes/No',
+      description: 'User answers a question with yes or no.',
+      available: true
+    },
+    {
+      type: 'yesno_multi',
+      name: 'Multiple Yes/No',
+      description: 'User answers multiple statements with yes or no.',
+      available: true
+    }
+  ];
+  
+  return (
+    <div className="min-h-screen bg-custom-light-bg py-12 px-4">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-12 text-custom-dark-blue">
+          Available Question Types
+        </h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {availableTypes.map((typeInfo) => (
+            <div 
+              key={typeInfo.type}
+              className={`bg-white p-6 rounded-lg shadow-lg transition-all duration-300 
+                ${typeInfo.available 
+                  ? 'cursor-pointer hover:shadow-xl transform hover:-translate-y-1' 
+                  : 'opacity-60 cursor-not-allowed'
+                }`}
+              onClick={() => typeInfo.available && setSelectedType(typeInfo.type)}
+            >
+              <h2 className="text-xl font-bold mb-2 text-custom-primary">{typeInfo.name}</h2>
+              <p className="text-gray-600 mb-4">{typeInfo.description}</p>
+              <div className={`px-4 py-2 rounded-full text-sm font-medium text-center ${
+                typeInfo.available 
+                ? 'bg-green-100 text-green-800' 
+                : 'bg-gray-100 text-gray-600'
+              }`}>
+                {typeInfo.available ? 'Available' : 'Coming Soon'}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {selectedType && (
+          <div className="mt-12 bg-white p-8 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-6 text-center text-custom-dark-blue">
+              {availableTypes.find(t => t.type === selectedType)?.name} Example
+            </h2>
+            
+            <div className="mb-8">
+              <p className="text-lg font-medium text-center text-custom-primary">
+                Click the button below to see a demo of this question type
+              </p>
+            </div>
+            
+            <div className="flex justify-center">
+              <Link
+                href={`/demos/question-types/${selectedType}`}
+                className="bg-custom-primary hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg text-center"
+              >
+                See Interactive Demo
+              </Link>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default QuestionTypesDemoPage;
+
+```
+
+### app/demos/question-types/[type]/page.tsx
+
+```tsx
+'use client';
+
+import React from 'react';
+import QuestionTypeDemo from '../../../question-types-demo/type-client-page';
+
+export default function DemoQuestionTypePage({ params }: { params: { type: string } }) {
+  return <QuestionTypeDemo params={params} />;
+}
+
+```
+
 ### libs/gpt.ts
 
 ```typescript
@@ -35405,14 +35713,15 @@ const Hero = () => {
         </a>
 
         <h1 className="font-extrabold text-4xl lg:text-6xl tracking-tight md:-mb-4">
-          Ship your startup in days, not weeks
+          Master Any Topic with Instant, Interactive Quizzes
         </h1>
         <p className="text-lg opacity-80 leading-relaxed">
-          The NextJS boilerplate with all you need to build your SaaS, AI tool,
-          or any other web app. From idea to production in 5 minutes.
+          Boost your learning retention and confidence with our adaptive quiz platform.
+          Choose from multiple question types, track your progress, and get instant feedback
+          to level up your skills.
         </p>
         <button className="btn btn-primary btn-wide">
-          Get {config.appName}
+          Start Your First Quiz
         </button>
 
         <TestimonialsAvatars priority={true} />
@@ -35525,7 +35834,7 @@ const Pricing = () => {
         <div className="flex flex-col text-center w-full mb-20">
           <p className="font-medium text-primary mb-8">Pricing</p>
           <h2 className="font-bold text-3xl lg:text-5xl tracking-tight">
-            Save hours of repetitive code and ship faster!
+            Flexible Plans to Fit Every Learner
           </h2>
         </div>
 
@@ -36742,35 +37051,19 @@ interface Feature {
 // - alt: The alt text of the image (if type is 'image')
 const features = [
   {
-    title: "Emails",
+    title: "Adaptive Learning",
     description:
-      "Send transactional emails, setup your DNS to avoid spam folder (DKIM, DMARC, SPF in subdomain), and listen to webhook to receive & forward emails",
-    type: "video",
-    path: "https://d3m8mk7e1mf7xn.cloudfront.net/app/newsletter.webm",
-    format: "video/webm",
+      "Quiz difficulty adjusts in real time based on your performance, ensuring you stay challenged but not overwhelmed.",
     svg: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          d="M16.5 12a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zm0 0c0 1.657 1.007 3 2.25 3S21 13.657 21 12a9 9 0 10-2.636 6.364M16.5 12V8.25"
-        />
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
     ),
   },
   {
-    title: "Payments",
+    title: "Instant Feedback",
     description:
-      "Create checkout sessions, handle webhooks to update user's account (subscriptions, one-time payments...) and tips to setup your account & reduce chargebacks",
-    type: "image",
-    path: "https://images.unsplash.com/photo-1571171637578-41bc2dd41cd2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3540&q=80",
-    alt: "A computer",
+      "Get immediate, detailed explanations after each question to reinforce learning and correct misconceptions.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -36789,9 +37082,9 @@ const features = [
     ),
   },
   {
-    title: "Authentication",
+    title: "Progress Tracking",
     description:
-      "Magic links setup, login with Google walkthrough, save user in MongoDB/Supabase, private/protected pages & API calls",
+      "Monitor your strengths, weaknesses, and improvements over time with visual performance analytics.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -36810,9 +37103,9 @@ const features = [
     ),
   },
   {
-    title: "Style",
+    title: "Diverse Question Types",
     description:
-      "Components, animations & sections (like this features section), 20+ themes with daisyUI, automatic dark mode",
+      "Practice with multiple formats—single choice, multiple choice, drag & drop, and more—for a well-rounded learning experience.",
     svg: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -37747,6 +38040,7 @@ export default Testimonials11;
 
 ```tsx
 import Image from "next/image";
+import Link from "next/link";
 import config from "@/config";
 
 const CTA = () => {
@@ -37762,16 +38056,18 @@ const CTA = () => {
       <div className="relative hero-content text-center text-neutral-content p-8">
         <div className="flex flex-col items-center max-w-xl p-8 md:p-0">
           <h2 className="font-bold text-3xl md:text-5xl tracking-tight mb-8 md:mb-12">
-            Boost your app, launch, earn
+            Unlock Your Knowledge with Engaging Quizzes
           </h2>
           <p className="text-lg opacity-80 mb-12 md:mb-16">
-            Don&apos;t waste time integrating APIs or designing a pricing
-            section...
+            Dive into interactive quizzes tailored to boost retention,
+            sharpen your skills, and track your progress in real time.
           </p>
 
-          <button className="btn btn-primary btn-wide">
-            Get {config.appName}
-          </button>
+          <Link href="/quizzes">
+            <button className="btn btn-primary btn-wide">
+              Browse Quizzes
+            </button>
+          </Link>
         </div>
       </div>
     </section>
@@ -37803,6 +38099,10 @@ const links: {
   {
     href: "/#pricing",
     label: "Pricing",
+  },
+  {
+    href: "/quizzes",
+    label: "Quizzes",
   },
   {
     href: "/#testimonials",
@@ -38319,24 +38619,24 @@ const Problem = () => {
   return (
     <section className="bg-neutral text-neutral-content">
       <div className="max-w-7xl mx-auto px-8 py-16 md:py-32 text-center">
-        <h2 className="max-w-3xl mx-auto font-extrabold text-4xl md:text-5xl tracking-tight mb-6 md:mb-8">
-          80% of startups fail because founders never launch
+      <h2 className="max-w-3xl mx-auto font-extrabold text-4xl md:text-5xl tracking-tight mb-6 md:mb-8">
+          Over 70% of Learners Forget Key Information Within 24 Hours
         </h2>
         <p className="max-w-xl mx-auto text-lg opacity-90 leading-relaxed mb-12 md:mb-20">
-          Emails, DNS records, user authentication... There&apos;s so much going
-          on.
+          Studying without active recall leads to poor retention, lack of confidence,
+          and stalled progress in mastering new skills.
         </p>
 
         <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-6">
-          <Step emoji="🧑‍💻" text="8 hrs to add Stripe" />
+          <Step emoji="�" text="Passively Memorize Facts" />
 
           <Arrow extraStyle="max-md:-scale-x-100 md:-rotate-90" />
 
-          <Step emoji="😮‍💨" text="Struggle to find time" />
+          <Step emoji="❓" text="Struggle to Recall" />
 
           <Arrow extraStyle="md:-scale-x-100 md:-rotate-90" />
 
-          <Step emoji="😔" text="Quit project" />
+          <Step emoji="�" text="Lose Confidence & Motivation" />
         </div>
       </div>
     </section>

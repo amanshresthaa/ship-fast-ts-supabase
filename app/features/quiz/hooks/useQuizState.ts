@@ -22,6 +22,10 @@ export interface QuizState {
   error: string | null;
   isQuizComplete: boolean;
   showFeedbackForCurrentQuestion: boolean;
+  // Added states for DB progress tracking
+  isSavingProgress: boolean;
+  isLoadingProgress: boolean;
+  progressError: string | null;
 }
 
 // Action Types
@@ -49,7 +53,19 @@ export type QuizAction =
   | { type: 'PREVIOUS_QUESTION' }
   | { type: 'COMPLETE_QUIZ' }
   | { type: 'RESET_QUIZ' }
-  | { type: 'SHOW_FEEDBACK'; payload: { questionId: string } };
+  | { type: 'SHOW_FEEDBACK'; payload: { questionId: string } }
+  // Added action types for DB progress
+  | { type: 'LOAD_DB_PROGRESS_START' }
+  | { type: 'LOAD_DB_PROGRESS_SUCCESS'; payload: { currentQuestionIndex: number; userAnswers: UserAnswersState } }
+  | { type: 'LOAD_DB_PROGRESS_FAILURE'; payload: string }
+  | { type: 'SAVE_DB_PROGRESS_START' }
+  | { type: 'SAVE_DB_PROGRESS_SUCCESS' }
+  | { type: 'SAVE_DB_PROGRESS_FAILURE'; payload: string }
+  | { type: 'DELETE_DB_PROGRESS_START' }
+  | { type: 'DELETE_DB_PROGRESS_SUCCESS' }
+  | { type: 'DELETE_DB_PROGRESS_FAILURE'; payload: string }
+  // New action type for restoring saved progress
+  | { type: 'RESTORE_QUIZ_PROGRESS'; payload: { currentQuestionIndex: number; userAnswers: UserAnswersState } };
 
 // Initial State
 const initialState: QuizState = {
@@ -61,6 +77,9 @@ const initialState: QuizState = {
   error: null,
   isQuizComplete: false,
   showFeedbackForCurrentQuestion: false,
+  isSavingProgress: false,
+  isLoadingProgress: false,
+  progressError: null,
 };
 
 // Quiz Reducer
@@ -222,7 +241,47 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
 
     case 'RESET_QUIZ':
       return initialState;
+
+    case 'DELETE_DB_PROGRESS_FAILURE':
+      return { ...state, isSavingProgress: false, progressError: action.payload };
+
+    case 'LOAD_DB_PROGRESS_START':
+      return { ...state, isLoadingProgress: true, progressError: null };
       
+    case 'LOAD_DB_PROGRESS_SUCCESS':
+      return {
+        ...state,
+        isLoadingProgress: false,
+        currentQuestionIndex: action.payload.currentQuestionIndex,
+        userAnswers: action.payload.userAnswers,
+        progressError: null,
+      };
+      
+    case 'LOAD_DB_PROGRESS_FAILURE':
+      return { ...state, isLoadingProgress: false, progressError: action.payload };
+
+    case 'SAVE_DB_PROGRESS_START':
+      return { ...state, isSavingProgress: true, progressError: null };
+      
+    case 'SAVE_DB_PROGRESS_SUCCESS':
+      return { ...state, isSavingProgress: false, progressError: null };
+      
+    case 'SAVE_DB_PROGRESS_FAILURE':
+      return { ...state, isSavingProgress: false, progressError: action.payload };
+
+    case 'DELETE_DB_PROGRESS_START':
+      return { ...state, isSavingProgress: true, progressError: null };
+      
+    case 'DELETE_DB_PROGRESS_SUCCESS':
+      return { ...state, isSavingProgress: false, progressError: null };
+
+    case 'RESTORE_QUIZ_PROGRESS':
+      return {
+        ...state,
+        currentQuestionIndex: action.payload.currentQuestionIndex,
+        userAnswers: action.payload.userAnswers,
+      };
+
     default:
       return state;
   }
