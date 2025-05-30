@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
-import { fetchQuizById } from '../../../lib/supabaseQuizServiceRedis';
-import OptimizedQuizRenderer from '../../../components/OptimizedQuizRenderer';
+import { fetchQuizById } from '../../lib/supabaseQuizServiceRedis';
+import OptimizedQuizRenderer from '../../components/OptimizedQuizRenderer';
 import Link from 'next/link';
 
 // Enable revalidation for this page to benefit from the Next.js cache

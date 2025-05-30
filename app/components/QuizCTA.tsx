@@ -9,7 +9,8 @@ const QuizCTA = () => {
         </h2>
         <p className="mb-8 text-lg md:text-xl opacity-90 max-w-2xl mx-auto">
           Our brand new interactive quizzes are here! Start with our engaging Single Selection questions
-          and prove your expertise. More question types are on the way. Dare to see your score?
+          and prove your expertise. Try our Smart Review feature for spaced repetition learning that adapts to your progress.
+          More question types are on the way. Dare to see your score?
         </p>
         <div className="flex flex-col md:flex-row justify-center gap-4">
           <Link
@@ -17,6 +18,12 @@ const QuizCTA = () => {
             className="inline-block bg-white hover:bg-gray-100 text-purple-700 font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
           >
             Take the Challenge!
+          </Link>
+          <Link
+            href="/spaced-repetition-quiz"
+            className="inline-block bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-3 px-10 rounded-lg text-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+          >
+            🧠 Smart Review
           </Link>
           <Link
             href="/quizzes"

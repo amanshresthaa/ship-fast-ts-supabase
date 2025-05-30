@@ -21,12 +21,20 @@ export const QuizContext = createContext<QuizContextType | undefined>(undefined)
 // QuizProvider Component
 interface QuizProviderProps {
   children: ReactNode;
+  quizId?: string;
+  questionType?: string;
+  spacedRepetitionMode?: boolean;
 }
 
-export const QuizProvider: React.FC<QuizProviderProps> = ({ children }) => {
+export const QuizProvider: React.FC<QuizProviderProps> = ({ 
+  children, 
+  quizId, 
+  questionType, 
+  spacedRepetitionMode 
+}) => {
   // Use our custom hooks
   const { state, dispatch } = useQuizState();
-  const { submitAndScoreAnswer } = useQuizScoring(dispatch);
+  const { submitAndScoreAnswer } = useQuizScoring(dispatch, state.quiz);
 
   // Function to load progress from the database
   const loadProgress = async (quizId: string, questionTypeFilter?: string) => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import QuizTypeClientPage from '../../../type-client-page';
+import QuizTypeClientPage from '../../type-client-page';
 
 // This is a server component that properly handles async params in Next.js
 export default async function QuizByTypeAndQuestionTypePage({ params }: { params: { quizId: string, type: string } }) {

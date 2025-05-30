@@ -54,10 +54,16 @@ describe('DragAndDropQuestionComponent', () => {
     jest.clearAllMocks();
     
     // Mock classList API used by the drag-and-drop functionality
-    Element.prototype.classList = {
-      add: jest.fn(),
-      remove: jest.fn(),
-    } as any;
+    Object.defineProperty(Element.prototype, 'classList', {
+      value: {
+        add: jest.fn(),
+        remove: jest.fn(),
+        contains: jest.fn().mockReturnValue(false),
+        toggle: jest.fn(),
+      },
+      writable: true,
+      configurable: true,
+    });
   });
 
   it('renders correctly with initial state', () => {

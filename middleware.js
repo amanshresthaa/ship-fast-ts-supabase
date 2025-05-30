@@ -16,10 +16,11 @@ export const config = {
     // Only match routes that need auth session
     '/dashboard/:path*',
     '/api/protected/:path*',
-    // Add other paths that require authentication
     '/quiz-test/:path*',
+    '/api/user/:path*',
+    '/api/stripe/:path*',
     
-    // Exclude cached and optimized routes for better performance
-    '/((?!quiz-cached|quiz-optimized|api/quiz/cached|api/admin/cache|_next/static|_next/image|favicon.ico).*)'
+    // Don't run middleware on demo routes, static files, or cached routes
+    // Removed the broad pattern that was causing issues
   ],
 }

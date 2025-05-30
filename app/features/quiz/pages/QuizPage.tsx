@@ -8,6 +8,7 @@ import QuestionCard from '../components/QuestionCard';
 import QuizProgress from '../components/QuizProgress';
 import QuizNavigation from '../components/QuizNavigation';
 import QuizCompletionSummary from '../components/QuizCompletionSummary';
+import SpacedRepetitionToggle from '../components/SpacedRepetitionToggle';
 import { useQuizAutoSave } from '@/app/hooks/useQuizAutoSave';
 import { ResumeQuizPrompt } from '../components/ResumeQuizPrompt';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
@@ -15,7 +16,11 @@ import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 // Quiz Runner Component
-const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ quizId, questionType }) => {
+const QuizPageContent: React.FC<{ 
+  quizId: string; 
+  questionType?: string; 
+  spacedRepetitionMode?: boolean; 
+}> = ({ quizId, questionType, spacedRepetitionMode }) => {
   const { state, dispatch, loadProgress, deleteProgress } = useQuiz();
   const [user, setUser] = useState<any>(null);
   const supabase = createClientComponentClient();
@@ -87,7 +92,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
         }
 
         // Load the quiz data regardless
-        const quizData = await QuizService.fetchQuizById(quizId, questionType);
+        const quizData = await QuizService.fetchQuizById(quizId, questionType, spacedRepetitionMode);
         dispatch({ type: 'LOAD_QUIZ_SUCCESS', payload: quizData });
         
         // If we're showing the resume prompt, don't apply progress yet
@@ -159,6 +164,8 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   
   // Quiz loaded but no questions match the filter
   if (state.questions.length === 0) {
+    const isSpacedRepetition = QuizService.isSpacedRepetitionQuiz(state.quiz);
+    
     return (
       <div className="min-h-screen bg-custom-light-bg py-6 px-4 md:px-6">
         <div className="quiz-container max-w-3xl mx-auto">
@@ -168,32 +175,61 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
             </h1>
             
-            {/* Filter by question type */}
-            <div className="mb-6">
-              <div className="flex flex-wrap justify-center gap-2 mb-2">
-                <Link 
-                  href={`/quiz/${quizId}`} 
-                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                >
-                  All Questions
-                </Link>
-                <Link 
-                  href={`/quiz/${quizId}/type/single_selection`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-                >
-                  Single Selection
-                </Link>
-                {/* ... other question types ... */}
+            {/* Only show filters for regular quizzes, not spaced repetition */}
+            {!isSpacedRepetition && (
+              <div className="mb-6">
+                <div className="flex flex-wrap justify-center gap-2 mb-2">
+                  <Link 
+                    href={`/quiz/${quizId}`} 
+                    className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                  >
+                    All Questions
+                  </Link>
+                  <Link 
+                    href={`/quiz/${quizId}/type/single_selection`}
+                    className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                  >
+                    Single Selection
+                  </Link>
+                  {/* ... other question types ... */}
+                </div>
               </div>
-            </div>
+            )}
           </header>
           
           <div className="text-center p-8 bg-white rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">No questions found</h2>
-            <p>There are no questions available with this filter.</p>
-            <Link href={`/quiz/${quizId}`} className="mt-4 inline-block text-custom-primary hover:underline">
-              View all questions
-            </Link>
+            {isSpacedRepetition ? (
+              <>
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-xl font-semibold mb-4">Great job! All caught up!</h2>
+                <p className="text-gray-600 mb-4">You have no questions due for review right now.</p>
+                <p className="text-sm text-gray-500 mb-6">
+                  Questions will become available for review as your spaced repetition intervals expire.
+                </p>
+                <div className="flex justify-center gap-4">
+                  <Link 
+                    href="/browse" 
+                    className="px-6 py-2 bg-custom-primary text-white rounded-lg hover:bg-custom-primary/90 transition-colors"
+                  >
+                    Browse Quizzes
+                  </Link>
+                  <button 
+                    onClick={() => window.location.reload()} 
+                    className="px-6 py-2 border border-custom-primary text-custom-primary rounded-lg hover:bg-custom-primary/10 transition-colors"
+                  >
+                    Check Again
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h2 className="text-xl font-semibold mb-4">No questions found</h2>
+                <p>There are no questions available with this filter.</p>
+                <Link href={`/quiz/${quizId}`} className="mt-4 inline-block text-custom-primary hover:underline">
+                  View all questions
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -202,6 +238,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
 
   // Get current question
   const currentQuestion = state.questions[state.currentQuestionIndex];
+  const isSpacedRepetition = QuizService.isSpacedRepetitionQuiz(state.quiz);
   
   // If showing the resume prompt
   if (showResumePrompt && savedProgress) {
@@ -254,25 +291,57 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             {state.quiz.title}
             <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
           </h1>
+        </header>
+
+        {/* Spaced Repetition Mode Toggle */}
+        <div className="mb-6">
+          <SpacedRepetitionToggle 
+            quizId={quizId} 
+            questionType={questionType}
+          />
+        </div>
           
-          {/* Filter by question type */}
-          <div className="mb-6">
-            <div className="flex flex-wrap justify-center gap-2 mb-2">
-              <Link 
-                href={`/quiz/${quizId}`} 
-                className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                All Questions
-              </Link>
-              <Link 
-                href={`/quiz/${quizId}/type/single_selection`}
-                className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                Single Selection
-              </Link>
-              {/* ... other question type links ... */}
+        {/* Spaced Repetition Session Info */}
+        {isSpacedRepetition && state.quiz.spaced_repetition_metadata && (
+          <div className="mb-4 p-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-blue-700">
+              <div className="flex items-center gap-1">
+                <span className="font-medium">🧠 Spaced Repetition</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="font-medium">📚 Total Questions:</span>
+                <span>{state.quiz.spaced_repetition_metadata.total_count}</span>
+              </div>
+              {state.quiz.spaced_repetition_metadata.quiz_topic_filter && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">🏷️ Topic:</span>
+                  <span>{state.quiz.spaced_repetition_metadata.quiz_topic_filter}</span>
+                </div>
+              )}
             </div>
           </div>
+        )}
+          
+          {/* Filter by question type - only show for regular quizzes */}
+          {!isSpacedRepetition && (
+            <div className="mb-6">
+              <div className="flex flex-wrap justify-center gap-2 mb-2">
+                <Link 
+                  href={`/quiz/${quizId}`} 
+                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  All Questions
+                </Link>
+                <Link 
+                  href={`/quiz/${quizId}/type/single_selection`}
+                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                >
+                  Single Selection
+                </Link>
+                {/* ... other question type links ... */}
+              </div>
+            </div>
+          )}
           
           <div className="flex justify-between items-center">
             <QuizProgress 
@@ -282,7 +351,6 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             
             {user && <SaveStatusIndicator />}
           </div>
-        </header>
         
         <QuestionCard question={currentQuestion} />
         
@@ -293,7 +361,11 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
 };
 
 // Main Quiz Page Component that can be used directly
-const QuizPage: React.FC<{ quizId: string; questionType?: string }> = (props) => {
+const QuizPage: React.FC<{ 
+  quizId: string; 
+  questionType?: string; 
+  spacedRepetitionMode?: boolean; 
+}> = (props) => {
   return <QuizPageContent {...props} />;
 };
 
