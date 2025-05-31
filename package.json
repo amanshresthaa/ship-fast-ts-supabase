@@ -8,16 +8,7 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "ANALYZE=true next build",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "setup-migration": "node setup-migration.js",
-    "validate-quiz": "node validate-quiz-data.js --report",
-    "validate-and-fix": "node validate-quiz-data.js --fix --report",
-    "migrate-dry-run": "node enhanced-migrate-quiz-data.js --dry-run",
-    "migrate-quiz": "node enhanced-migrate-quiz-data.js",
-    "migrate-legacy": "node migrate-quiz-data.js"
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
@@ -26,7 +17,6 @@
     "@next/mdx": "^13.5.6",
     "@supabase/auth-helpers-nextjs": "^0.8.7",
     "@supabase/supabase-js": "^2.41.1",
-    "@testing-library/dom": "^10.4.0",
     "axios": "^1.6.8",
     "crisp-sdk-web": "^1.0.22",
     "dotenv": "^16.5.0",
@@ -35,7 +25,6 @@
     "form-data": "^4.0.0",
     "framer-motion": "^12.10.1",
     "fs-extra": "^11.3.0",
-    "lucide-react": "^0.511.0",
     "mailgun.js": "^9.4.1",
     "next": "^15.3.2",
     "next-plausible": "^3.12.0",
@@ -43,8 +32,6 @@
     "nextjs-toploader": "^1.6.11",
     "nodemailer": "^6.9.13",
     "react": "18.2.0",
-    "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-syntax-highlighter": "^15.5.0",
@@ -57,8 +44,6 @@
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^15.3.2",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
     "@types/dotenv": "^6.1.1",
     "@types/jest": "^29.5.14",
     "@types/mdx": "^2.0.12",
@@ -71,13 +56,10 @@
     "autoprefixer": "^10.4.19",
     "daisyui": "^4.10.1",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^30.0.0-beta.3",
-    "node-mocks-http": "^1.17.2",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "whatwg-fetch": "^3.6.20"
+    "typescript": "^5.8.3"
   }
 }

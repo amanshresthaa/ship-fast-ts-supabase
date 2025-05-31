@@ -136,7 +136,6 @@ function log(...args) {
       question:           q.questionText || q.question, // Use questionText if available
       points:             q.points,
       quiz_tag:           quizRow.id,
-      quiz_topic:         quizRow.quiz_topic, // Added for spaced repetition denormalized access
       difficulty:         q.difficulty || 'medium',
       explanation:        q.explanation || null,
       feedback_correct:   q.feedback?.correct || 'Correct!', // Provide default feedback

@@ -9,17 +9,6 @@ export type QuestionType =
 
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
-// Spaced repetition metadata for questions
-export interface SpacedRepetitionData {
-  session_id?: string;
-  easiness_factor?: number;
-  repetition_count?: number;
-  interval_days?: number;
-  last_reviewed?: string;
-  next_review_date?: string;
-  performance_streak?: number;
-}
-
 export interface BaseQuestion {
   id: string; // UUID
   type: QuestionType;
@@ -32,8 +21,6 @@ export interface BaseQuestion {
   feedback_incorrect: string;
   created_at: string; // TIMESTAMPTZ
   updated_at: string; // TIMESTAMPTZ
-  // Optional spaced repetition metadata
-  spaced_repetition_data?: SpacedRepetitionData;
 }
 
 export interface SelectionOption {
@@ -149,14 +136,6 @@ export type AnyQuestion =
   | YesNoQuestion
   | YesNoMultiQuestion;
 
-// Spaced repetition metadata for quizzes
-export interface SpacedRepetitionMetadata {
-  total_count: number;
-  quiz_topic_filter: string | null;
-  generated_at: string;
-  session_id?: string;
-}
-
 export interface Quiz {
   id: string; // e.g. azure-a102
   title: string;
@@ -169,7 +148,4 @@ export interface Quiz {
   created_at: string; // TIMESTAMPTZ
   updated_at: string; // TIMESTAMPTZ
   questions: AnyQuestion[];
-  // Spaced repetition support
-  is_spaced_repetition?: boolean;
-  spaced_repetition_metadata?: SpacedRepetitionMetadata;
 }

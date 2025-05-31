@@ -7,25 +7,10 @@ import QuizPage from '../../features/quiz/pages/QuizPage';
 interface ClientQuizPageProps {
   quizId: string;
   questionType?: string;
-  spacedRepetitionMode?: boolean;
 }
 
-export default function ClientQuizPage({ 
-  quizId, 
-  questionType, 
-  spacedRepetitionMode 
-}: ClientQuizPageProps) {
-  return (
-    <QuizProvider 
-      quizId={quizId} 
-      questionType={questionType}
-      spacedRepetitionMode={spacedRepetitionMode}
-    >
-      <QuizPage 
-        quizId={quizId} 
-        questionType={questionType}
-        spacedRepetitionMode={spacedRepetitionMode}
-      />
-    </QuizProvider>
-  );
+export default function ClientQuizPage({ quizId, questionType }: ClientQuizPageProps) {
+  return <QuizProvider quizId={quizId} questionType={questionType}>
+    <QuizPage quizId={quizId} questionType={questionType} />
+  </QuizProvider>;
 }

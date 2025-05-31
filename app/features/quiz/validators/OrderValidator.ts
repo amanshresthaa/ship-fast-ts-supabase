@@ -13,14 +13,9 @@ export class OrderValidator extends AnswerValidator<OrderQuestion, OrderQuestion
    * @returns True if all slots have items assigned (no null values)
    */
   isComplete(answer: OrderQuestionAnswer): boolean {
-    // If no answer object, it's not complete
-    if (!answer || typeof answer !== 'object') {
+    // If no answer object or no items in question, nothing is complete
+    if (!answer || typeof answer !== 'object' || this.question.correctOrder.length === 0) {
       return false;
-    }
-    
-    // If no items in question, then empty answer is complete
-    if (this.question.correctOrder.length === 0) {
-      return true;
     }
     
     // Check if we have the right number of slots and none are null
@@ -40,7 +35,7 @@ export class OrderValidator extends AnswerValidator<OrderQuestion, OrderQuestion
   /**
    * Validates which items are in the correct slots based on the question's correctOrder
    * @param answer Record mapping slots to item_ids
-   * @returns Map with entries for each slot's correctness
+   * @returns Map with entries for each item's correctness
    */
   getCorrectnessMap(answer: OrderQuestionAnswer): CorrectnessMap {
     const correctnessMap: CorrectnessMap = {};
@@ -55,35 +50,13 @@ export class OrderValidator extends AnswerValidator<OrderQuestion, OrderQuestion
       const slotKey = `slot_${index}`;
       const placedItemId = answer[slotKey];
       
-      // Mark the slot as correct or incorrect
-      const isCorrect = placedItemId === correctItemId;
-      correctnessMap[slotKey] = isCorrect;
+      // Mark the placed item as correct or incorrect
+      if (placedItemId) {
+        const isCorrect = correctItemId === placedItemId;
+        correctnessMap[placedItemId] = isCorrect;
+      }
     });
     
     return correctnessMap;
-  }
-
-  /**
-   * For order questions, we use all-or-nothing scoring
-   * The user must get all items in the correct order to receive points
-   * @param answer The answer to score
-   * @returns 1 if completely correct, 0 otherwise
-   */
-  getCorrectnessScore(answer: OrderQuestionAnswer): number {
-    // If no items to order, perfect score
-    if (this.question.correctOrder.length === 0) {
-      return 1;
-    }
-    
-    // Check if answer is complete first
-    if (!this.isComplete(answer)) {
-      return 0;
-    }
-    
-    // Check if all items are in correct positions
-    const correctnessMap = this.getCorrectnessMap(answer);
-    const allCorrect = Object.values(correctnessMap).every(isCorrect => isCorrect);
-    
-    return allCorrect ? 1 : 0;
   }
 }

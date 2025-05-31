@@ -1,8 +1,7 @@
 import { useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { AnyQuestion, YesNoQuestion, YesNoMultiQuestion, Quiz } from '../../../types/quiz';
+import { AnyQuestion, YesNoQuestion, YesNoMultiQuestion } from '../../../types/quiz';
 import { QuizAction } from './useQuizState';
-import { SpacedRepetitionQuizService } from '../services/spacedRepetitionQuizService';
 
 // Initialize Supabase client for Edge Function calls
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
@@ -14,15 +13,12 @@ if (supabaseUrl && supabaseAnonKey) {
 }
 
 // Hook for handling answer submission and scoring
-export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>, quiz?: Quiz) => {
+export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
   const submitAndScoreAnswer = useCallback(async (question: AnyQuestion, answer: any) => {
     if (!supabaseFunctionsClient) {
       console.error('Supabase client for functions not initialized.');
       return;
     }
-
-    const startTime = Date.now();
-    const isSpacedRepetition = quiz && SpacedRepetitionQuizService.isSpacedRepetitionQuiz(quiz);
 
     let submitPayload: QuizAction = {
       type: 'SUBMIT_ANSWER',
@@ -69,107 +65,45 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>, quiz?: Quiz
     dispatch(submitPayload);
 
     try {
-      let isCorrect = false;
-      let serverVerifiedCorrectAnswer = null;
-
-      if (isSpacedRepetition) {
-        // For spaced repetition, use the existing edge function for validation
-        // but then also record the response for spaced repetition tracking
-        const { data: scoreData, error: functionError } = await supabaseFunctionsClient.functions.invoke(
-          'score-answer', 
-          {
-            body: { 
-              questionId: question.id, 
-              userAnswer: answer, 
-              questionType: question.type 
-            }
+      // Then send to server for validation
+      const { data: scoreData, error: functionError } = await supabaseFunctionsClient.functions.invoke(
+        'score-answer', 
+        {
+          body: { 
+            questionId: question.id, 
+            userAnswer: answer, 
+            questionType: question.type 
           }
-        );
-
-        if (functionError) {
-          console.error('Error invoking score-answer Edge Function:', functionError.message);
-          return;
         }
+      );
 
-        if (scoreData && scoreData.questionId === question.id) {
-          isCorrect = scoreData.isCorrect;
-          serverVerifiedCorrectAnswer = scoreData.correctAnswer;
+      if (functionError) {
+        console.error('Error invoking score-answer Edge Function:', functionError.message);
+        return;
+      }
 
-          // Record the response for spaced repetition
-          const responseTimeMs = Date.now() - startTime;
-          const sessionId = quiz?.spaced_repetition_metadata?.session_id;
-          
-          try {
-            await SpacedRepetitionQuizService.recordQuestionResponse(
-              question.id,
-              answer,
-              isCorrect,
-              responseTimeMs,
-              sessionId
-            );
-          } catch (spacedRepError) {
-            console.error('Error recording spaced repetition response:', spacedRepError);
-            // Don't fail the whole flow if spaced repetition recording fails
+      if (scoreData && scoreData.questionId === question.id) {
+        dispatch({
+          type: 'UPDATE_ANSWER_CORRECTNESS',
+          payload: { 
+            questionId: scoreData.questionId,
+            isCorrect: scoreData.isCorrect,
+            serverVerifiedCorrectAnswer: scoreData.correctAnswer 
           }
-
-          dispatch({
-            type: 'UPDATE_ANSWER_CORRECTNESS',
-            payload: { 
-              questionId: scoreData.questionId,
-              isCorrect: scoreData.isCorrect,
-              serverVerifiedCorrectAnswer: scoreData.correctAnswer 
-            }
-          });
-          
-          // Show feedback after answer submission
-          dispatch({
-            type: 'SHOW_FEEDBACK',
-            payload: { questionId: question.id }
-          });
-        } else {
-          console.error('Score data mismatch or missing from Edge Function response:', scoreData);
-        }
+        });
+        
+        // Show feedback after answer submission
+        dispatch({
+          type: 'SHOW_FEEDBACK',
+          payload: { questionId: question.id }
+        });
       } else {
-        // Regular quiz flow - use edge function
-        const { data: scoreData, error: functionError } = await supabaseFunctionsClient.functions.invoke(
-          'score-answer', 
-          {
-            body: { 
-              questionId: question.id, 
-              userAnswer: answer, 
-              questionType: question.type 
-            }
-          }
-        );
-
-        if (functionError) {
-          console.error('Error invoking score-answer Edge Function:', functionError.message);
-          return;
-        }
-
-        if (scoreData && scoreData.questionId === question.id) {
-          dispatch({
-            type: 'UPDATE_ANSWER_CORRECTNESS',
-            payload: { 
-              questionId: scoreData.questionId,
-              isCorrect: scoreData.isCorrect,
-              serverVerifiedCorrectAnswer: scoreData.correctAnswer 
-            }
-          });
-          
-          // Show feedback after answer submission
-          dispatch({
-            type: 'SHOW_FEEDBACK',
-            payload: { questionId: question.id }
-          });
-        } else {
-          console.error('Score data mismatch or missing from Edge Function response:', scoreData);
-        }
+        console.error('Score data mismatch or missing from Edge Function response:', scoreData);
       }
     } catch (e: any) {
       console.error('Unexpected error during submitAndScoreAnswer:', e.message);
     }
-  }, [dispatch, quiz]);
+  }, [dispatch]);
 
   return { submitAndScoreAnswer };
 };

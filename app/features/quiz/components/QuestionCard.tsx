@@ -8,7 +8,6 @@ import QuestionHeader from '../components/QuestionHeader';
 import QuestionContent from '../components/QuestionContent';
 import FeedbackSection from '../components/FeedbackSection';
 import QuestionTypeRenderer from './question-types/QuestionTypeRenderer';
-import { SpacedRepetitionQuizService } from '../services/spacedRepetitionQuizService';
 
 interface QuestionCardProps {
   question: AnyQuestion;
@@ -16,18 +15,6 @@ interface QuestionCardProps {
 
 const QuestionCard: React.FC<QuestionCardProps> = memo(({ question }) => {
   const { state, submitAndScoreAnswer } = useQuiz();
-  
-  // Check if this is a spaced repetition quiz
-  const isSpacedRepetition = useMemo(() => 
-    state.quiz && SpacedRepetitionQuizService.isSpacedRepetitionQuiz(state.quiz),
-    [state.quiz]
-  );
-  
-  // Get spaced repetition stats for this question
-  const spacedRepetitionStats = useMemo(() => 
-    SpacedRepetitionQuizService.getQuestionSpacedRepetitionStats(question),
-    [question]
-  );
   
   // Use useMemo for derived state from context to prevent unnecessary recalculations
   const userAnswerDetails = useMemo(() => 
@@ -111,32 +98,6 @@ const QuestionCard: React.FC<QuestionCardProps> = memo(({ question }) => {
           points={question.points} 
           difficulty={question.difficulty} 
         />
-
-        {/* Spaced Repetition Metadata Display */}
-        {isSpacedRepetition && spacedRepetitionStats && (
-          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex flex-wrap gap-4 text-sm text-blue-700">
-              <div className="flex items-center gap-1">
-                <span className="font-medium">📊 Reviews:</span>
-                <span>{spacedRepetitionStats.repetition_count || 0}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="font-medium">🎯 Easiness:</span>
-                <span>{spacedRepetitionStats.easiness_factor ? spacedRepetitionStats.easiness_factor.toFixed(1) : '2.5'}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="font-medium">⏰ Interval:</span>
-                <span>{spacedRepetitionStats.interval_days || 1} days</span>
-              </div>
-              {spacedRepetitionStats.performance_streak && spacedRepetitionStats.performance_streak > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="font-medium">🔥 Streak:</span>
-                  <span>{spacedRepetitionStats.performance_streak}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
         {question.type !== 'dropdown_selection' && (
           <QuestionContent question={question.question} />
