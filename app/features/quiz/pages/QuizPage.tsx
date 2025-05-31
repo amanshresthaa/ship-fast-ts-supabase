@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useQuiz } from '../context/QuizContext';
 import { QuizService } from '../services/quizService';
 import QuestionCard from '../components/QuestionCard';
@@ -14,11 +15,19 @@ import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
 // Using the session hook that works in this project
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-// Quiz Runner Component
+// Learning Mode Quiz Runner Component
 const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ quizId, questionType }) => {
   const { state, dispatch, loadProgress, deleteProgress } = useQuiz();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const supabase = createClientComponentClient();
+  
+  // Handle multiple question types from URL parameters
+  const typesParam = searchParams.get('types');
+  const effectiveQuestionTypes = typesParam ? typesParam.split(',') : (questionType ? [questionType] : undefined);
+  
+  // For backwards compatibility, convert array back to string for single type
+  const effectiveQuestionType = effectiveQuestionTypes && effectiveQuestionTypes.length === 1 ? effectiveQuestionTypes[0] : undefined;
   
   // Get the authenticated user
   useEffect(() => {
@@ -41,18 +50,21 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   const { forceSave } = useQuizAutoSave(!!user);
 
   // Keep track of the last loaded quiz to prevent re-running effect unnecessarily
-  const lastLoadedQuizRef = useRef({ quizId: '', questionType: '', userId: '' });
+  const lastLoadedQuizRef = useRef({ quizId: '', questionTypes: '', userId: '' });
   
   // Memoize loadProgress function to prevent it from causing re-renders
   const memoizedLoadProgress = useCallback(loadProgress, []);
   
   // Load quiz data and check for existing progress when component mounts or important params change
   useEffect(() => {
+    // Create a string representation of questionTypes for comparison
+    const questionTypesStr = effectiveQuestionTypes ? effectiveQuestionTypes.join(',') : '';
+    
     // Skip if nothing important has changed
     const currentUserId = user?.id || '';
     if (
       quizId === lastLoadedQuizRef.current.quizId &&
-      questionType === lastLoadedQuizRef.current.questionType &&
+      questionTypesStr === lastLoadedQuizRef.current.questionTypes &&
       currentUserId === lastLoadedQuizRef.current.userId
     ) {
       return;
@@ -61,7 +73,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
     // Update the ref with current values to track what we've loaded
     lastLoadedQuizRef.current = {
       quizId: quizId || '',
-      questionType: questionType || '',
+      questionTypes: questionTypesStr,
       userId: currentUserId,
     };
     
@@ -74,7 +86,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
         // First check for existing progress if user is authenticated
         let progress = null;
         if (user) {
-          progress = await memoizedLoadProgress(quizId, questionType);
+          progress = await memoizedLoadProgress(quizId, effectiveQuestionType);
           
           if (progress) {
             // Save progress data to show the resume prompt
@@ -86,8 +98,8 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
           }
         }
 
-        // Load the quiz data regardless
-        const quizData = await QuizService.fetchQuizById(quizId, questionType);
+        // Load the quiz data with multiple question types support
+        const quizData = await QuizService.fetchQuizById(quizId, effectiveQuestionTypes);
         dispatch({ type: 'LOAD_QUIZ_SUCCESS', payload: quizData });
         
         // If we're showing the resume prompt, don't apply progress yet
@@ -96,13 +108,13 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
         console.error("Error fetching quiz data:", error);
         dispatch({ 
           type: 'LOAD_QUIZ_FAILURE', 
-          payload: error.message || 'Error fetching quiz.' 
+          payload: error.message || 'Error fetching learning mode quiz.' 
         });
       }
     };
     
     loadQuizAndProgress();
-  }, [quizId, questionType, user, dispatch, memoizedLoadProgress]);
+  }, [quizId, effectiveQuestionTypes, user, dispatch, memoizedLoadProgress]);
 
   // Handle resuming quiz from saved progress
   const handleResumeQuiz = () => {
@@ -122,7 +134,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   const handleRestartQuiz = async () => {
     // Delete the saved progress first
     if (user) {
-      await deleteProgress(quizId, questionType);
+      await deleteProgress(quizId, effectiveQuestionType);
     }
     
     // Reset the quiz state
@@ -134,7 +146,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   if (state.isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-custom-light-bg">
-        <p className="text-xl text-custom-dark-blue">Loading quiz...</p>
+        <p className="text-xl text-custom-dark-blue">Loading learning mode quiz...</p>
       </div>
     );
   }
@@ -173,13 +185,13 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               <div className="flex flex-wrap justify-center gap-2 mb-2">
                 <Link 
                   href={`/quiz/${quizId}`} 
-                  className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${!effectiveQuestionTypes || effectiveQuestionTypes.length > 1 ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   All Questions
                 </Link>
                 <Link 
                   href={`/quiz/${quizId}/type/single_selection`}
-                  className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                  className={`px-3 py-1 rounded-full text-sm ${effectiveQuestionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
                 >
                   Single Selection
                 </Link>
@@ -260,13 +272,13 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             <div className="flex flex-wrap justify-center gap-2 mb-2">
               <Link 
                 href={`/quiz/${quizId}`} 
-                className={`px-3 py-1 rounded-full text-sm ${!questionType ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                className={`px-3 py-1 rounded-full text-sm ${!effectiveQuestionTypes || effectiveQuestionTypes.length > 1 ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
               >
                 All Questions
               </Link>
               <Link 
                 href={`/quiz/${quizId}/type/single_selection`}
-                className={`px-3 py-1 rounded-full text-sm ${questionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
+                className={`px-3 py-1 rounded-full text-sm ${effectiveQuestionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
               >
                 Single Selection
               </Link>

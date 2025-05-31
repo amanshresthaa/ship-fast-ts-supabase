@@ -8,17 +8,26 @@ export async function GET(
   // Need to properly handle params in Next.js 13+
   const quizId = (await Promise.resolve(params)).quizId;
   
-  // Extract questionType from URL if present
+  // Extract questionType and types from URL
   const url = new URL(request.url);
   const questionType = url.searchParams.get('questionType');
+  const typesParam = url.searchParams.get('types');
+  
+  // Handle both single questionType and multiple types
+  let questionTypes: string[] | undefined;
+  if (typesParam) {
+    questionTypes = typesParam.split(',').filter(t => t.trim());
+  } else if (questionType) {
+    questionTypes = [questionType];
+  }
 
   if (!quizId) {
     return NextResponse.json({ error: 'Quiz ID is required' }, { status: 400 });
   }
 
   try {
-    // Pass questionType to the fetchQuizById function
-    const quiz = await fetchQuizById(quizId, questionType || undefined);
+    // Pass questionTypes array to the fetchQuizById function
+    const quiz = await fetchQuizById(quizId, questionTypes);
     if (!quiz) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
     }

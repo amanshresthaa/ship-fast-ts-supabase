@@ -30,10 +30,10 @@ const QuizCompletionSummary: React.FC<QuizCompletionSummaryProps> = ({ quiz }) =
   return (
     <div className="min-h-screen bg-custom-light-bg flex flex-col justify-center items-center p-6 animate-fade-in">
       <div className="container mx-auto p-4 md:p-8 text-center bg-white shadow-shadow-strong rounded-rounded-lg-ref max-w-3xl">
-        <h1 className="text-3xl md:text-4xl font-bold mb-6 text-custom-success">Quiz Completed!</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 text-custom-success">Learning mode Quiz Completed!</h1>
         
         <p className="text-lg md:text-xl text-custom-gray-1 mb-8">
-          You have completed the quiz: <span className="font-semibold">{quiz.title}</span>.
+          You have completed the learning mode quiz: <span className="font-semibold">{quiz.title}</span>.
         </p>
         
         <div className="score-summary bg-gray-50 p-6 rounded-lg mb-8">
@@ -70,14 +70,14 @@ const QuizCompletionSummary: React.FC<QuizCompletionSummaryProps> = ({ quiz }) =
             onClick={() => dispatch({ type: 'RESET_QUIZ' })} 
             className="btn-secondary-custom px-8 py-3 rounded-full"
           >
-            Take Another Quiz
+            Take Another Learning Quiz
           </button>
           
           <button 
             onClick={() => window.location.href = '/quizzes'} 
             className="btn-primary-custom px-8 py-3 rounded-full"
           >
-            Browse All Quizzes
+            Browse All Learning Quizzes
           </button>
         </div>
       </div>

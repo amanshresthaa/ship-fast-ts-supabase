@@ -22,15 +22,15 @@ const Hero = () => {
         </a>
 
         <h1 className="font-extrabold text-4xl lg:text-6xl tracking-tight md:-mb-4">
-          Master Any Topic with Instant, Interactive Quizzes
+          Master Any Topic with Instant, Interactive Learning Mode Quizzes
         </h1>
         <p className="text-lg opacity-80 leading-relaxed">
-          Boost your learning retention and confidence with our adaptive quiz platform.
+          Boost your learning retention and confidence with our adaptive learning mode quiz platform.
           Choose from multiple question types, track your progress, and get instant feedback
           to level up your skills.
         </p>
         <button className="btn btn-primary btn-wide">
-          Start Your First Quiz
+          Start Your First Learning Quiz
         </button>
 
         <TestimonialsAvatars priority={true} />

@@ -1,7 +1,7 @@
-# Quiz Component Architecture
+# Learning Mode Quiz Component Architecture
 
 ## Overview
-The quiz components follow a Model-View-Controller pattern:
+The learning mode quiz components follow a Model-View-Controller pattern:
 
 - **Models**: Question types defined in `app/types/quiz.ts`
 - **Controllers**: Question-specific controllers that manage state and validation logic 

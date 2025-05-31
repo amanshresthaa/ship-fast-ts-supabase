@@ -9,7 +9,7 @@ interface ResumeQuizPromptProps {
 }
 
 /**
- * A UI component that shows a prompt to resume a previously started quiz
+ * A UI component that shows a prompt to resume a previously started learning mode quiz
  * or start fresh from the beginning.
  */
 export const ResumeQuizPrompt = ({
@@ -34,7 +34,7 @@ export const ResumeQuizPrompt = ({
           </h3>
         </div>
         <p className="mt-2 text-blue-600 dark:text-blue-300">
-          You have a quiz in progress. Would you like to resume where you left off?
+          You have a learning mode quiz in progress. Would you like to resume where you left off?
         </p>
       </div>
 

@@ -19,7 +19,7 @@ const links: {
   },
   {
     href: "/quizzes",
-    label: "Quizzes",
+    label: "Learning Quizzes",
   },
   {
     href: "/#testimonials",

@@ -42,7 +42,6 @@ export {
   enrichOrderQuestions,
   enrichYesNoQuestions,
   enrichYesNoMultiQuestions,
-  groupQuestionsByType,
 };
 
 export async function enrichQuestionWithDetails(
@@ -453,7 +452,7 @@ export async function enrichQuestionWithDetails(
 
 export async function fetchQuizById(
   quizId: string,
-  questionType?: string
+  questionTypes?: string | string[]
 ): Promise<Quiz | null> {
   try {
     // 1. Fetch quiz metadata
@@ -483,8 +482,14 @@ export async function fetchQuizById(
       .eq('quiz_tag', quizId);
       
     // Apply type filter if provided
-    if (questionType) {
-      query = query.eq('type', questionType);
+    if (questionTypes) {
+      if (typeof questionTypes === 'string') {
+        // Single question type
+        query = query.eq('type', questionTypes);
+      } else if (Array.isArray(questionTypes) && questionTypes.length > 0) {
+        // Multiple question types - use 'in' operator
+        query = query.in('type', questionTypes);
+      }
     }
     
     // Execute the query
@@ -541,9 +546,37 @@ export async function fetchQuizById(
       console.warn(`Not all questions for quiz ${quizId} could be successfully enriched.`);
     }
 
+    // Implement optimized randomization:
+    // 1. First shuffle each question type independently to ensure even distribution
+    const shuffledByType = enrichedQuestionArrays.map(typeArray => shuffleArray(typeArray));
+    
+    // 2. Then interleave questions from different types for variety
+    const interleavedQuestions: AnyQuestion[] = [];
+    const maxLength = Math.max(...shuffledByType.map(arr => arr.length));
+    
+    for (let i = 0; i < maxLength; i++) {
+      // Add one question from each type (if available) at each iteration
+      shuffledByType.forEach(typeArray => {
+        if (i < typeArray.length) {
+          interleavedQuestions.push(typeArray[i]);
+        }
+      });
+    }
+    
+    // 3. Final shuffle to break any remaining patterns
+    const finalShuffledQuestions = shuffleArray(interleavedQuestions);
+
+    // Log randomization results for debugging
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎲 Quiz ${quizId} randomization results:`);
+      console.log(`  Original question types:`, allEnrichedQuestions.map(q => `${q.type}`).join(', '));
+      console.log(`  Randomized question types:`, finalShuffledQuestions.map(q => `${q.type}`).join(', '));
+      console.log(`  Total questions shuffled: ${finalShuffledQuestions.length}`);
+    }
+
     return {
       ...(quizData as Quiz),
-      questions: allEnrichedQuestions,
+      questions: finalShuffledQuestions,
     };
 
   } catch (error: any) {
@@ -607,9 +640,18 @@ export async function fetchRandomQuestionByTypeAndFilters(
   }
 }
 
-// Helper to group questions by type
-function groupQuestionsByType(baseQuestions: BaseQuestion[]): Record<string, BaseQuestion[]> {
-  return baseQuestions.reduce((acc, q) => {
+// Fisher-Yates shuffle algorithm for optimal randomization
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]; // Create a copy to avoid mutating the original
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+export function groupQuestionsByType(questions: BaseQuestion[]): Record<string, BaseQuestion[]> {
+  return questions.reduce((acc, q) => {
     if (!acc[q.type]) {
       acc[q.type] = [];
     }
@@ -1150,6 +1192,24 @@ async function enrichYesNoMultiQuestions(questions: BaseQuestion[]): Promise<Yes
 
   } catch (error: any) {
     console.error('Error in enrichYesNoMultiQuestions:', error.message);
+    return [];
+  }
+}
+
+export async function fetchAllQuizzes(): Promise<Quiz[]> {
+  try {
+    const { data: quizzes, error } = await supabase
+      .from('quizzes')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching quizzes:', error.message);
+      return [];
+    }
+
+    return quizzes || [];
+  } catch (error: any) {
+    console.error('Unexpected error fetching quizzes:', error.message);
     return [];
   }
 }

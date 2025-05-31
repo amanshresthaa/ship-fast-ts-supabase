@@ -15,16 +15,16 @@ const CTA = () => {
       <div className="relative hero-content text-center text-neutral-content p-8">
         <div className="flex flex-col items-center max-w-xl p-8 md:p-0">
           <h2 className="font-bold text-3xl md:text-5xl tracking-tight mb-8 md:mb-12">
-            Unlock Your Knowledge with Engaging Quizzes
+            Unlock Your Knowledge with Engaging Learning Mode Quizzes
           </h2>
           <p className="text-lg opacity-80 mb-12 md:mb-16">
-            Dive into interactive quizzes tailored to boost retention,
+            Dive into interactive learning mode quizzes tailored to boost retention,
             sharpen your skills, and track your progress in real time.
           </p>
 
           <Link href="/quizzes">
             <button className="btn btn-primary btn-wide">
-              Browse Quizzes
+              Browse Learning Quizzes
             </button>
           </Link>
         </div>

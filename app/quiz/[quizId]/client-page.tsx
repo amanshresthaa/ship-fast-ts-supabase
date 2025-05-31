@@ -10,7 +10,7 @@ interface ClientQuizPageProps {
 }
 
 export default function ClientQuizPage({ quizId, questionType }: ClientQuizPageProps) {
-  return <QuizProvider quizId={quizId} questionType={questionType}>
+  return <QuizProvider>
     <QuizPage quizId={quizId} questionType={questionType} />
   </QuizProvider>;
 }

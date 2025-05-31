@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { fetchQuizById } from '../../../lib/supabaseQuizService';
 
 export default async function QuestionTypesListPage({ params }: { params: { quizId: string } }) {
-  const quizId = params.quizId;
+  const { quizId } = await params;
   
   // Fetch the quiz data to get all available question types
   const quiz = await fetchQuizById(quizId);

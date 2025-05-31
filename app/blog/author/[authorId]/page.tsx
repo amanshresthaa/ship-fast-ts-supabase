@@ -9,7 +9,8 @@ export async function generateMetadata({
 }: {
   params: { authorId: string };
 }) {
-  const author = authors.find((author) => author.slug === params.authorId);
+  const resolvedParams = await params;
+  const author = authors.find((author) => author.slug === resolvedParams.authorId);
 
   return getSEOTags({
     title: `${author.name}, Author at ${config.appName}'s Blog`,
@@ -23,7 +24,8 @@ export default async function Author({
 }: {
   params: { authorId: string };
 }) {
-  const author = authors.find((author) => author.slug === params.authorId);
+  const resolvedParams = await params;
+  const author = authors.find((author) => author.slug === resolvedParams.authorId);
   const articlesByAuthor = articles
     .filter((article) => article.author.slug === author.slug)
     .sort(
