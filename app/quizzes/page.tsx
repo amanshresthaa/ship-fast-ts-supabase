@@ -64,14 +64,15 @@ export default function QuizzesPage() {
           {quizzes.map((quiz) => (
             <div
               key={quiz.id}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200"
+              onClick={() => handleQuizSelect(quiz)}
+              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
             >
               <div className="p-8">
                 <div className="flex items-start gap-6">
                   {/* Quiz Icon */}
                   <div className="flex-shrink-0">
-                    <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors duration-200">
+                      <svg className="w-8 h-8 text-blue-600 group-hover:text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
@@ -79,46 +80,34 @@ export default function QuizzesPage() {
 
                   {/* Quiz Content */}
                   <div className="flex-1 min-w-0">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-200">
                       {quiz.title}
                     </h2>
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {quiz.description || "Sharpen your skills for the AI-102 exam. Click to configure your practice session."}
                     </p>
 
-                    {/* Action Buttons */}
+                    {/* Action Labels (now visual only) */}
                     <div className="flex flex-wrap gap-3">
-                      <button
-                        onClick={() => handleQuizSelect(quiz)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-200 flex items-center gap-2 text-sm"
-                      >
+                      <div className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md text-sm">
                         Practice Quiz
-                      </button>
-                      <button
-                        onClick={() => handleQuizSelect(quiz)}
-                        className="bg-green-500 hover:bg-green-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-200 text-sm"
-                      >
+                      </div>
+                      <div className="bg-green-500 text-white font-medium px-4 py-2 rounded-md text-sm">
                         All Levels
-                      </button>
-                      <button
-                        onClick={() => handleQuizSelect(quiz)}
-                        className="bg-purple-500 hover:bg-purple-600 text-white font-medium px-4 py-2 rounded-md transition-colors duration-200 text-sm"
-                      >
+                      </div>
+                      <div className="bg-purple-500 text-white font-medium px-4 py-2 rounded-md text-sm">
                         Certification Prep
-                      </button>
+                      </div>
                     </div>
                   </div>
 
                   {/* Arrow Icon */}
                   <div className="flex-shrink-0">
-                    <button
-                      onClick={() => handleQuizSelect(quiz)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                    >
+                    <div className="text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all duration-200">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
-                    </button>
+                    </div>
                   </div>
                 </div>
               </div>
