@@ -9,6 +9,7 @@ import QuestionCard from '../components/QuestionCard';
 import QuizProgress from '../components/QuizProgress';
 import QuizNavigation from '../components/QuizNavigation';
 import QuizCompletionSummary from '../components/QuizCompletionSummary';
+import QuizHeader from '../components/QuizHeader';
 import { useQuizAutoSave } from '@/app/hooks/useQuizAutoSave';
 import { ResumeQuizPrompt } from '../components/ResumeQuizPrompt';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
@@ -242,14 +243,20 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   // Quiz is complete - Show summary
   if (state.isQuizComplete) {
     return (
-      <div className="min-h-screen bg-custom-light-bg py-6 px-4 md:px-6">
-        <div className="quiz-container max-w-3xl mx-auto">
-          <header className="text-center mb-8 animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold text-custom-dark-blue mb-3 relative inline-block pb-2">
-              {state.quiz.title}
-              <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
-            </h1>
-          </header>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 md:px-6">
+        <div className="quiz-container max-w-4xl mx-auto">
+          <QuizHeader 
+            quizId={quizId}
+            user={user}
+            effectiveQuestionTypes={effectiveQuestionTypes}
+            effectiveQuestionType={effectiveQuestionType}
+            showQuestionFilters={false}
+            customActions={
+              <div className="completion-badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-4 py-2 rounded-full text-sm font-semibold">
+                ✅ Quiz Completed!
+              </div>
+            }
+          />
           
           <QuizCompletionSummary quiz={state.quiz} />
         </div>
@@ -259,46 +266,19 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
 
   // Show the quiz
   return (
-    <div className="min-h-screen bg-custom-light-bg py-6 px-4 md:px-6">
-      <div className="quiz-container max-w-3xl mx-auto">
-        <header className="text-center mb-8 animate-fade-in">
-          <h1 className="text-3xl md:text-4xl font-bold text-custom-dark-blue mb-3 relative inline-block pb-2">
-            {state.quiz.title}
-            <span className="absolute left-1/4 bottom-0 w-1/2 h-1 bg-primary-gradient rounded-rounded-full"></span>
-          </h1>
-          
-          {/* Filter by question type */}
-          <div className="mb-6">
-            <div className="flex flex-wrap justify-center gap-2 mb-2">
-              <Link 
-                href={`/quiz/${quizId}`} 
-                className={`px-3 py-1 rounded-full text-sm ${!effectiveQuestionTypes || effectiveQuestionTypes.length > 1 ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                All Questions
-              </Link>
-              <Link 
-                href={`/quiz/${quizId}/type/single_selection`}
-                className={`px-3 py-1 rounded-full text-sm ${effectiveQuestionType === 'single_selection' ? 'bg-custom-primary text-white' : 'bg-gray-200 hover:bg-gray-300'}`}
-              >
-                Single Selection
-              </Link>
-              {/* ... other question type links ... */}
-            </div>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <QuizProgress 
-              currentIndex={state.currentQuestionIndex} 
-              totalQuestions={state.questions.length} 
-            />
-            
-            {user && <SaveStatusIndicator />}
-          </div>
-        </header>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 md:px-6">
+      <div className="quiz-container max-w-4xl mx-auto">
+        <QuizHeader 
+          quizId={quizId}
+          user={user}
+          effectiveQuestionTypes={effectiveQuestionTypes}
+          effectiveQuestionType={effectiveQuestionType}
+        />
         
-        <QuestionCard question={currentQuestion} />
-        
-        <QuizNavigation currentQuestionId={currentQuestion.id} />
+        <main className="quiz-content mt-8">
+          <QuestionCard question={currentQuestion} />
+          <QuizNavigation currentQuestionId={currentQuestion.id} />
+        </main>
       </div>
     </div>
   );
