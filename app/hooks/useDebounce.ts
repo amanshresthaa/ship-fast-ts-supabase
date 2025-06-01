@@ -3,12 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
- * A custom hook for debouncing values
- * Implements the debouncing technique from the performance checklist
- * 
- * @param value The value to debounce
- * @param delay The delay in milliseconds
- * @returns The debounced value
+ * Returns a debounced version of the provided value that updates only after the specified delay has elapsed without changes.
+ *
+ * @param value - The value to debounce.
+ * @param delay - Time in milliseconds to wait before updating the debounced value. Defaults to 500.
+ * @returns The debounced value.
  */
 export function useDebounce<T>(value: T, delay: number = 500): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -30,13 +29,14 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
 }
 
 /**
- * Custom hook for debouncing functions
- * Useful for handling frequent events like window resize, scroll, or input changes
- * 
- * @param fn The function to debounce
- * @param delay The delay in milliseconds
- * @param deps Dependencies array for the function
- * @returns The debounced function
+ * Returns a debounced version of the provided callback function.
+ *
+ * The debounced function delays invoking the original function until after the specified delay has elapsed since the last call. Useful for reducing the frequency of function executions in response to rapid events such as input changes or window resizing.
+ *
+ * @param fn - The function to debounce.
+ * @param delay - The debounce delay in milliseconds. Defaults to 500.
+ * @param deps - Optional dependencies array to control when the debounced function is reset.
+ * @returns A debounced function that delays invocation of {@link fn}.
  */
 export function useDebouncedCallback<T extends (...args: any[]) => any>(
   fn: T, 
@@ -81,12 +81,13 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
 }
 
 /**
- * Custom hook for throttling functions (limit how often a function can be called)
- * Useful for scroll events, mousemove, etc.
- * 
- * @param fn The function to throttle
- * @param limit The minimum time between function calls in milliseconds
- * @returns The throttled function
+ * Returns a throttled version of the provided function that can only be called once per specified time interval.
+ *
+ * The throttled function is useful for limiting the rate of execution in response to high-frequency events such as scrolling or mouse movement.
+ *
+ * @param fn - The function to throttle.
+ * @param limit - The minimum interval in milliseconds between allowed calls. Defaults to 200.
+ * @returns A throttled function that enforces the specified call interval.
  */
 export function useThrottle<T extends (...args: any[]) => any>(
   fn: T,

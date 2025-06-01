@@ -9,11 +9,18 @@ interface IntersectionOptions extends IntersectionObserverInit {
 }
 
 /**
- * An optimized hook to detect when an element enters or leaves the viewport
- * Implements efficient lazy loading pattern from performance checklist
- * 
- * @param options IntersectionObserver options and additional config
- * @returns [ref, isIntersecting, entry] - Attach ref to the element you want to observe
+ * React hook that detects when a DOM element enters or leaves the viewport using the Intersection Observer API.
+ *
+ * Returns a tuple containing a ref to attach to the target element, a boolean indicating if the element is in view, and the latest IntersectionObserverEntry.
+ *
+ * @param options - Configuration object extending IntersectionObserverInit, with additional flags:
+ *   - `freezeOnceVisible`: If true, freezes the visibility state after the element becomes visible.
+ *   - `initialInView`: Sets the initial visibility state, useful for server-side rendering.
+ *   - `skipObserver`: If true, disables observation (useful for testing).
+ *   - `observerOnce`: If true, disconnects the observer after the element is first visible.
+ * @returns A readonly tuple: [ref, isInView, entry], where `ref` is attached to the observed element, `isInView` indicates visibility, and `entry` contains intersection details or null.
+ *
+ * @remark If `freezeOnceVisible` is enabled, the hook will stop updating visibility state after the element is first observed as visible.
  */
 function useIntersectionObserver<T extends Element>({
   threshold = 0,

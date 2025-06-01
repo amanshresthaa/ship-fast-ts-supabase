@@ -77,10 +77,12 @@ const MAX_METRICS = 100;
 const performanceMetrics: PerformanceMetric[] = [];
 
 /**
- * Generate a version hash for a quiz based on its content
- * This allows us to invalidate the cache when the quiz content changes
- * @param quiz The quiz data
- * @returns A version hash string
+ * Generates a version string for a quiz based on its last updated timestamp.
+ *
+ * Used to detect changes in quiz content for cache invalidation.
+ *
+ * @param quiz - The quiz object to generate a version for.
+ * @returns A string representing the quiz version, derived from {@link quiz.updated_at} or the current time if unavailable.
  */
 function generateQuizVersionHash(quiz: Quiz): string {
   // Use the updated_at timestamp as a version indicator
@@ -89,10 +91,15 @@ function generateQuizVersionHash(quiz: Quiz): string {
 }
 
 /**
- * Track performance of an API call
- * @param operation Name of the operation being performed
- * @param params Parameters that were passed to the operation
- * @returns A function to call when the operation completes
+ * Starts tracking the performance of an operation and returns a callback to record its completion.
+ *
+ * The returned function should be called when the operation finishes, indicating success and providing any additional information to be logged with the metric.
+ *
+ * @param operation - The name of the operation being tracked.
+ * @param params - Parameters associated with the operation.
+ * @returns A function to call upon operation completion, accepting a success flag and optional additional info.
+ *
+ * @remark Metrics are only tracked in development mode or if explicitly enabled via the `NEXT_PUBLIC_ENABLE_METRICS` environment variable.
  */
 export function traceOperation(operation: string, params: Record<string, any> = {}): 
   (success: boolean, additionalInfo?: Record<string, any>) => void {
@@ -131,10 +138,11 @@ export function traceOperation(operation: string, params: Record<string, any> = 
 }
 
 /**
- * Get performance metrics for analysis
- * @param operation Optional operation name to filter by
- * @param minDuration Optional minimum duration to filter by (in ms)
- * @returns Array of performance metrics
+ * Retrieves recorded performance metrics, optionally filtered by operation name and minimum duration.
+ *
+ * @param operation - If provided, only metrics for this operation are returned.
+ * @param minDuration - If provided, only metrics with duration greater than or equal to this value (in milliseconds) are returned.
+ * @returns An array of performance metrics matching the specified filters.
  */
 export function getPerformanceMetrics(operation?: string, minDuration?: number): PerformanceMetric[] {
   return performanceMetrics
@@ -143,15 +151,18 @@ export function getPerformanceMetrics(operation?: string, minDuration?: number):
 }
 
 /**
- * Clear performance metrics
+ * Removes all stored performance metrics from memory.
  */
 export function clearPerformanceMetrics(): void {
   performanceMetrics.length = 0;
 }
 
 /**
- * Get summary statistics for API operations
- * @returns Object with summary statistics
+ * Returns aggregated statistics for all tracked API operations.
+ *
+ * Calculates the count, average duration, maximum and minimum duration, success rate, and cache hit rate (if applicable) for each operation based on recorded performance metrics.
+ *
+ * @returns An object mapping each operation name to its summary statistics.
  */
 export function getPerformanceStats(): Record<string, {
   count: number;
@@ -210,11 +221,14 @@ export function getPerformanceStats(): Record<string, {
 }
 
 /**
- * Enhanced fetchQuizById with caching
- * @param quizId The ID of the quiz to fetch
- * @param questionType Optional filter for question type
- * @param useCache Whether to use the cache or force a fresh fetch
- * @returns The quiz data or null if not found or error
+ * Fetches a quiz by ID from Supabase, enriching its questions and utilizing in-memory caching for performance.
+ *
+ * If caching is enabled and the cached quiz is up-to-date, returns the cached data. Otherwise, fetches the quiz metadata and questions in parallel, enriches questions by type, and updates the cache. Optionally filters questions by type.
+ *
+ * @param quizId - The ID of the quiz to fetch.
+ * @param questionType - If provided, only questions of this type are included.
+ * @param useCache - Whether to use the cache or force a fresh fetch (default: true).
+ * @returns The enriched quiz data, or null if not found or on error.
  */
 export async function fetchQuizByIdOptimized(
   quizId: string,
@@ -385,8 +399,11 @@ export async function fetchQuizByIdOptimized(
 }
 
 /**
- * Clear the quiz cache
- * @param quizId Optional quiz ID to clear specific cache entry, or clear all if not provided
+ * Clears the in-memory quiz cache for a specific quiz or all quizzes.
+ *
+ * If a {@link quizId} is provided, only the cache entry for that quiz is removed. If no {@link quizId} is given, all quiz cache entries are cleared.
+ *
+ * @param quizId - The ID of the quiz to clear from the cache. If omitted, clears the entire quiz cache.
  */
 export function clearQuizCache(quizId?: string): void {
   if (quizId) {
@@ -398,7 +415,11 @@ export function clearQuizCache(quizId?: string): void {
   }
 }
 
-// Function to get cache stats for debugging
+/**
+ * Returns statistics about the current quiz cache, including the number of cached quizzes and their IDs.
+ *
+ * @returns An object containing the cache size and an array of cached quiz IDs.
+ */
 export function getQuizCacheStats(): { size: number, entries: string[] } {
   return {
     size: Object.keys(quizCache).length,
@@ -407,12 +428,11 @@ export function getQuizCacheStats(): { size: number, entries: string[] } {
 }
 
 /**
- * Prefetch related quizzes based on tags or topics
- * This function can be called when a quiz loads to preload other quizzes the user might access next
- * 
- * @param currentQuizId The ID of the currently viewed quiz
- * @param limit The maximum number of related quizzes to prefetch
- * @returns An array of quiz IDs that were prefetched
+ * Prefetches quizzes related to the current quiz by topic, loading them into cache for faster future access.
+ *
+ * @param currentQuizId - The ID of the quiz for which to find related quizzes.
+ * @param limit - Maximum number of related quizzes to prefetch. Defaults to 3.
+ * @returns An array of quiz IDs that were successfully prefetched.
  */
 export async function prefetchRelatedQuizzes(currentQuizId: string, limit: number = 3): Promise<string[]> {
   try {
@@ -459,12 +479,13 @@ export async function prefetchRelatedQuizzes(currentQuizId: string, limit: numbe
 }
 
 /**
- * Optimized batch fetching for a list of quizzes
- * This minimizes database queries by fetching all quizzes in one request
- * 
- * @param quizIds Array of quiz IDs to fetch
- * @param useCache Whether to use cache for individual quizzes
- * @returns Object mapping quiz IDs to quizzes
+ * Fetches multiple quizzes and their questions in a single batch operation, minimizing database queries and enriching questions by type.
+ *
+ * Returns a mapping of quiz IDs to enriched quiz objects or null if a quiz is not found or cannot be fetched.
+ *
+ * @param quizIds - Array of quiz IDs to fetch.
+ * @param useCache - Whether to use cached quiz data when available.
+ * @returns An object mapping each quiz ID to its corresponding enriched quiz or null.
  */
 export async function batchFetchQuizzes(
   quizIds: string[],
@@ -661,12 +682,11 @@ export async function batchFetchQuizzes(
 }
 
 /**
- * Fetch quiz metadata first and then progressively load questions
- * This improves perceived performance by showing content to the user sooner
- * 
- * @param quizId The ID of the quiz to fetch
- * @param onQuestionsProgress Optional callback for question loading progress
- * @returns A Promise with the initial quiz metadata and a function to load questions
+ * Fetches quiz metadata immediately and provides a function to progressively load and enrich all questions, enabling faster initial display and optional progress updates.
+ *
+ * @param quizId - The ID of the quiz to fetch.
+ * @param onQuestionsProgress - Optional callback invoked with the number of loaded and total questions as enrichment progresses.
+ * @returns A promise resolving to an object containing the initial quiz metadata (with empty questions) and a `loadQuestions` function that loads and enriches all questions for the quiz.
  */
 export async function fetchQuizProgressively(
   quizId: string,

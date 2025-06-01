@@ -44,6 +44,14 @@ export {
   enrichYesNoMultiQuestions,
 };
 
+/**
+ * Enriches a base quiz question with all necessary details for its specific type.
+ *
+ * Depending on the question's type, fetches and attaches related options, targets, correct answers, or other required data from the database. Returns a fully constructed question object of the appropriate type, or `null` if required data is missing or an error occurs.
+ *
+ * @param baseQuestion - The base question object to enrich.
+ * @returns The enriched question object with all necessary details, or `null` if enrichment fails or the type is unrecognized.
+ */
 export async function enrichQuestionWithDetails(
   baseQuestion: BaseQuestion
 ): Promise<AnyQuestion | null> {
@@ -450,6 +458,18 @@ export async function enrichQuestionWithDetails(
   }
 }
 
+/**
+ * Fetches a quiz by its ID, including all associated questions enriched with detailed data and randomized order.
+ *
+ * Optionally filters questions by one or more specified types. Questions are batch-enriched by type, then randomized to ensure variety and unpredictability in their order.
+ *
+ * @param quizId - The unique identifier of the quiz to fetch.
+ * @param questionTypes - Optional question type or array of types to filter which questions are included.
+ * @returns The quiz object with enriched and randomized questions, or `null` if the quiz is not found or an error occurs.
+ *
+ * @remark
+ * If some questions cannot be enriched due to missing or incomplete data, they are omitted from the returned quiz.
+ */
 export async function fetchQuizById(
   quizId: string,
   questionTypes?: string | string[]
@@ -585,7 +605,15 @@ export async function fetchQuizById(
   }
 }
 
-// New function to fetch a random question by type and filters
+/**
+ * Fetches a random quiz question of a specified type, applying optional difficulty and tag filters.
+ *
+ * Selects up to 10 matching questions from the database, randomly chooses one, and enriches it with detailed data.
+ *
+ * @param type - The question type to filter by.
+ * @param filters - Optional filters for difficulty and tags.
+ * @returns The enriched random question, or `null` if none are found or an error occurs.
+ */
 export async function fetchRandomQuestionByTypeAndFilters(
   type: string, // Should be QuestionType, but using string for broader initial compatibility
   filters: { difficulty?: string; tags?: string[] }
@@ -640,7 +668,14 @@ export async function fetchRandomQuestionByTypeAndFilters(
   }
 }
 
-// Fisher-Yates shuffle algorithm for optimal randomization
+/**
+ * Returns a new array with the elements of the input array shuffled in random order.
+ *
+ * The original array is not modified.
+ *
+ * @param array - The array to shuffle.
+ * @returns A new array containing the shuffled elements.
+ */
 function shuffleArray<T>(array: T[]): T[] {
   const shuffled = [...array]; // Create a copy to avoid mutating the original
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -650,6 +685,12 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+/**
+ * Groups an array of base questions by their type.
+ *
+ * @param questions - The list of base questions to group.
+ * @returns An object mapping each question type to an array of questions of that type.
+ */
 export function groupQuestionsByType(questions: BaseQuestion[]): Record<string, BaseQuestion[]> {
   return questions.reduce((acc, q) => {
     if (!acc[q.type]) {
@@ -660,7 +701,14 @@ export function groupQuestionsByType(questions: BaseQuestion[]): Record<string, 
   }, {} as Record<string, BaseQuestion[]>);
 }
 
-// Batch fetch for single selection questions
+/**
+ * Enriches an array of base single selection questions with their options and correct answers.
+ *
+ * Fetches all related options and correct answer IDs in batch for the provided questions, returning fully constructed {@link SingleSelectionQuestion} objects. Questions with missing options or correct answers are excluded from the result.
+ *
+ * @param questions - The base questions to enrich.
+ * @returns An array of enriched single selection questions.
+ */
 async function enrichSingleSelectionQuestions(questions: BaseQuestion[]): Promise<SingleSelectionQuestion[]> {
   if (!questions.length) return [];
   
@@ -731,7 +779,14 @@ async function enrichSingleSelectionQuestions(questions: BaseQuestion[]): Promis
   }
 }
 
-// Batch fetch for multi choice questions
+/**
+ * Enriches an array of base multi-choice questions with their options and correct answers.
+ *
+ * Fetches all options and correct answer option IDs for the provided questions in batch, returning fully constructed {@link MultiChoiceQuestion} objects. Questions with incomplete data are omitted from the result.
+ *
+ * @param questions - The base questions to enrich.
+ * @returns An array of enriched multi-choice questions.
+ */
 async function enrichMultiChoiceQuestions(questions: BaseQuestion[]): Promise<MultiChoiceQuestion[]> {
   if (!questions.length) return [];
   
@@ -805,7 +860,15 @@ async function enrichMultiChoiceQuestions(questions: BaseQuestion[]): Promise<Mu
   }
 }
 
-// Batch fetch for drag and drop questions
+/**
+ * Enriches an array of base drag and drop questions with their targets, options, and correct pairs.
+ *
+ * Fetches all related targets, options, and correct answer pairs in batches for the provided questions.
+ * Returns only questions with complete data; incomplete questions are omitted.
+ *
+ * @param questions - The base drag and drop questions to enrich.
+ * @returns An array of fully enriched {@link DragAndDropQuestion} objects.
+ */
 async function enrichDragAndDropQuestions(questions: BaseQuestion[]): Promise<DragAndDropQuestion[]> {
   if (!questions.length) return [];
   
@@ -901,7 +964,14 @@ async function enrichDragAndDropQuestions(questions: BaseQuestion[]): Promise<Dr
   }
 }
 
-// Batch fetch for dropdown selection questions
+/**
+ * Enriches an array of base dropdown selection questions with their options and placeholder targets.
+ *
+ * Fetches all related options and placeholder-to-correct-value mappings for each question in a single batch, returning fully constructed {@link DropdownSelectionQuestion} objects. Returns an empty array if input is empty or if data is incomplete.
+ *
+ * @param questions - The base dropdown selection questions to enrich.
+ * @returns An array of enriched dropdown selection questions.
+ */
 async function enrichDropdownSelectionQuestions(questions: BaseQuestion[]): Promise<DropdownSelectionQuestion[]> {
   if (!questions.length) return [];
   
@@ -977,7 +1047,14 @@ async function enrichDropdownSelectionQuestions(questions: BaseQuestion[]): Prom
   }
 }
 
-// Batch fetch for order questions
+/**
+ * Enriches an array of base order questions with their items and correct order sequence.
+ *
+ * Fetches all related items and correct order data in batches for the provided questions. Returns only those questions for which both items and correct order are available.
+ *
+ * @param questions - The base order questions to enrich.
+ * @returns An array of enriched {@link OrderQuestion} objects.
+ */
 async function enrichOrderQuestions(questions: BaseQuestion[]): Promise<OrderQuestion[]> {
   if (!questions.length) return [];
   
@@ -1064,7 +1141,14 @@ async function enrichOrderQuestions(questions: BaseQuestion[]): Promise<OrderQue
   }
 }
 
-// Batch fetch for yes/no questions
+/**
+ * Enriches an array of base yes/no questions with their correct answers.
+ *
+ * Fetches correct answers for all provided questions in a single batch query and constructs fully detailed {@link YesNoQuestion} objects. Questions without a corresponding correct answer are skipped.
+ *
+ * @param questions - The base yes/no questions to enrich.
+ * @returns An array of enriched {@link YesNoQuestion} objects.
+ */
 async function enrichYesNoQuestions(questions: BaseQuestion[]): Promise<YesNoQuestion[]> {
   if (!questions.length) return [];
   
@@ -1110,7 +1194,14 @@ async function enrichYesNoQuestions(questions: BaseQuestion[]): Promise<YesNoQue
   }
 }
 
-// Batch fetch for yes/no multi questions
+/**
+ * Enriches an array of base yes/no multi-statement questions with their statements and correct answers.
+ *
+ * Fetches all statements and corresponding correct answers for each question in a single batch, returning fully constructed {@link YesNoMultiQuestion} objects. If data is incomplete for a question, it is skipped.
+ *
+ * @param questions - The base yes/no multi-statement questions to enrich.
+ * @returns An array of enriched {@link YesNoMultiQuestion} objects. Returns an empty array if input is empty or on error.
+ */
 async function enrichYesNoMultiQuestions(questions: BaseQuestion[]): Promise<YesNoMultiQuestion[]> {
   if (!questions.length) return [];
   
@@ -1196,6 +1287,11 @@ async function enrichYesNoMultiQuestions(questions: BaseQuestion[]): Promise<Yes
   }
 }
 
+/**
+ * Retrieves all quizzes from the database.
+ *
+ * @returns An array of all quizzes, or an empty array if an error occurs.
+ */
 export async function fetchAllQuizzes(): Promise<Quiz[]> {
   try {
     const { data: quizzes, error } = await supabase

@@ -16,8 +16,13 @@ export interface UseNetworkResult {
 }
 
 /**
- * Custom hook to monitor network connectivity and connection quality
- * Uses Network Information API when available, falls back to basic online/offline detection
+ * React hook that provides real-time network connectivity and connection quality information.
+ *
+ * Uses the Network Information API when available to report connection type, estimated speed, round-trip time, data saver status, and metered connection status. Falls back to basic online/offline detection if the API is unsupported.
+ *
+ * @returns An object containing network status properties, including online state, effective connection type, downlink speed, round-trip time, data saver mode, metered connection status, a flag for unsupported environments, and a derived flag indicating if the connection is slow.
+ *
+ * @remark The `unsupported` property is `true` if the Network Information API is not available in the current browser.
  */
 export default function useNetwork(): UseNetworkResult {
   // Check if we're in a browser environment

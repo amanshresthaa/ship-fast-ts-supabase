@@ -23,7 +23,14 @@ interface QuizProgressResponse {
   created_at: string;
 }
 
-// Handle GET requests to fetch user quiz progress
+/**
+ * Handles GET requests to retrieve the authenticated user's quiz progress for a specific quiz.
+ *
+ * Returns the user's quiz progress data for the given `quizId` and optional `questionTypeFilter`. If no progress is found, returns `progress: null`. Responds with appropriate error messages and status codes for authentication failure, missing parameters, or server errors.
+ *
+ * @remark
+ * Returns a 401 status if the user is not authenticated, 400 if `quizId` is missing, and 500 for unexpected errors.
+ */
 export async function GET(request: NextRequest) {
   const cookieStore = cookies();
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
@@ -76,7 +83,15 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Handle POST requests to save user quiz progress
+/**
+ * Handles POST requests to save or update the authenticated user's quiz progress.
+ *
+ * Expects a JSON body containing `quizId`, `currentQuestionIndex`, and `userAnswers`. Optionally accepts `questionTypeFilter` and `isExplicitlyCompleted`. Performs an upsert operation in the `user_quiz_progress` table keyed by user ID, quiz ID, and question type filter.
+ *
+ * Returns the saved progress data on success, or an error response with appropriate HTTP status on failure.
+ *
+ * @returns A JSON response containing the saved quiz progress or an error message.
+ */
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
@@ -134,7 +149,13 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle DELETE requests to remove user quiz progress
+/**
+ * Handles DELETE requests to remove the authenticated user's quiz progress for a specified quiz.
+ *
+ * Deletes the user's progress record from the `user_quiz_progress` table based on the provided `quizId` and optional `questionTypeFilter`.
+ *
+ * @returns A JSON response indicating success, or an error message with the appropriate HTTP status code.
+ */
 export async function DELETE(request: NextRequest) {
   const cookieStore = cookies();
   const supabase = createRouteHandlerClient({ cookies: () => cookieStore });

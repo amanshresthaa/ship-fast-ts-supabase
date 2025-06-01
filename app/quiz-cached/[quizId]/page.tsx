@@ -8,7 +8,14 @@ export const revalidate = 3600; // Revalidate page every hour
 // Add dynamic = 'force-dynamic' if you want to ensure this is always server-rendered
 // export const dynamic = 'force-dynamic';
 
-// Server Component for Quiz Rendering
+/**
+ * Server-rendered page component that displays quiz details by quiz ID with cached data fetching and revalidation.
+ *
+ * Fetches quiz data on the server using an optimized method and renders the quiz content or an error message based on data availability. The page is cached and revalidated according to the configured interval.
+ *
+ * @param params - Route parameters containing the quiz ID.
+ * @returns The rendered quiz page with quiz details or an error message if the quiz is not found.
+ */
 export default async function CachedQuizPage({ params }: { params: { quizId: string } }) {
   const { quizId } = params;
   
@@ -31,7 +38,12 @@ export default async function CachedQuizPage({ params }: { params: { quizId: str
 }
 
 // Client Component that receives the server-fetched data 
-// and can also refresh it client-side if needed
+/**
+ * Wraps the quiz display component with a context provider, supplying initial quiz data and quiz ID for client-side state management.
+ *
+ * @param initialData - The initial quiz data fetched on the server.
+ * @param quizId - The unique identifier for the quiz.
+ */
 function QuizWithData({ initialData, quizId }: { initialData: any; quizId: string }) {
   return (
     <QuizDataProvider quizId={quizId} initialData={initialData}>
@@ -40,7 +52,11 @@ function QuizWithData({ initialData, quizId }: { initialData: any; quizId: strin
   );
 }
 
-// Client Component that displays the quiz using the context
+/**
+ * Displays a summary of the cached quiz data fetching strategy and its benefits.
+ *
+ * Intended to be used within a quiz data context, this component presents static informational content about server-side data pre-fetching, cache revalidation, and data consistency between server and client.
+ */
 function QuizDisplay() {
   // This would normally use the useQuizData() hook to get quiz data from context
   

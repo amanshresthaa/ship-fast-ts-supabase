@@ -10,8 +10,16 @@ interface UseAnimationFrameOptions {
 }
 
 /**
- * Custom hook for smooth animations using requestAnimationFrame
- * Returns a progress value between 0 and 1
+ * React hook for animating a progress value from 0 to 1 using `requestAnimationFrame`.
+ *
+ * Provides smooth, frame-based animation with configurable duration, optional delay, easing function, and completion callback.
+ *
+ * @param options - Optional configuration for the animation, including duration (milliseconds), delay (milliseconds), easing function, and an `onComplete` callback.
+ * @returns An object containing:
+ *   - `progress`: Current eased progress value between 0 and 1.
+ *   - `isRunning`: Whether the animation is currently active.
+ *   - `animate`: Function to start the animation.
+ *   - `reset`: Function to reset progress and running state.
  */
 export default function useAnimationFrame({
   duration = 300,

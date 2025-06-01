@@ -1,7 +1,12 @@
 import React from 'react';
 import ClientQuizPage from '../client-page';
 
-// This is a server component that properly handles async params in Next.js 15
+/**
+ * Renders the quiz test page for a specific quiz and question type.
+ *
+ * @param params - An object containing the quiz ID and question type.
+ * @returns A React element displaying the quiz page for the given quiz and question type.
+ */
 export default async function QuizTestByTypePage({ params }: { params: { quizId: string, questionType: string } }) {
   // Using server component to access params properly - need to await params in Next.js 13+
   const resolvedParams = await Promise.resolve(params);

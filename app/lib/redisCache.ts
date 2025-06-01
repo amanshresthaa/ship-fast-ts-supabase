@@ -10,8 +10,11 @@ const DEFAULT_TTL = 3600; // 1 hour in seconds
 let redisClient: ReturnType<typeof createClient> | null = null;
 
 /**
- * Initialize and get the Redis client
- * Lazy initialization to avoid connection in environments where Redis isn't needed
+ * Returns a singleton Redis client instance, initializing and connecting it if necessary.
+ *
+ * @returns The connected Redis client, or null if connection fails.
+ *
+ * @remark The client is lazily initialized and reused across calls. If a connection error occurs during initialization, the client is reset to null and the error is logged.
  */
 export async function getRedisClient() {
   if (!redisClient) {
@@ -36,10 +39,13 @@ export async function getRedisClient() {
 }
 
 /**
- * Cache key builder for consistency across the application
- * @param key Base key name
- * @param params Additional parameters to include in the key
- * @returns Formatted cache key
+ * Constructs a standardized cache key for quiz-related data.
+ *
+ * Appends additional parameters as colon-separated key-value pairs to ensure uniqueness and consistency.
+ *
+ * @param key - The base key name.
+ * @param params - Optional key-value pairs to further distinguish the cache entry.
+ * @returns A formatted cache key string prefixed with `quiz:`.
  */
 export function buildCacheKey(key: string, params: Record<string, string> = {}): string {
   let cacheKey = `quiz:${key}`;
@@ -53,9 +59,10 @@ export function buildCacheKey(key: string, params: Record<string, string> = {}):
 }
 
 /**
- * Get item from Redis cache
- * @param key Cache key
- * @returns Cached data or null if not found
+ * Retrieves and deserializes an item from the Redis cache by key.
+ *
+ * @param key - The cache key to retrieve.
+ * @returns The cached data as an object of type {@link T}, or null if not found or on error.
  */
 export async function getCacheItem<T>(key: string): Promise<T | null> {
   try {
@@ -73,11 +80,12 @@ export async function getCacheItem<T>(key: string): Promise<T | null> {
 }
 
 /**
- * Set item in Redis cache
- * @param key Cache key
- * @param data Data to cache
- * @param ttl Time to live in seconds (optional, defaults to 1 hour)
- * @returns Success status
+ * Stores data in Redis cache under the specified key with an optional time-to-live.
+ *
+ * @param key - The cache key to store the data under.
+ * @param data - The data to cache.
+ * @param ttl - Optional time-to-live in seconds; defaults to 1 hour if not provided.
+ * @returns True if the data was successfully cached; false otherwise.
  */
 export async function setCacheItem<T>(key: string, data: T, ttl = DEFAULT_TTL): Promise<boolean> {
   try {
@@ -96,9 +104,10 @@ export async function setCacheItem<T>(key: string, data: T, ttl = DEFAULT_TTL): 
 }
 
 /**
- * Delete item from Redis cache
- * @param key Cache key
- * @returns Success status
+ * Deletes an item from the Redis cache by its key.
+ *
+ * @param key - The cache key to delete.
+ * @returns `true` if the item was successfully deleted; otherwise, `false`.
  */
 export async function deleteCacheItem(key: string): Promise<boolean> {
   try {
@@ -114,8 +123,11 @@ export async function deleteCacheItem(key: string): Promise<boolean> {
 }
 
 /**
- * Clear all quiz cache entries or by pattern
- * @param pattern Optional pattern to match keys (e.g., 'quiz:aws*')
+ * Deletes all quiz cache entries matching a given pattern.
+ *
+ * @param pattern - Optional pattern to match cache keys. Defaults to all quiz-related keys if not provided.
+ *
+ * @remark If no keys match the pattern, no action is taken.
  */
 export async function clearCache(pattern?: string): Promise<void> {
   try {
@@ -151,8 +163,11 @@ interface CacheAnalytics {
 }
 
 /**
- * Record cache hit
- * @param key Cache key
+ * Records a cache hit for the specified key, updating global and per-key analytics in Redis.
+ *
+ * Increments the total hit counter and the hit counter for the given key, updates the last accessed timestamp, and sets a 7-day expiration for per-key statistics.
+ *
+ * @param key - The cache key for which the hit is recorded.
  */
 export async function recordCacheHit(key: string): Promise<void> {
   try {
@@ -174,8 +189,11 @@ export async function recordCacheHit(key: string): Promise<void> {
 }
 
 /**
- * Record cache miss
- * @param key Cache key
+ * Records a cache miss event for the specified cache key.
+ *
+ * Increments global and per-key miss counters in Redis analytics, updates the last accessed timestamp, and sets a 7-day expiration for per-key statistics.
+ *
+ * @param key - The cache key for which the miss is recorded.
  */
 export async function recordCacheMiss(key: string): Promise<void> {
   try {
@@ -197,9 +215,10 @@ export async function recordCacheMiss(key: string): Promise<void> {
 }
 
 /**
- * Record a cache operation
- * @param operation Operation name (e.g., 'set', 'get', 'delete')
- * @param key Cache key
+ * Increments the global count for a specific cache operation in analytics.
+ *
+ * @param operation - The cache operation performed (e.g., 'set', 'get', 'delete').
+ * @param key - The cache key involved in the operation.
  */
 export async function recordCacheOperation(operation: string, key: string): Promise<void> {
   try {
@@ -213,8 +232,9 @@ export async function recordCacheOperation(operation: string, key: string): Prom
 }
 
 /**
- * Get cache analytics
- * @returns Cache analytics data
+ * Retrieves aggregated cache analytics data, including global hit/miss counts, operation statistics, and per-key usage details.
+ *
+ * @returns A {@link CacheAnalytics} object containing cache usage metrics, or `null` if retrieval fails.
  */
 export async function getCacheAnalytics(): Promise<CacheAnalytics | null> {
   try {

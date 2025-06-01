@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server';
-import { fetchQuizById } from '../../../lib/supabaseQuizService'; // We'll keep using the server-side service for API routes
+import { fetchQuizById } from '../../../lib/supabaseQuizService'; /**
+ * Handles GET requests to retrieve quiz data by ID, with optional filtering by question types.
+ *
+ * Extracts the quiz ID from route parameters and supports filtering quiz questions by type using the `questionType` or `types` query parameters. Returns the quiz data as JSON, or an error response if the quiz is not found or an error occurs.
+ *
+ * @param request - The incoming HTTP request.
+ * @param params - Route parameters containing the quiz ID.
+ * @returns A JSON response with the quiz data, or an error message with the appropriate HTTP status code.
+ */
 
 export async function GET(
   request: Request,

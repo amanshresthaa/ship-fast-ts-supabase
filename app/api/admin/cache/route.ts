@@ -4,7 +4,13 @@ import { clearQuizCache, getQuizCacheStats } from '../../../lib/supabaseQuizServ
 // Make sure the page is never cached by browsers
 export const dynamic = 'force-dynamic';
 
-// Get cache statistics
+/**
+ * Handles GET requests to retrieve quiz cache statistics for admin purposes.
+ *
+ * Requires a valid Bearer token in the Authorization header if an admin API key is configured.
+ *
+ * @returns A JSON response containing quiz cache statistics, or an error message with appropriate HTTP status code.
+ */
 export async function GET(request: NextRequest) {
   try {
     // Basic API key authentication
@@ -29,7 +35,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Clear cache (DELETE method)
+/**
+ * Handles DELETE requests to clear quiz cache, either globally or for a specific quiz.
+ *
+ * Requires a valid admin API key in the Authorization header if {@link process.env.ADMIN_API_KEY} is set.
+ * If a `quizId` query parameter is provided, clears the cache for that quiz; otherwise, clears all quiz cache.
+ *
+ * @returns A JSON response indicating success and which cache was cleared, or an error response on failure.
+ */
 export async function DELETE(request: NextRequest) {
   try {
     // Basic API key authentication
@@ -63,7 +76,13 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// Force refresh specific quiz (POST method)
+/**
+ * Handles POST requests to force-refresh the cache for a specific quiz.
+ *
+ * Authenticates the request using a Bearer token if an admin API key is set. Expects a JSON body containing a `quizId`. Clears the cache for the specified quiz, then re-fetches and updates the cache with the latest quiz data. Returns a JSON response indicating success and the number of questions in the quiz, or an error response if the quiz is not found or another error occurs.
+ *
+ * @remark Returns a 401 response if authentication fails, 400 if `quizId` is missing, 404 if the quiz does not exist, and 500 for other errors.
+ */
 export async function POST(request: NextRequest) {
   try {
     // Basic API key authentication

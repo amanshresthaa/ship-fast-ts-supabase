@@ -5,7 +5,11 @@ import { clearQuizCache } from '../../lib/supabaseQuizServiceRedis';
 // Add dynamic to ensure the page is always server-rendered with fresh data
 export const dynamic = 'force-dynamic';
 
-// Server Component to fetch cache analytics
+/**
+ * Displays quiz cache analytics and management controls in a server-rendered dashboard.
+ *
+ * Fetches cache statistics, calculates hit rates and total requests, and presents summary and per-key metrics for both Redis and in-memory cache formats. Provides an admin interface to clear the entire quiz cache.
+ */
 async function CacheAnalyticsContent() {
   // Fetch analytics data
   const analytics = await getQuizCacheStats();
@@ -145,6 +149,11 @@ async function CacheAnalyticsContent() {
   );
 }
 
+/**
+ * Renders the cache analytics dashboard page with summary information and controls.
+ *
+ * Displays a header, description, and asynchronously loads cache analytics content within a Suspense boundary.
+ */
 export default function CacheAnalyticsDashboard() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-10">

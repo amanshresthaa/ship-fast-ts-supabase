@@ -4,6 +4,12 @@ import CardArticle from "../../_assets/components/CardArticle";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+/**
+ * Generates SEO metadata for an author's blog profile page.
+ *
+ * @param params - Route parameters containing the author's ID slug.
+ * @returns Metadata tags for the author's profile page, including title, description, and canonical URL.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -19,6 +25,17 @@ export async function generateMetadata({
   });
 }
 
+/**
+ * Renders an author's profile page with their details and a list of their most recent articles.
+ *
+ * Displays the author's name, job title, description, avatar, and social links, followed by a grid of articles authored by them.
+ *
+ * @param params - Route parameters containing the author's slug as {@link params.authorId}.
+ *
+ * @returns A React component displaying the author's profile and their articles.
+ *
+ * @remark If the author corresponding to {@link params.authorId} is not found, the page may render with undefined data.
+ */
 export default async function Author({
   params,
 }: {

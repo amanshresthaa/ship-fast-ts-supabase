@@ -3,13 +3,15 @@ import { QuestionController } from '../controllers/QuestionController';
 import { AnyQuestion } from '@/app/types/quiz';
 
 /**
- * Hook that manages auto-validation for question components
- * 
- * @param controller The question controller
- * @param initialAnswer Initial answer state
- * @param onAnswerChange Callback when answer changes
- * @param validateOnComplete Whether to auto-validate when answer is complete
- * @returns [answer, setAnswer, isValidating, allComplete]
+ * React hook that manages automatic validation logic for question components.
+ *
+ * Tracks the current answer state, determines if the answer is complete, and triggers validation when appropriate. Automatically calls the provided callback when a complete answer is detected and validation is enabled. Prevents duplicate submissions and skips validation on initial render.
+ *
+ * @param controller - Controller used to determine answer completeness.
+ * @param initialAnswer - The initial answer value.
+ * @param onAnswerChange - Callback invoked when a complete answer is detected and validation is triggered.
+ * @param validateOnComplete - If true, triggers validation automatically when the answer becomes complete. Defaults to true.
+ * @returns A tuple containing the current answer, a setter function for the answer, a boolean indicating if validation is in progress, and a boolean indicating if the answer is complete.
  */
 export function useAutoValidation<Q extends AnyQuestion, A>(
   controller: QuestionController<Q, A>,

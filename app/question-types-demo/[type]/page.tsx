@@ -6,7 +6,13 @@ import SingleSelectionComponent from '../../features/quiz/components/question-ty
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
 import DropdownSelectionComponent from '../../features/quiz/components/question-types/DropdownSelectionComponent'; // Import DropdownSelectionComponent
 import OrderQuestionComponent from '../../features/quiz/components/question-types/OrderQuestionComponent'; // Import OrderQuestionComponent
-import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
+import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; /**
+ * Displays an interactive demo for a specific quiz question type, allowing users to filter, answer, and review questions of various formats.
+ *
+ * Loads a random question of the selected type with optional difficulty and tag filters. Supports single selection, multiple choice, dropdown selection, and order question types. Provides controls to lock answers, show feedback, and reset filters. Handles loading, error, and empty states with user-friendly messages and navigation options.
+ *
+ * @param params - Contains the question type to display in the demo.
+ */
 
 export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);

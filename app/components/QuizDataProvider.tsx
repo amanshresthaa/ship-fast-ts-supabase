@@ -28,7 +28,18 @@ interface QuizDataProviderProps {
   initialData?: Quiz | null;
 }
 
-// Provider component with optional initial data (for SSR)
+/**
+ * Provides quiz data, loading state, error, and refetch functionality to descendant components via React context.
+ *
+ * Optionally accepts initial quiz data for server-side rendering or prefetching scenarios. Fetches quiz data from a cached API endpoint based on the provided {@link quizId}, managing loading and error states internally.
+ *
+ * @param children - React nodes to be rendered within the provider.
+ * @param quizId - The unique identifier for the quiz to fetch.
+ * @param initialData - Optional initial quiz data to populate the context without fetching.
+ *
+ * @remark
+ * If {@link initialData} is provided, the provider will not fetch quiz data on mount.
+ */
 export function QuizDataProvider({ children, quizId, initialData }: QuizDataProviderProps) {
   const [quiz, setQuiz] = useState<Quiz | null>(initialData || null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialData);
@@ -78,7 +89,13 @@ export function QuizDataProvider({ children, quizId, initialData }: QuizDataProv
   );
 }
 
-// Base hook to get the context
+/**
+ * Retrieves the current quiz context.
+ *
+ * @returns The quiz context value.
+ *
+ * @throws {Error} If called outside of a {@link QuizDataProvider}.
+ */
 export function useQuizContext() {
   const context = useContext(QuizContext);
   
@@ -90,28 +107,55 @@ export function useQuizContext() {
 }
 
 // Selector hooks to access only specific parts of the context
-// This prevents unnecessary re-renders when other parts of the context change
+/**
+ * Returns the current quiz data from the quiz context.
+ *
+ * Use this hook to access the quiz object without causing re-renders when unrelated context values change.
+ *
+ * @returns The current quiz data, or null if not loaded.
+ */
 export function useQuizData() {
   const { quiz } = useQuizContext();
   return quiz;
 }
 
+/**
+ * Returns the loading state for quiz data fetching from the quiz context.
+ *
+ * @returns `true` if quiz data is currently being loaded; otherwise, `false`.
+ */
 export function useQuizLoadingState() {
   const { isLoading } = useQuizContext();
   return isLoading;
 }
 
+/**
+ * Returns the current error state from the quiz context.
+ *
+ * @returns The error encountered during quiz data fetching, or null if no error has occurred.
+ */
 export function useQuizError() {
   const { error } = useQuizContext();
   return error;
 }
 
+/**
+ * Returns a function to manually refetch the quiz data from the API.
+ *
+ * @returns A function that triggers a reload of the quiz data when called.
+ */
 export function useQuizRefetch() {
   const { refetch } = useQuizContext();
   return refetch;
 }
 
-// Still provide the full context access if needed
+/**
+ * Returns the complete quiz context object, including quiz data, loading state, error, and refetch function.
+ *
+ * Use this hook when you need access to all quiz-related state and actions provided by the context.
+ *
+ * @returns The full quiz context value.
+ */
 export function useFullQuizContext() {
   return useQuizContext();
 }

@@ -36,7 +36,17 @@ const CACHE_TTL = 3600;
 const isProduction = process.env.NODE_ENV === 'production';
 
 /**
- * Redis-based implementation of fetchQuizById with advanced caching
+ * Fetches a quiz by ID from Supabase, enriching its questions and utilizing Redis caching for performance.
+ *
+ * Retrieves quiz metadata and associated questions, optionally filtered by question type. Enriches questions in parallel according to their type, assembles the final quiz object, and caches the result in Redis for subsequent requests.
+ *
+ * @param quizId - The unique identifier of the quiz to fetch.
+ * @param questionType - Optional question type to filter questions within the quiz.
+ * @param useCache - Whether to use Redis caching for this operation (default: true).
+ * @returns The enriched quiz object, or `null` if not found or on error.
+ *
+ * @remark
+ * Returns a quiz object with an empty questions array if the quiz exists but contains no questions. Logs warnings if the quiz is missing or if not all questions could be enriched.
  */
 export async function fetchQuizByIdRedis(
   quizId: string,
@@ -176,8 +186,14 @@ export async function fetchQuizByIdRedis(
 }
 
 /**
- * The main fetchQuizById function that uses either Redis or in-memory cache
- * depending on the environment
+ * Retrieves a quiz by ID with question enrichment, using Redis caching in production and in-memory caching in development.
+ *
+ * Selects the appropriate caching and data-fetching strategy based on the current environment.
+ *
+ * @param quizId - The unique identifier of the quiz to retrieve.
+ * @param questionType - Optional filter to include only questions of a specific type.
+ * @param useCache - Whether to use the cache for retrieval. Defaults to true.
+ * @returns The enriched quiz object if found, or null if not found or on error.
  */
 export async function fetchQuizById(
   quizId: string,
@@ -195,8 +211,9 @@ export async function fetchQuizById(
 }
 
 /**
- * Clear the quiz cache
- * @param quizId Optional quiz ID to clear specific cache entry
+ * Clears cached quiz data, either for a specific quiz or for all quizzes.
+ *
+ * If a {@link quizId} is provided, only the cache entries related to that quiz are cleared; otherwise, the entire quiz cache is cleared.
  */
 export async function clearQuizCache(quizId?: string): Promise<void> {
   if (isProduction) {
@@ -215,7 +232,11 @@ export async function clearQuizCache(quizId?: string): Promise<void> {
 }
 
 /**
- * Get cache statistics
+ * Retrieves quiz cache statistics for the current environment.
+ *
+ * In production, returns Redis cache analytics. In development, returns in-memory cache statistics.
+ *
+ * @returns A promise resolving to cache analytics data.
  */
 export async function getQuizCacheStats() {
   if (isProduction) {

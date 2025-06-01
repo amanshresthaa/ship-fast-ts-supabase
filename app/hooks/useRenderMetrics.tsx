@@ -10,8 +10,12 @@ interface RenderMetrics {
 }
 
 /**
- * Custom hook for tracking component render performance
- * @returns A debug object with render metrics
+ * Tracks and records render performance metrics for a React component during development.
+ *
+ * @param componentName - The display name used to identify the component in metrics and logs.
+ *
+ * @remark
+ * Metrics are only collected in development mode. Render statistics are stored on the global {@link window.__RENDER_METRICS__} object for inspection in the browser console.
  */
 export default function useRenderMetrics(componentName: string): void {
   const renderCount = useRef(0);
@@ -66,7 +70,13 @@ export default function useRenderMetrics(componentName: string): void {
 }
 
 /**
- * Higher-order component wrapper for tracking render performance
+ * Wraps a React component to enable render performance tracking during development.
+ *
+ * The wrapped component will collect and store render metrics, including render count and timing information, accessible via the browser console.
+ *
+ * @param Component - The React component to be wrapped.
+ * @param options - Optional settings, including a custom display name for metrics tracking.
+ * @returns A new component with render metrics tracking enabled.
  */
 export function withRenderMetrics<P extends object>(
   Component: React.ComponentType<P>,

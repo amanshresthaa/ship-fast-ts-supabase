@@ -24,7 +24,13 @@ const getRelatedQuizIds = (quizId: string): string[] => {
   return quizMap[quizId] || [];
 };
 
-// Server Component for the optimized quiz page
+/**
+ * Renders the optimized quiz page with server-side data fetching, caching, and performance features.
+ *
+ * Displays a quiz identified by the given quiz ID, including navigation breadcrumbs, a summary of optimization techniques, related quizzes, sample performance metrics, and admin tools for cache management. The quiz content is rendered within a React Suspense boundary for improved loading experience.
+ *
+ * @param params - Route parameters containing the quiz ID to display.
+ */
 export default async function OptimizedQuizPage({ params }: OptimizedQuizPageProps) {
   const { quizId } = params;
   

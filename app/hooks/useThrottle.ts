@@ -2,12 +2,13 @@
 import { useRef, useEffect, useCallback } from 'react';
 
 /**
- * A custom hook for throttling function calls
- * Implements the throttling technique from the performance checklist
- * 
- * @param callback The function to throttle
- * @param delay The minimum time between function calls in milliseconds
- * @returns A throttled version of the callback
+ * Returns a throttled version of the given callback that invokes at most once per specified delay.
+ *
+ * The throttled function ensures that the callback is called immediately if the delay has elapsed since the last call, or schedules a call with the latest arguments after the remaining delay. Pending timeouts are cleared on component unmount to prevent memory leaks.
+ *
+ * @param callback - The function to throttle.
+ * @param delay - Minimum interval between calls in milliseconds. Defaults to 200.
+ * @returns A throttled function that limits invocation frequency of {@link callback}.
  */
 function useThrottle<T extends (...args: any[]) => any>(
   callback: T,

@@ -18,9 +18,12 @@ import { YesNoMultiController } from "./YesNoMultiController";
 import { QuestionController } from "./QuestionController";
 
 /**
- * Factory function to create the appropriate controller for a question type
- * @param question The question data
- * @returns A controller instance for the specific question type
+ * Instantiates and returns the appropriate controller for a given question based on its type.
+ *
+ * @param question - The question object to create a controller for.
+ * @returns An instance of the controller corresponding to the question's type.
+ *
+ * @throws {Error} If the question type is not supported by any controller.
  */
 export function createQuestionController(question: AnyQuestion): QuestionController<any, any> {
   switch (question.type) {

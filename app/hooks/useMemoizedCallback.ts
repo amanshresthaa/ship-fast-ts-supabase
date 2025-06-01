@@ -2,12 +2,13 @@
 import { useCallback, useRef, useEffect } from 'react';
 
 /**
- * A hook that creates a memoized callback with dependencies tracking
- * Provides deeper memoization than standard useCallback
- * 
- * @param callback The callback function to memoize
- * @param deps Dependencies array for the callback
- * @returns A memoized version of the callback that only changes when dependencies change
+ * Returns a memoized callback whose identity only changes when the specified dependencies change, ensuring the latest callback is always invoked.
+ *
+ * Unlike React's standard `useCallback`, this hook tracks dependency changes using shallow equality checks, providing more precise memoization when dependencies are complex or frequently recreated.
+ *
+ * @param callback - The function to be memoized.
+ * @param deps - The list of dependencies that control when the memoized callback identity updates.
+ * @returns A stable callback function that always calls the latest {@link callback}, with its identity updated only when {@link deps} change.
  */
 function useMemoizedCallback<T extends (...args: any[]) => any>(
   callback: T,

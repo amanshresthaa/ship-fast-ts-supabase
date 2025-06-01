@@ -2,6 +2,14 @@ import React from 'react';
 import Link from 'next/link';
 import { fetchQuizById } from '../../../lib/supabaseQuizService';
 
+/**
+ * Displays a page listing all unique question types for a given quiz, allowing users to select a type to practice or view all questions.
+ *
+ * If the quiz is not found, renders a "Quiz Not Found" message with a link to the home page.
+ *
+ * @param params - An object containing the quiz ID as a string.
+ * @returns A React component rendering the question types selection page or a not found message.
+ */
 export default async function QuestionTypesListPage({ params }: { params: { quizId: string } }) {
   const { quizId } = await params;
   

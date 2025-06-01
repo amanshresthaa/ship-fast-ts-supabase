@@ -6,6 +6,13 @@ import Avatar from "../_assets/components/Avatar";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+/**
+ * Generates SEO metadata for a blog article page based on the provided route parameters.
+ *
+ * @returns An object containing SEO tags for the specified article, including Open Graph metadata.
+ *
+ * @remark Assumes the article exists for the given {@link params.articleId}; no fallback is provided if not found.
+ */
 export async function generateMetadata({
   params,
 }: {
@@ -37,6 +44,17 @@ export async function generateMetadata({
   });
 }
 
+/**
+ * Renders a blog article page with metadata, author information, and related articles.
+ *
+ * Displays the article's content, categories, publication date, and description. Includes structured data for SEO, a link back to the blog index, author avatar, and up to three related articles sharing categories with the current article.
+ *
+ * @param params - Route parameters containing the article ID slug.
+ *
+ * @returns The complete article page as a React component.
+ *
+ * @remark Assumes the article exists for the given slug; no fallback UI is provided if not found.
+ */
 export default async function Article({
   params,
 }: {
