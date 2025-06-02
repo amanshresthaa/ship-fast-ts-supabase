@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { AnyQuestion, YesNoQuestion, YesNoMultiQuestion } from '../../../types/quiz';
 import { QuizAction } from './useQuizState';
@@ -34,10 +34,11 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
       case 'single_selection':
         submitPayload.payload.correctAnswerOptionId = (question as any).correctAnswerOptionId;
         break;
-      case 'multi':
+      case 'multi': {
         submitPayload.payload.correctAnswerOptionIds = (question as any).correctAnswerOptionIds;
         break;
-      case 'dropdown_selection':
+      }
+      case 'dropdown_selection': {
         // For dropdown, map placeholderTargets to the expected format for client-side validation
         const correctDropdownAnswers: Record<string, string> = {};
         if ((question as any).placeholderTargets) {
@@ -47,6 +48,7 @@ export const useQuizScoring = (dispatch: React.Dispatch<QuizAction>) => {
         }
         submitPayload.payload.correctDropdownAnswers = correctDropdownAnswers;
         break;
+      }
       case 'order':
         // For 'order' questions, pass the correctOrder array for client-side validation
         submitPayload.payload.correctOrder = (question as any).correctOrder;

@@ -1,13 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import OrderQuestionComponent from '../components/question-types/OrderQuestionComponent';
+import OrderQuestionComponent from '../../components/question-types/OrderQuestionComponent';
 import { OrderQuestion } from '@/app/types/quiz';
 
 // Mock framer-motion to avoid animation issues in tests
 jest.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, layout, transition, ...props }: any) => (
+    div: ({ children, ...props }: any) => (
       <div {...props}>{children}</div>
     )
   }
@@ -55,9 +55,8 @@ describe('OrderQuestionComponent', () => {
     expect(screen.getByText('Third Item')).toBeInTheDocument();
     expect(screen.getByText('Fourth Item')).toBeInTheDocument();
 
-    // Check that the component sections are displayed
-    expect(screen.getByText('Available Items:')).toBeInTheDocument();
-    expect(screen.getByText('Ordered Sequence:')).toBeInTheDocument();
+    // Check that the instruction is displayed
+    expect(screen.getByText('Arrange the items in the correct order:')).toBeInTheDocument();
   });
 
   it('should disable dragging when submitted', () => {
@@ -69,20 +68,18 @@ describe('OrderQuestionComponent', () => {
       />
     );
     
-    // Get all draggable elements by looking for div elements containing items
-    const draggableElements = screen.getAllByText(/Item/).map(el => 
-      el.closest('div[draggable]')
-    ).filter(Boolean);
+    // Get all draggable elements
+    const draggableElements = screen.getAllByText(/Item/);
     
     // Check that all elements have draggable="false"
     draggableElements.forEach(element => {
-      expect(element).toHaveAttribute('draggable', 'false');
+      expect(element.parentElement).toHaveAttribute('draggable', 'false');
     });
   });
 
   it('should show feedback styling when requested', () => {
     // Create a user answer with items in wrong order
-    const userAnswer = { '0': 'i2', '1': 'i1', '2': 'i4', '3': 'i3' };
+    const userAnswer = ['i2', 'i1', 'i4', 'i3'];
     
     render(
       <OrderQuestionComponent 
@@ -100,7 +97,7 @@ describe('OrderQuestionComponent', () => {
 
   it('should initialize with user answer if provided', () => {
     // Create a specific user answer order
-    const userAnswer = { 'slot_0': 'i4', 'slot_1': 'i3', 'slot_2': 'i2', 'slot_3': 'i1' };
+    const userAnswer = ['i4', 'i3', 'i2', 'i1'];
     
     render(
       <OrderQuestionComponent 
@@ -110,15 +107,12 @@ describe('OrderQuestionComponent', () => {
       />
     );
 
-    // Check that items appear in the user's order in the ordered sequence section
-    // Look for items within slot containers specifically 
-    const slotItems = screen.getAllByText(/Item/).filter(el => 
-      el.closest('div[class*="relative pl-10"]')
-    );
-    expect(slotItems[0].textContent).toBe('Fourth Item');
-    expect(slotItems[1].textContent).toBe('Third Item');
-    expect(slotItems[2].textContent).toBe('Second Item');
-    expect(slotItems[3].textContent).toBe('First Item');
+    // Check that items appear in the user's order
+    const items = screen.getAllByText(/Item/);
+    expect(items[0].textContent).toBe('Fourth Item');
+    expect(items[1].textContent).toBe('Third Item');
+    expect(items[2].textContent).toBe('Second Item');
+    expect(items[3].textContent).toBe('First Item');
   });
 
   // Note: Testing drag and drop interactions is complex and often requires

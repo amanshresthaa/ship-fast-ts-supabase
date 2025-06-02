@@ -13,6 +13,13 @@ import QuizHeader from '../components/QuizHeader';
 import { useQuizAutoSave } from '@/app/hooks/useQuizAutoSave';
 import { ResumeQuizPrompt } from '../components/ResumeQuizPrompt';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
+import LeftSidebar from '../components/LeftSidebar'; // <-- Import LeftSidebar
+import QuizFooter from '../components/QuizFooter'; // <-- Import QuizFooter
+import MobileSidebarToggle from '../components/MobileSidebarToggle'; // <-- Import MobileSidebarToggle
+import MobileQuizStats from '../components/MobileQuizStats'; // <-- Import MobileQuizStats
+import { useQuizTimer } from '../hooks/useQuizTimer'; // <-- Import useQuizTimer
+import { ConfirmationDialog } from '../components/ConfirmationDialog'; // <-- Import ConfirmationDialog
+import { HelpModal } from '../components/HelpModal'; // <-- Import HelpModal
 // Using the session hook that works in this project
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
@@ -21,7 +28,76 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   const { state, dispatch, loadProgress, deleteProgress } = useQuiz();
   const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(100); // Zoom level in percentage
+  const [isDarkMode, setIsDarkMode] = useState(false); // Dark mode state
   const supabase = createClientComponentClient();
+  
+  // Initialize timer with 60 minutes (can be made configurable)
+  const { timeLeft, isExpired, pause, resume } = useQuizTimer({
+    initialTimeInMinutes: 60,
+    autoSubmitOnExpiry: true,
+    onTimeExpired: () => {
+      // Auto-submit quiz when time expires
+      dispatch({ type: 'COMPLETE_QUIZ' });
+    }
+  });
+  
+  // Handle quiz submission
+  const handleQuizSubmit = () => {
+    setShowSubmitConfirmation(true);
+  };
+  
+  const confirmQuizSubmit = () => {
+    dispatch({ type: 'COMPLETE_QUIZ' });
+    setShowSubmitConfirmation(false);
+  };
+  
+  const cancelQuizSubmit = () => {
+    setShowSubmitConfirmation(false);
+  };
+  
+  // Handle help modal
+  const handleShowHelp = () => {
+    setShowHelpModal(true);
+  };
+  
+  // Handle zoom controls
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 10, 150)); // Max 150%
+  };
+  
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 10, 80)); // Min 80%
+  };
+  
+  const resetZoom = () => {
+    setZoomLevel(100);
+  };
+  
+  // Handle dark mode toggle
+  const toggleDarkMode = () => {
+    setIsDarkMode(prev => !prev);
+  };
+  
+  // Handle save and exit
+  const handleSaveAndExit = () => {
+    // Save current progress (this would typically save to backend)
+    console.log('Saving quiz progress...', {
+      userAnswers: state.userAnswers,
+      currentQuestionIndex: state.currentQuestionIndex,
+      flaggedQuestions: Array.from(state.flaggedQuestions),
+      timeSpent: 60 * 60 - (timeLeft ? timeLeft.split(':').reduce((acc, time) => (60 * acc) + +time, 0) : 0)
+    });
+    
+    // Navigate back or show confirmation
+    if (confirm('Are you sure you want to save and exit? Your progress will be saved and you can resume later.')) {
+      // This would typically navigate to dashboard or quiz list
+      window.history.back();
+    }
+  };
   
   // Handle multiple question types from URL parameters
   const typesParam = searchParams.get('types');
@@ -266,20 +342,548 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
 
   // Show the quiz
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 md:px-6">
-      <div className="quiz-container max-w-4xl mx-auto">
-        <QuizHeader 
-          quizId={quizId}
-          user={user}
-          effectiveQuestionTypes={effectiveQuestionTypes}
-          effectiveQuestionType={effectiveQuestionType}
-        />
-        
-        <main className="quiz-content mt-8">
-          <QuestionCard question={currentQuestion} />
-          <QuizNavigation currentQuestionId={currentQuestion.id} />
-        </main>
+    <div className={`min-h-screen transition-colors duration-300 ${
+      isDarkMode 
+        ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' 
+        : 'bg-gradient-to-br from-purple-50 via-white to-blue-50'
+    }`}>
+      {/* Top Navigation Bar */}
+      <div className={`sticky top-0 z-50 backdrop-blur-sm border-b shadow-sm transition-colors duration-300 ${
+        isDarkMode 
+          ? 'bg-gray-900/95 border-gray-700' 
+          : 'bg-white/95 border-gray-200'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-4">
+              {/* Mobile Sidebar Toggle */}
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="xl:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              
+              <h1 className="text-xl font-semibold text-gray-900 truncate max-w-xs sm:max-w-sm">
+                {state.quiz?.title || 'Quiz'}
+              </h1>
+              <div className="hidden sm:flex items-center space-x-2">
+                <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                  Question {state.currentQuestionIndex + 1} of {state.questions.length}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-6 text-sm text-gray-600">
+                <span className="flex items-center space-x-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>{Math.round((Object.keys(state.userAnswers).length / state.questions.length) * 100)}% Complete</span>
+                </span>
+                <span className="flex items-center space-x-1">
+                  <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium text-red-600">{timeLeft}</span>
+                </span>
+              </div>
+              
+              {/* Zoom Controls */}
+              <div className="hidden lg:flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+                <button 
+                  onClick={handleZoomOut}
+                  disabled={zoomLevel <= 80}
+                  className="p-1 text-gray-600 hover:text-gray-900 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                  title="Zoom Out"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={resetZoom}
+                  className="px-2 py-1 text-xs font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                  title="Reset Zoom"
+                >
+                  {zoomLevel}%
+                </button>
+                <button 
+                  onClick={handleZoomIn}
+                  disabled={zoomLevel >= 150}
+                  className="p-1 text-gray-600 hover:text-gray-900 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                  title="Zoom In"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Dark Mode Toggle */}
+              <button 
+                onClick={toggleDarkMode}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              >
+                {isDarkMode ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
+              
+              <button 
+                onClick={handleShowHelp}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Help"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Progress Bar */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500 ease-out"
+              style={{ width: `${(Object.keys(state.userAnswers).length / state.questions.length) * 100}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Stats Bar */}
+      <div className="xl:hidden bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center space-x-4">
+              <span className="flex items-center space-x-1 text-blue-600">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span className="font-medium">{Object.keys(state.userAnswers).length} / {state.questions.length}</span>
+              </span>
+              <span className="text-gray-500">
+                {Math.round((Object.keys(state.userAnswers).length / state.questions.length) * 100)}% Complete
+              </span>
+            </div>
+            <div className="flex items-center space-x-1 text-red-600">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium">{timeLeft}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex flex-col xl:flex-row gap-8">
+          
+          {/* Main Question Area */}
+          <div className="flex-1 max-w-4xl">
+            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+              {/* Question Header */}
+              <div className="bg-gradient-to-r from-purple-500 to-blue-500 px-8 py-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                      <span className="text-white font-semibold text-sm">
+                        Question {state.currentQuestionIndex + 1}
+                      </span>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
+                      <span className="text-white text-xs font-medium uppercase tracking-wide">
+                        {state.questions[state.currentQuestionIndex]?.difficulty || 'Medium'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => dispatch({ type: 'TOGGLE_FLAG_QUESTION', payload: currentQuestion.id })}
+                      className={`bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/30 transition-colors flex items-center space-x-2 ${
+                        state.flaggedQuestions.has(currentQuestion.id) ? 'bg-yellow-500/30' : ''
+                      }`}
+                    >
+                      <svg className="w-4 h-4" fill={state.flaggedQuestions.has(currentQuestion.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                      </svg>
+                      <span>{state.flaggedQuestions.has(currentQuestion.id) ? 'Unflag' : 'Flag'}</span>
+                    </button>
+                    
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                      <span className="text-white text-sm font-medium">
+                        {state.questions[state.currentQuestionIndex]?.points || 1} pts
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Question Content */}
+              <div 
+                className="px-8 py-8 transition-transform duration-200"
+                style={{ 
+                  transform: `scale(${zoomLevel / 100})`,
+                  transformOrigin: 'top center'
+                }}
+              >
+                <QuestionCard question={currentQuestion} />
+              </div>
+
+              {/* Navigation Footer */}
+              <div className="bg-gray-50 px-8 py-6 border-t border-gray-100">
+                <div className="flex justify-between items-center">
+                  <button 
+                    onClick={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
+                    disabled={state.currentQuestionIndex === 0}
+                    className="flex items-center space-x-2 px-6 py-3 bg-white border border-gray-200 rounded-full text-gray-600 hover:text-gray-800 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span className="font-medium">Previous</span>
+                  </button>
+
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm text-gray-500">
+                      {state.currentQuestionIndex + 1} of {state.questions.length}
+                    </span>
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      if (state.currentQuestionIndex === state.questions.length - 1) {
+                        handleQuizSubmit();
+                      } else {
+                        dispatch({ type: 'NEXT_QUESTION' });
+                      }
+                    }}
+                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                  >
+                    <span>{state.currentQuestionIndex === state.questions.length - 1 ? 'Submit Quiz' : 'Next'}</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="xl:w-80 space-y-6">
+            {/* Quiz Overview Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Quiz Overview</span>
+                </h3>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-xl">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {Object.keys(state.userAnswers).length}
+                    </div>
+                    <div className="text-sm text-blue-600 font-medium">Answered</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-xl">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {state.questions.length - Object.keys(state.userAnswers).length}
+                    </div>
+                    <div className="text-sm text-purple-600 font-medium">Remaining</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="text-center p-4 bg-yellow-50 rounded-xl">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {state.flaggedQuestions.size}
+                    </div>
+                    <div className="text-sm text-yellow-600 font-medium">Flagged</div>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-600">Progress</span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {Math.round((Object.keys(state.userAnswers).length / state.questions.length) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(Object.keys(state.userAnswers).length / state.questions.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Question Navigator */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                  <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <span>Quick Jump</span>
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-8 gap-1.5">
+                  {state.questions.map((question, index) => {
+                    const isAnswered = !!state.userAnswers[question.id];
+                    const isCurrent = index === state.currentQuestionIndex;
+                    const isCorrect = state.userAnswers[question.id]?.isCorrect;
+                    const isFlagged = state.flaggedQuestions.has(question.id);
+                    
+                    return (
+                      <button
+                        key={question.id}
+                        onClick={() => dispatch({ type: 'NAVIGATE_TO_QUESTION', payload: index })}
+                        className={`
+                          aspect-square rounded-lg text-xs font-semibold transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 relative
+                          ${isCurrent 
+                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg ring-2 ring-purple-300' 
+                            : isAnswered
+                              ? isCorrect 
+                                ? 'bg-green-500 text-white shadow-md' 
+                                : 'bg-red-500 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm'
+                          }
+                        `}
+                      >
+                        {index + 1}
+                        {isFlagged && (
+                          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full border border-white">
+                            <div className="w-0.5 h-0.5 bg-yellow-700 rounded-full absolute inset-0.5 m-auto"></div>
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Actions Card */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div className="p-6 space-y-4">
+                <button 
+                  onClick={handleQuizSubmit}
+                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                >
+                  Submit Quiz
+                </button>
+                
+                <button 
+                  onClick={handleSaveAndExit}
+                  className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200"
+                >
+                  Save & Exit
+                </button>
+                
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="text-center text-sm text-gray-500">
+                    <p>Need help?</p>
+                    <button 
+                      onClick={handleShowHelp}
+                      className="text-purple-600 hover:text-purple-700 font-medium"
+                    >
+                      View Help Guide
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div className="xl:hidden fixed inset-0 z-50 overflow-hidden">
+          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)} />
+          <div className="absolute right-0 top-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Quiz Overview</h2>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6 overflow-y-auto h-full pb-24">
+              {/* Quiz Overview Card */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-4 bg-blue-50 rounded-xl">
+                    <div className="text-2xl font-bold text-blue-600">
+                      {Object.keys(state.userAnswers).length}
+                    </div>
+                    <div className="text-sm text-blue-600 font-medium">Answered</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-xl">
+                    <div className="text-2xl font-bold text-purple-600">
+                      {state.questions.length - Object.keys(state.userAnswers).length}
+                    </div>
+                    <div className="text-sm text-purple-600 font-medium">Remaining</div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="text-center p-4 bg-yellow-50 rounded-xl">
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {state.flaggedQuestions.size}
+                    </div>
+                    <div className="text-sm text-yellow-600 font-medium">Flagged</div>
+                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-gray-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-600">Progress</span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {Math.round((Object.keys(state.userAnswers).length / state.questions.length) * 100)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(Object.keys(state.userAnswers).length / state.questions.length) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Question Navigator */}
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center space-x-2">
+                    <svg className="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span>Quick Jump</span>
+                  </h3>
+                </div>
+                
+                <div className="p-4">
+                  <div className="grid grid-cols-6 gap-1.5">
+                    {state.questions.map((question, index) => {
+                      const isAnswered = !!state.userAnswers[question.id];
+                      const isCurrent = index === state.currentQuestionIndex;
+                      const isCorrect = state.userAnswers[question.id]?.isCorrect;
+                      const isFlagged = state.flaggedQuestions.has(question.id);
+                      
+                      return (
+                        <button
+                          key={question.id}
+                          onClick={() => {
+                            dispatch({ type: 'NAVIGATE_TO_QUESTION', payload: index });
+                            setIsSidebarOpen(false);
+                          }}
+                          className={`
+                            aspect-square rounded-lg text-xs font-semibold transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 relative
+                            ${isCurrent 
+                              ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg ring-2 ring-purple-300' 
+                              : isAnswered
+                                ? isCorrect 
+                                  ? 'bg-green-500 text-white shadow-md' 
+                                  : 'bg-red-500 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm'
+                            }
+                          `}
+                        >
+                          {index + 1}
+                          {isFlagged && (
+                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-yellow-400 rounded-full border border-white">
+                              <div className="w-0.5 h-0.5 bg-yellow-700 rounded-full absolute inset-0.5 m-auto"></div>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-4">
+                <button 
+                  onClick={() => {
+                    handleQuizSubmit();
+                    setIsSidebarOpen(false);
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                >
+                  Submit Quiz
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    handleSaveAndExit();
+                    setIsSidebarOpen(false);
+                  }}
+                  className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200"
+                >
+                  Save & Exit
+                </button>
+                
+                <button 
+                  onClick={() => {
+                    handleShowHelp();
+                    setIsSidebarOpen(false);
+                  }}
+                  className="w-full bg-blue-50 text-blue-600 py-3 px-4 rounded-xl font-medium hover:bg-blue-100 transition-all duration-200 border border-blue-200"
+                >
+                  View Help Guide
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Submit Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={showSubmitConfirmation}
+        title="Submit Quiz"
+        message={`Are you sure you want to submit your quiz? You have answered ${Object.keys(state.userAnswers).length} out of ${state.questions.length} questions. Once submitted, you cannot make any changes.`}
+        confirmText="Submit Quiz"
+        cancelText="Continue Quiz"
+        confirmButtonVariant="primary"
+        onConfirm={confirmQuizSubmit}
+        onCancel={cancelQuizSubmit}
+      />
+
+      {/* Help Modal */}
+      <HelpModal
+        isOpen={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+      />
     </div>
   );
 };

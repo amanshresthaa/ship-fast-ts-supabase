@@ -1,28 +1,37 @@
 import config from "@/config";
 import ButtonCheckout from "./ButtonCheckout";
+import { useResponsive } from "@/app/hooks/useResponsive";
+import { ResponsiveContainer, ResponsiveGrid, MobileOnly, DesktopOnly } from "@/app/components/ResponsiveComponents";
 
 // <Pricing/> displays the pricing plans for your app
 // It's your Stripe config in config.js.stripe.plans[] that will be used to display the plans
 // <ButtonCheckout /> renders a button that will redirect the user to Stripe checkout called the /api/stripe/create-checkout API endpoint with the correct priceId
 
 const Pricing = () => {
+  const { isMobile, isTablet, isDesktop } = useResponsive();
+
   return (
     <section className="bg-base-200 overflow-hidden" id="pricing">
-      <div className="py-24 px-8 max-w-5xl mx-auto">
-        <div className="flex flex-col text-center w-full mb-20">
-          <p className="font-medium text-primary mb-8">Pricing</p>
-          <h2 className="font-bold text-3xl lg:text-5xl tracking-tight">
+      <ResponsiveContainer className="py-12 sm:py-16 md:py-20 lg:py-24">
+        <div className="flex flex-col text-center w-full mb-12 sm:mb-16 md:mb-20">
+          <p className="font-medium text-primary mb-4 sm:mb-6 md:mb-8 text-sm sm:text-base">Pricing</p>
+          <h2 className="font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl tracking-tight leading-tight">
             Flexible Plans to Fit Every Learner
           </h2>
         </div>
 
-        <div className="relative flex justify-center flex-col lg:flex-row items-center lg:items-stretch gap-8">
+        <ResponsiveGrid 
+          mobileCols={1} 
+          tabletCols={2} 
+          desktopCols={3}
+          className="gap-6 sm:gap-8 items-stretch"
+        >
           {config.stripe.plans.map((plan) => (
-            <div key={plan.priceId} className="relative w-full max-w-lg">
+            <div key={plan.priceId} className="relative w-full">
               {plan.isFeatured && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
                   <span
-                    className={`badge text-xs text-primary-content font-semibold border-0 bg-primary`}
+                    className={`badge text-xs text-primary-content font-semibold border-0 bg-primary px-3 py-1`}
                   >
                     POPULAR
                   </span>
@@ -35,20 +44,21 @@ const Pricing = () => {
                 ></div>
               )}
 
-              <div className="relative flex flex-col h-full gap-5 lg:gap-8 z-10 bg-base-100 p-8 rounded-lg">
+              <div className="relative flex flex-col h-full gap-4 sm:gap-5 lg:gap-8 z-10 bg-base-100 p-6 sm:p-8 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-center gap-4">
                   <div>
-                    <p className="text-lg lg:text-xl font-bold">{plan.name}</p>
+                    <p className="text-base sm:text-lg lg:text-xl font-bold">{plan.name}</p>
                     {plan.description && (
-                      <p className="text-base-content/80 mt-2">
+                      <p className="text-base-content/80 mt-2 text-sm sm:text-base">
                         {plan.description}
                       </p>
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                
+                <div className="flex gap-2 items-end">
                   {plan.priceAnchor && (
-                    <div className="flex flex-col justify-end mb-[4px] text-lg ">
+                    <div className="flex flex-col justify-end mb-[4px] text-base sm:text-lg">
                       <p className="relative">
                         <span className="absolute bg-base-content h-[1.5px] inset-x-0 top-[53%]"></span>
                         <span className="text-base-content/80">
@@ -57,7 +67,7 @@ const Pricing = () => {
                       </p>
                     </div>
                   )}
-                  <p className={`text-5xl tracking-tight font-extrabold`}>
+                  <p className={`text-3xl sm:text-4xl lg:text-5xl tracking-tight font-extrabold`}>
                     ${plan.price}
                   </p>
                   <div className="flex flex-col justify-end mb-[4px]">
@@ -66,15 +76,16 @@ const Pricing = () => {
                     </p>
                   </div>
                 </div>
+                
                 {plan.features && (
-                  <ul className="space-y-2.5 leading-relaxed text-base flex-1">
+                  <ul className="space-y-2 sm:space-y-2.5 leading-relaxed text-sm sm:text-base flex-1">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-center gap-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 20 20"
                           fill="currentColor"
-                          className="w-[18px] h-[18px] opacity-80 shrink-0"
+                          className="w-4 h-4 sm:w-[18px] sm:h-[18px] opacity-80 shrink-0 text-primary"
                         >
                           <path
                             fillRule="evenodd"
@@ -82,24 +93,23 @@ const Pricing = () => {
                             clipRule="evenodd"
                           />
                         </svg>
-
-                        <span>{feature.name} </span>
+                        <span>{feature.name}</span>
                       </li>
                     ))}
                   </ul>
                 )}
-                <div className="space-y-2">
+                
+                <div className="space-y-2 mt-auto">
                   <ButtonCheckout priceId={plan.priceId} />
-
-                  <p className="flex items-center justify-center gap-2 text-sm text-center text-base-content/80 font-medium relative">
+                  <p className="flex items-center justify-center gap-2 text-xs sm:text-sm text-center text-base-content/80 font-medium relative">
                     Pay once. Access forever.
                   </p>
                 </div>
               </div>
             </div>
           ))}
-        </div>
-      </div>
+        </ResponsiveGrid>
+      </ResponsiveContainer>
     </section>
   );
 };

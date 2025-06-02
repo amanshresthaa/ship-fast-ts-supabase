@@ -1,5 +1,5 @@
 // app/hooks/useMemoizedCallback.ts
-import { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef, useEffect } from 'react';
 
 /**
  * A hook that creates a memoized callback with dependencies tracking

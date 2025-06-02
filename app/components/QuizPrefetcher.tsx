@@ -36,9 +36,6 @@ const QuizPrefetcher = memo(({
   
   // Track if the component is mounted
   const isMounted = useRef<boolean>(true);
-
-  // Don't prefetch if disabled or no related quizzes
-  if (!enabled || !relatedQuizIds.length) return null;
   
   // Filter out current quiz from related quizzes - memoized for performance
   const quizzesToPrefetch = useMemo(() => 
@@ -142,6 +139,9 @@ const QuizPrefetcher = memo(({
   }, [prefetchDistance, enabled, shouldPrefetch, performPrefetch]);
   
   useEffect(() => {
+    // Don't prefetch if disabled or no related quizzes
+    if (!enabled || !relatedQuizIds.length) return;
+    
     // Initial prefetch when idle
     prefetchWhenIdle();
     
@@ -152,7 +152,10 @@ const QuizPrefetcher = memo(({
       isMounted.current = false;
       cleanup?.();
     };
-  }, [prefetchWhenIdle, setupIntersectionObserver]);
+  }, [prefetchWhenIdle, setupIntersectionObserver, enabled, relatedQuizIds.length]);
+  
+  // Don't render anything if disabled or no related quizzes
+  if (!enabled || !relatedQuizIds.length) return null;
   
   // This component doesn't render anything
   return null;

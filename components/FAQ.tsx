@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import type { JSX } from "react";
+import { useResponsive } from "@/app/hooks/useResponsive";
+import { ResponsiveContainer } from "@/app/components/ResponsiveComponents";
 
 // <FAQ> component is a lsit of <Item> component
 // Just import the FAQ & add your FAQ content to the const faqList arrayy below.
@@ -36,11 +38,12 @@ const faqList: FAQItemProps[] = [
 const FaqItem = ({ item }: { item: FAQItemProps }) => {
   const accordion = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { isMobile } = useResponsive();
 
   return (
     <li>
       <button
-        className="relative flex gap-2 items-center w-full py-5 text-base font-semibold text-left border-t md:text-lg border-base-content/10"
+        className="relative flex gap-3 sm:gap-4 items-center w-full py-4 sm:py-5 text-sm sm:text-base md:text-lg font-semibold text-left border-t border-base-content/10 touch-target-min"
         onClick={(e) => {
           e.preventDefault();
           setIsOpen(!isOpen);
@@ -53,7 +56,9 @@ const FaqItem = ({ item }: { item: FAQItemProps }) => {
           {item?.question}
         </span>
         <svg
-          className={`flex-shrink-0 w-4 h-4 ml-auto fill-current`}
+          className={`flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 ml-auto fill-current transition-transform duration-200 ease-out ${
+            isOpen ? "rotate-180" : ""
+          }`}
           viewBox="0 0 16 16"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -87,29 +92,33 @@ const FaqItem = ({ item }: { item: FAQItemProps }) => {
             : { maxHeight: 0, opacity: 0 }
         }
       >
-        <div className="pb-5 leading-relaxed">{item?.answer}</div>
+        <div className="pb-4 sm:pb-5 leading-relaxed text-sm sm:text-base text-base-content/90">
+          {item?.answer}
+        </div>
       </div>
     </li>
   );
 };
 
 const FAQ = () => {
+  const { isMobile, isTablet } = useResponsive();
+
   return (
     <section className="bg-base-200" id="faq">
-      <div className="py-24 px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-12">
-        <div className="flex flex-col text-left basis-1/2">
-          <p className="inline-block font-semibold text-primary mb-4">FAQ</p>
-          <p className="sm:text-4xl text-3xl font-extrabold text-base-content">
+      <ResponsiveContainer className={`py-12 sm:py-16 md:py-20 lg:py-24 flex flex-col ${isMobile ? 'gap-8' : 'md:flex-row gap-12'}`}>
+        <div className={`flex flex-col text-left ${isMobile ? 'basis-full' : 'basis-1/2'}`}>
+          <p className="inline-block font-semibold text-primary mb-3 sm:mb-4 text-sm sm:text-base">FAQ</p>
+          <p className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-base-content leading-tight">
             Frequently Asked Questions
           </p>
         </div>
 
-        <ul className="basis-1/2">
+        <ul className={`${isMobile ? 'basis-full' : 'basis-1/2'} space-y-1`}>
           {faqList.map((item, i) => (
             <FaqItem key={i} item={item} />
           ))}
         </ul>
-      </div>
+      </ResponsiveContainer>
     </section>
   );
 };

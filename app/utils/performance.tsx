@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 /**
  * Performance metrics interface for tracking component performance
@@ -49,7 +49,7 @@ if (typeof window !== 'undefined') {
  * @param componentName The name of the component to track
  * @param enabled Whether metrics collection is enabled for this component
  */
-export function usePerformanceMetrics(componentName: string, enabled: boolean = true) {
+export function usePerformanceMetrics(componentName: string, enabled: boolean = true): PerformanceMetrics {
   const renderCountRef = useRef(0);
   const renderStartTimeRef = useRef(0);
   const metricsRef = useRef<PerformanceMetrics>({
@@ -109,14 +109,14 @@ export function usePerformanceMetrics(componentName: string, enabled: boolean = 
 export function withPerformanceTracking<P extends object>(
   Component: React.ComponentType<P>,
   options: { componentName?: string; enabled?: boolean } = {}
-) {
-  const wrappedComponent = (props: P) => {
+): React.ComponentType<P> {
+  const WrappedComponent = (props: P) => {
     const componentName = options.componentName || Component.displayName || Component.name || 'UnknownComponent';
     usePerformanceMetrics(componentName, options.enabled);
     return <Component {...props} />;
   };
 
-  wrappedComponent.displayName = `WithPerformanceTracking(${Component.displayName || Component.name || 'Component'})`;
+  WrappedComponent.displayName = `WithPerformanceTracking(${Component.displayName || Component.name || 'Component'})`;
   
-  return wrappedComponent;
+  return WrappedComponent;
 }

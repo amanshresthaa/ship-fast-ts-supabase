@@ -1,7 +1,9 @@
+import { ResponsiveContainer } from '@/app/components/ResponsiveComponents';
+
 const Arrow = ({ extraStyle }: { extraStyle: string }) => {
   return (
     <svg
-      className={`shrink-0 w-12 fill-neutral-content opacity-70 ${extraStyle}`}
+      className={`shrink-0 w-8 sm:w-10 md:w-12 fill-neutral-content opacity-70 transition-transform duration-300 ${extraStyle}`}
       viewBox="0 0 138 138"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -21,11 +23,12 @@ const Arrow = ({ extraStyle }: { extraStyle: string }) => {
     </svg>
   );
 };
+
 const Step = ({ emoji, text }: { emoji: string; text: string }) => {
   return (
-    <div className="w-full md:w-48 flex flex-col gap-2 items-center justify-center">
-      <span className="text-4xl">{emoji}</span>
-      <h3 className="font-bold">{text}</h3>
+    <div className="w-full sm:w-56 md:w-48 lg:w-52 flex flex-col gap-3 sm:gap-4 items-center justify-center p-4 sm:p-6 rounded-lg hover:bg-neutral-focus/50 transition-colors duration-200">
+      <span className="text-3xl sm:text-4xl md:text-5xl animate-pulse">{emoji}</span>
+      <h3 className="font-bold text-sm sm:text-base md:text-lg text-center leading-tight">{text}</h3>
     </div>
   );
 };
@@ -42,27 +45,34 @@ const Step = ({ emoji, text }: { emoji: string; text: string }) => {
 const Problem = () => {
   return (
     <section className="bg-neutral text-neutral-content">
-      <div className="max-w-7xl mx-auto px-8 py-16 md:py-32 text-center">
-      <h2 className="max-w-3xl mx-auto font-extrabold text-4xl md:text-5xl tracking-tight mb-6 md:mb-8">
-          Over 70% of Learners Forget Key Information Within 24 Hours
+      <ResponsiveContainer className="py-12 sm:py-16 md:py-24 lg:py-32 text-center">
+        <h2 className="max-w-4xl mx-auto font-extrabold text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl tracking-tight mb-6 sm:mb-8 md:mb-10 leading-tight">
+          <span className="block sm:hidden">70% Forget Within 24 Hours</span>
+          <span className="hidden sm:block md:hidden">Over 70% of Learners Forget Key Information Within 24 Hours</span>
+          <span className="hidden md:block">Over 70% of Learners Forget Key Information Within 24 Hours</span>
         </h2>
-        <p className="max-w-xl mx-auto text-lg opacity-90 leading-relaxed mb-12 md:mb-20">
-          Studying without active recall leads to poor retention, lack of confidence,
-          and stalled progress in mastering new skills.
+        <p className="max-w-2xl mx-auto text-base sm:text-lg md:text-xl opacity-90 leading-relaxed mb-8 sm:mb-12 md:mb-16 lg:mb-20 px-4">
+          <span className="block sm:hidden">
+            Poor study methods lead to forgotten knowledge and lost confidence.
+          </span>
+          <span className="hidden sm:block">
+            Studying without active recall leads to poor retention, lack of confidence,
+            and stalled progress in mastering new skills.
+          </span>
         </p>
 
-        <div className="flex flex-col md:flex-row justify-center items-center md:items-start gap-6">
-          <Step emoji="�" text="Passively Memorize Facts" />
+        <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-6 sm:gap-8 md:gap-10 lg:gap-12">
+          <Step emoji="📖" text="Passively Memorize Facts" />
 
-          <Arrow extraStyle="max-md:-scale-x-100 md:-rotate-90" />
+          <Arrow extraStyle="max-lg:rotate-90 lg:max-xl:-scale-x-100 lg:-rotate-90 lg:mt-8" />
 
           <Step emoji="❓" text="Struggle to Recall" />
 
-          <Arrow extraStyle="md:-scale-x-100 md:-rotate-90" />
+          <Arrow extraStyle="max-lg:rotate-90 lg:-scale-x-100 lg:-rotate-90 lg:mt-8" />
 
-          <Step emoji="�" text="Lose Confidence & Motivation" />
+          <Step emoji="😔" text="Lose Confidence & Motivation" />
         </div>
-      </div>
+      </ResponsiveContainer>
     </section>
   );
 };

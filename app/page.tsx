@@ -8,6 +8,8 @@ import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import QuizCTA from "@/app/components/QuizCTA";
+import ResponsiveDemo from "@/app/components/ResponsiveDemo";
+import { ShowOn } from "@/app/components/ResponsiveComponents";
 
 export default function Home() {
   return (
@@ -17,6 +19,12 @@ export default function Home() {
       </Suspense>
       <main>
         <Hero />
+        
+        {/* Show responsive demo only on desktop */}
+        <ShowOn breakpoint="lg">
+          <ResponsiveDemo />
+        </ShowOn>
+        
         <Problem />
         <QuizCTA />
         <FeaturesAccordion />

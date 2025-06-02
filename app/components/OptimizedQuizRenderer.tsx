@@ -214,7 +214,7 @@ const OptimizedQuizRenderer = ({
       </Card>
     </ErrorBoundary>
   );
-});
+};
 
 // Use our enhanced memo with proper naming and custom comparison
 const EnhancedOptimizedQuizRenderer = MemoWithName(OptimizedQuizRenderer, 

@@ -127,6 +127,7 @@ const QuizHeader: React.FC<QuizHeaderProps> = ({
           <QuizProgress 
             currentIndex={state.currentQuestionIndex} 
             totalQuestions={totalQuestions}
+            attemptedQuestions={Object.keys(state.userAnswers).length}
           />
         </div>
       </div>

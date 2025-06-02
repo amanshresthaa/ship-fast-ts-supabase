@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface RenderMetrics {
   renders: number;
@@ -23,16 +23,18 @@ export default function useRenderMetrics(componentName: string): void {
     totalRenderTime: 0
   });
 
-  // Only perform measurements in development
-  if (process.env.NODE_ENV !== 'development') {
-    return;
-  }
-
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   // Track render count
   renderCount.current += 1;
   const currentRender = renderCount.current;
 
   useEffect(() => {
+    // Only perform measurements in development
+    if (isProduction) {
+      return;
+    }
+    
     // Measure time since component rendered
     const endTime = performance.now();
     const renderTime = endTime - lastRenderTimeRef.current;

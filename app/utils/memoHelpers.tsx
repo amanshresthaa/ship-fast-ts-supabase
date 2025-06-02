@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import React, { memo } from 'react';
 
 /**
  * Enhanced React.memo with automatic naming for debugging
@@ -13,7 +13,7 @@ import { memo } from 'react';
 export function MemoWithName<P extends object>(
   Component: React.ComponentType<P>,
   propsAreEqual?: (prevProps: Readonly<P>, nextProps: Readonly<P>) => boolean
-): React.NamedExoticComponent<P> {
+): React.MemoExoticComponent<React.ComponentType<P>> {
   const displayName = Component.displayName || Component.name || 'Component';
   const MemoComponent = memo(Component, propsAreEqual);
   MemoComponent.displayName = `Memo(${displayName})`;
@@ -95,7 +95,7 @@ function deepEqual(a: any, b: any): boolean {
     if (keysA.length !== keysB.length) return false;
     
     for (const key of keysA) {
-      if (!b.hasOwnProperty(key)) return false;
+      if (!Object.prototype.hasOwnProperty.call(b, key)) return false;
       if (!deepEqual(a[key], b[key])) return false;
     }
     

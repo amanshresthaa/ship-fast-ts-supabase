@@ -8,7 +8,7 @@ import { OrderController } from '@/app/features/quiz/controllers/OrderController
 // Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
-    div: jest.fn(({ children, layout, transition, ...props }) => <div {...props}>{children}</div>),
+    div: jest.fn(({ children, ...props }) => <div {...props}>{children}</div>),
   },
 }));
 
@@ -40,30 +40,30 @@ jest.mock('@/app/features/quiz/hooks/useAutoValidation', () => ({
 const mockQuestion: OrderQuestion = {
   id: 'order-q1',
   type: 'order',
-  question: 'Arrange these items correctly:',
-  points: 10,
-  quiz_tag: 'test-quiz',
-  difficulty: 'medium',
-  feedback_correct: 'Good job!',
-  feedback_incorrect: 'Try again!',
-  created_at: '2023-01-01T00:00:00Z',
-  updated_at: '2023-01-01T00:00:00Z',
+  text: 'Arrange these items correctly:',
   items: [
     { item_id: 'item1', text: 'First Item' },
     { item_id: 'item2', text: 'Second Item' },
     { item_id: 'item3', text: 'Third Item' },
   ],
   correctOrder: ['item1', 'item2', 'item3'],
+  question_meta: {
+    difficulty: 'medium',
+    estimated_time: 60,
+    topic: 'Ordering',
+    skill: 'Sequencing',
+  },
+  slotCount: 3,
 };
 
 // Helper to simulate drag and drop
-const simulateDragDrop = (draggedElement: HTMLElement, dropZone: HTMLElement, itemId: string) => {
+const simulateDragDrop = (draggedElement: HTMLElement, dropZone: HTMLElement, dragData: object) => {
   fireEvent.dragStart(draggedElement, {
     dataTransfer: {
       setData: (format: string, data: string) => {
         // Mock setData if needed, or rely on currentDraggedItemId state
       },
-      getData: (format: string) => itemId, // Provide simple string data for drop
+      getData: (format: string) => JSON.stringify(dragData), // Provide data for drop
       effectAllowed: 'move',
     }
   });
@@ -72,7 +72,7 @@ const simulateDragDrop = (draggedElement: HTMLElement, dropZone: HTMLElement, it
   fireEvent.dragOver(dropZone, { dataTransfer: { dropEffect: 'move' } });
   fireEvent.drop(dropZone, {
     dataTransfer: {
-      getData: (format: string) => itemId,
+      getData: (format: string) => JSON.stringify(dragData),
     }
   });
   fireEvent.dragLeave(dropZone);
@@ -95,23 +95,25 @@ describe('OrderQuestionComponent', () => {
     expect(screen.getByText('Third Item')).toBeInTheDocument();
 
     expect(screen.getByText('Ordered Sequence:')).toBeInTheDocument();
-    const slots = screen.getAllByText('Drop item here');
-    expect(slots.length).toBe(mockQuestion.items.length);
+    const slots = screen.getAllByText('Drop an item here');
+    expect(slots.length).toBe(mockQuestion.slotCount);
   });
 
   it('updates state when an item is dragged from available to an empty slot', () => {
     render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} />); 
     
-    const availableItem1 = screen.getByText('First Item').closest('div[draggable="true"]') as HTMLElement;
-    const firstSlot = screen.getAllByText('Drop item here')[0].closest('div[class*="border-dashed"]') as HTMLElement;
+    const availableItem1 = screen.getByText('First Item').closest('div[draggable="true"]');
+    const firstSlot = screen.getAllByText('Drop an item here')[0].closest('div[class*="border-dashed"]');
 
     expect(availableItem1).toBeInTheDocument();
     expect(firstSlot).toBeInTheDocument();
 
     if (availableItem1 && firstSlot) {
       // Simulate drag data
+      const dragData = { itemId: 'item1', sourceType: 'available' };
+      
       act(() => {
-        simulateDragDrop(availableItem1, firstSlot, 'item1');
+        simulateDragDrop(availableItem1, firstSlot, dragData);
       });
 
       // Check if onAnswerSelect was called by useAutoValidation due to state change
@@ -123,8 +125,7 @@ describe('OrderQuestionComponent', () => {
       // This requires the mocked useAutoValidation to correctly update the 'placedAnswers' state used by the component.
       // As the mock directly calls setAnswer, the component should re-render with the new state.
       expect(screen.getByText('First Item').closest('div[class*="border-gray-300"]')).not.toHaveClass('border-dashed'); // No longer a dashed empty slot
-      const dropItemTexts = screen.queryAllByText('Drop item here');
-      expect(dropItemTexts.length).toBe(2); // Should be one less "Drop item here" text now
+      expect(screen.queryByText('Drop an item here')).toBeNull(); // Assuming only one item dropped for now, so one less empty slot text
     }
   });
 
@@ -139,10 +140,8 @@ describe('OrderQuestionComponent', () => {
     const availableItemContainer = screen.getByText('All items placed.'); // In review mode, available items are empty
     expect(availableItemContainer).toBeInTheDocument();
     // Slots should show correct items, not be draggable
-    const draggableElements = screen.getAllByText(/Item/).filter(el => 
-      el.closest('div[draggable="false"]')
-    );
-    expect(draggableElements.length).toBeGreaterThan(0);
+    const firstSlotItem = screen.getByText('First Item').closest('div[draggable="false"]');
+    expect(firstSlotItem).toBeInTheDocument();
   });
 
   it('shows correct/incorrect feedback when showCorrectAnswer is true', () => {
@@ -161,14 +160,16 @@ describe('OrderQuestionComponent', () => {
       />
     );
 
-    // Check for feedback icons or styles using more specific selectors
-    const slotElements = screen.getAllByText(/Item/).filter(el => 
-      el.closest('div[class*="border-green-500"], div[class*="border-red-500"]')
-    );
-    expect(slotElements.length).toBeGreaterThan(0);
-    
-    // Check that feedback text is present
+    // Check for feedback icons or styles
+    const correctSlot = screen.getByText('First Item').closest('div');
+    expect(correctSlot).toHaveClass('border-green-500');
+
+    const incorrectSlot1 = screen.getByText('Third Item').closest('div');
+    expect(incorrectSlot1).toHaveClass('border-red-500');
     expect(screen.getByText('Correct: Second Item')).toBeInTheDocument(); // Feedback for incorrect item
+
+    const incorrectSlot2 = screen.getByText('Second Item').closest('div');
+    expect(incorrectSlot2).toHaveClass('border-red-500');
     expect(screen.getByText('Correct: Third Item')).toBeInTheDocument(); // Feedback for incorrect item
   });
 
@@ -177,26 +178,26 @@ describe('OrderQuestionComponent', () => {
     // when the answer becomes complete.
     render(<OrderQuestionComponent question={mockQuestion} onAnswerSelect={mockOnAnswerSelect} validateOnComplete={true} />);
 
-    const availableItem1 = screen.getByText('First Item').closest('div[draggable="true"]') as HTMLElement;
-    const availableItem2 = screen.getByText('Second Item').closest('div[draggable="true"]') as HTMLElement;
-    const availableItem3 = screen.getByText('Third Item').closest('div[draggable="true"]') as HTMLElement;
+    const availableItem1 = screen.getByText('First Item').closest('div[draggable="true"]');
+    const availableItem2 = screen.getByText('Second Item').closest('div[draggable="true"]');
+    const availableItem3 = screen.getByText('Third Item').closest('div[draggable="true"]');
 
-    const slots = screen.getAllByText('Drop item here').map(el => el.closest('div[class*="border-dashed"]') as HTMLElement);
+    const slots = screen.getAllByText('Drop an item here').map(el => el.closest('div[class*="border-dashed"]'));
 
     if (availableItem1 && availableItem2 && availableItem3 && slots.length === 3) {
       act(() => {
-        simulateDragDrop(availableItem1, slots[0]!, 'item1');
+        simulateDragDrop(availableItem1, slots[0]!, { itemId: 'item1', sourceType: 'available' });
       });
       // onAnswerSelect should not be called yet
       expect(mockOnAnswerSelect).not.toHaveBeenCalled(); 
 
       act(() => {
-        simulateDragDrop(availableItem2, slots[1]!, 'item2');
+        simulateDragDrop(availableItem2, slots[1]!, { itemId: 'item2', sourceType: 'available' });
       });
       expect(mockOnAnswerSelect).not.toHaveBeenCalled();
       
       act(() => {
-        simulateDragDrop(availableItem3, slots[2]!, 'item3');
+        simulateDragDrop(availableItem3, slots[2]!, { itemId: 'item3', sourceType: 'available' });
       });
       
       // Now that all items are placed, the mocked useAutoValidation's useEffect should trigger onAnswerSelect

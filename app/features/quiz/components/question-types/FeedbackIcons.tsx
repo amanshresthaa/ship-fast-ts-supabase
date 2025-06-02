@@ -12,6 +12,7 @@ export const CorrectIcon = memo(() => (
     ✓
   </span>
 ));
+CorrectIcon.displayName = 'CorrectIcon';
 
 /**
  * IncorrectIcon - Displays an X inside a red circle
@@ -22,6 +23,7 @@ export const IncorrectIcon = memo(() => (
     ✗
   </span>
 ));
+IncorrectIcon.displayName = 'IncorrectIcon';
 
 // Default export for convenience when importing both
 const FeedbackIcons = {

@@ -6,6 +6,14 @@ module.exports = {
     "./styles/globals.css",
   ],
   theme: {
+    screens: {
+      'xs': '0px',
+      'sm': '576px',    // Mobile large
+      'md': '768px',    // Tablet
+      'lg': '992px',    // Desktop  
+      'xl': '1200px',   // Large desktop
+      '2xl': '1400px',  // Extra large
+    },
     extend: {
       colors: {
         'custom-primary': '#0078D7',
@@ -25,6 +33,12 @@ module.exports = {
         'accent-gradient': 'linear-gradient(135deg, #FF4081, #F06292)',
         'success-gradient': 'linear-gradient(135deg, #00C853, #69F0AE)',
         'error-gradient': 'linear-gradient(135deg, #FF3D00, #FF8A65)',
+      },
+      backgroundSize: {
+        'size-200': '200% 200%',
+      },
+      backgroundPosition: {
+        'pos-[-100%]': '-100% 50%',
       },
       boxShadow: {
         'shadow-1': '0 4px 6px rgba(0,0,0,0.1)',
@@ -68,9 +82,8 @@ module.exports = {
           "100%": { transform: "scale(1)", opacity: 1 },
         },
         shimmer: {
-          "0%": { backgroundPosition: "0 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-          "100%": { backgroundPosition: "0% 50%" },
+          "0%": { backgroundPosition: "-100% 50%" },
+          "100%": { backgroundPosition: "100% 50%" },
         },
         fadeIn: {
           'from': { opacity: 0, transform: 'translateY(-10px)' },

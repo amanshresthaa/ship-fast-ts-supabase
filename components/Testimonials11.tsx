@@ -4,6 +4,9 @@ import { JSX, useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { StaticImageData } from "next/image";
 import config from "@/config";
+import { useResponsive } from "@/app/hooks/useResponsive";
+import { ResponsiveContainer, ResponsiveGrid } from "@/app/components/ResponsiveComponents";
+import { AnimatedElement, StaggeredContainer } from "@/app/components/ResponsiveAnimations";
 
 // Use this object to add an icon to the testimonial (optional) like the Product Hunt logo for instance.
 // Only change the values if you add more referrings sites (currently Twitter & Product Hunt)
@@ -359,96 +362,149 @@ const VideoTestimonial = ({ i }: { i: number }) => {
   );
 };
 
+// Enhanced responsive testimonials grid with device-optimized layouts
+// Features staggered animations, adaptive grids, and touch-friendly interactions
 const Testimonials11 = () => {
+  const { isMobile, isTablet, deviceType, isTouchDevice } = useResponsive();
+
+  // Device-specific grid configurations
+  const getGridConfig = () => {
+    if (isMobile) {
+      return {
+        columns: 1,
+        gap: 'gap-4',
+        testimonialGap: 'gap-y-4'
+      };
+    } else if (isTablet) {
+      return {
+        columns: 2,
+        gap: 'gap-6',
+        testimonialGap: 'gap-y-6'
+      };
+    }
+    return {
+      columns: 4,
+      gap: 'gap-6 sm:gap-8',
+      testimonialGap: 'gap-y-6 sm:gap-y-8'
+    };
+  };
+
+  const gridConfig = getGridConfig();
+
   return (
     <section className="bg-base-200" id="testimonials">
-      <div className="py-24 px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col text-center w-full mb-20">
-          <div className="mb-8">
-            <h2 className="sm:text-5xl text-4xl font-extrabold text-base-content">
-              212 makers are already shipping faster!
-            </h2>
-          </div>
-          <p className="lg:w-2/3 mx-auto leading-relaxed text-base text-base-content/80">
-            Don&apos;t take our word for it. Here&apos;s what they have to say
-            about {config.appName}.
-          </p>
+      <ResponsiveContainer>
+        <div className={`
+          ${isMobile ? 'py-16 px-4' : isTablet ? 'py-20 px-6' : 'py-24 px-8'}
+          max-w-7xl mx-auto
+        `}>
+          {/* Enhanced header with responsive typography */}
+          <AnimatedElement animation="fadeIn" delay={0}>
+            <div className={`
+              flex flex-col text-center w-full
+              ${isMobile ? 'mb-12' : 'mb-20'}
+            `}>
+              <div className={isMobile ? 'mb-4' : 'mb-8'}>
+                <h2 className={`
+                  font-extrabold text-base-content
+                  ${isMobile ? 'text-2xl sm:text-3xl' : isTablet ? 'text-3xl sm:text-4xl' : 'sm:text-5xl text-4xl'}
+                `}>
+                  212 makers are already shipping faster!
+                </h2>
+              </div>
+              <p className={`
+                mx-auto leading-relaxed text-base-content/80
+                ${isMobile ? 'text-sm px-4' : isTablet ? 'text-base lg:w-2/3' : 'lg:w-2/3 text-base'}
+              `}>
+                Don&apos;t take our word for it. Here&apos;s what they have to say
+                about {config.appName}.
+              </p>
+            </div>
+          </AnimatedElement>
+
+          {/* Responsive testimonials grid */}
+          <StaggeredContainer delay={200} staggerDelay={100}>
+            {isMobile ? (
+              // Mobile: Single column layout
+              <ul role="list" className={`flex flex-col ${gridConfig.testimonialGap}`}>
+                {[...Array(6)].map((e, i) => (
+                  <AnimatedElement 
+                    key={i} 
+                    animation="slideUp" 
+                    delay={i * 100}
+                  >
+                    <li>
+                      {i === 3 ? <VideoTestimonial i={i} /> : <Testimonial i={i} />}
+                    </li>
+                  </AnimatedElement>
+                ))}
+              </ul>
+            ) : (
+              // Tablet/Desktop: Multi-column layout
+              <ResponsiveGrid
+                mobile={1}
+                tablet={2}
+                desktop={4}
+                gap={gridConfig.gap}
+                className="max-w-2xl mx-auto lg:max-w-none"
+              >
+                {/* Column 1 */}
+                <li>
+                  <ul role="list" className={`flex flex-col ${gridConfig.testimonialGap}`}>
+                    {[...Array(3)].map((e, i) => (
+                      <AnimatedElement 
+                        key={i} 
+                        animation="slideUp" 
+                        delay={i * 150}
+                      >
+                        <Testimonial i={i} />
+                      </AnimatedElement>
+                    ))}
+                  </ul>
+                </li>
+
+                {/* Column 2-3: Video testimonials (hidden on mobile) */}
+                <li className={`
+                  ${isTablet ? 'col-span-1' : 'col-span-2'} 
+                  grid grid-cols-1 ${isTablet ? '' : 'md:grid-cols-2'} 
+                  ${gridConfig.gap}
+                `}>
+                  <AnimatedElement animation="scale" delay={300}>
+                    <VideoTestimonial i={0} />
+                  </AnimatedElement>
+                  {!isTablet && (
+                    <AnimatedElement animation="scale" delay={450}>
+                      <VideoTestimonial i={1} />
+                    </AnimatedElement>
+                  )}
+                </li>
+
+                {/* Column 4 */}
+                <li>
+                  <ul role="list" className={`flex flex-col ${gridConfig.testimonialGap}`}>
+                    {[...Array(3)].map((e, i) => (
+                      <AnimatedElement 
+                        key={i + 6} 
+                        animation="slideUp" 
+                        delay={(i + 6) * 150}
+                      >
+                        <Testimonial i={i + 6} />
+                      </AnimatedElement>
+                    ))}
+                  </ul>
+                </li>
+              </ResponsiveGrid>
+            )}
+          </StaggeredContainer>
+
+          {/* Debug info for development */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-8 pt-4 border-t border-base-300 text-center text-xs text-base-content/60">
+              Layout: {gridConfig.columns} columns • Device: {deviceType} • Touch: {isTouchDevice() ? 'Yes' : 'No'}
+            </div>
+          )}
         </div>
-
-        <ul
-          role="list"
-          className="grid max-w-2xl grid-cols-1 gap-6 mx-auto sm:gap-8 md:grid-cols-2 lg:max-w-none lg:grid-cols-4"
-        >
-          <li>
-            <ul role="list" className="flex flex-col gap-y-6 sm:gap-y-8">
-              {[...Array(3)].map((e, i) => (
-                <Testimonial key={i} i={i} />
-              ))}
-            </ul>
-          </li>
-
-          <li className="hidden md:grid order-none md:order-first lg:order-none col-span-2 grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            {/* BIG FEATURED TESTIMONIAL — THE LAST ONE IN THE LIST (11th) */}
-            <ul className="col-span-2">
-              <li>
-                <figure className="relative h-full p-6 bg-base-100 rounded-lg">
-                  <blockquote className="relative p-4">
-                    <p className="text-lg font-medium text-base-content">
-                      {list[list.length - 1].text}
-                    </p>
-                  </blockquote>
-                  <figcaption className="relative flex items-center justify-start gap-4 pt-4 mt-4 border-t border-base-content/5">
-                    <div className="overflow-hidden rounded-full bg-base-300 shrink-0">
-                      {list[list.length - 1].img ? (
-                        <Image
-                          className="w-12 h-12 rounded-full object-cover"
-                          src={list[list.length - 1].img}
-                          alt={`${
-                            list[list.length - 1].name
-                          }'s testimonial for ${config.appName}`}
-                          width={48}
-                          height={48}
-                        />
-                      ) : (
-                        <span className="w-12 h-12 rounded-full flex justify-center items-center text-xl font-medium bg-base-300">
-                          {list[list.length - 1].name.charAt(0)}
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <div className="text-base font-medium text-base-content">
-                        {list[list.length - 1].name}
-                      </div>
-                      {list[list.length - 1].username && (
-                        <div className="mt-1 text-base text-base-content/80">
-                          @{list[list.length - 1].username}
-                        </div>
-                      )}
-                    </div>
-                  </figcaption>
-                </figure>
-              </li>
-            </ul>
-            <ul role="list" className="flex flex-col gap-y-6 sm:gap-y-8">
-              {[...Array(2)].map((e, i) => (
-                <Testimonial key={i} i={i + 3} />
-              ))}
-            </ul>
-            <ul role="list" className="flex flex-col gap-y-6 sm:gap-y-8">
-              {[...Array(2)].map((e, i) => (
-                <Testimonial key={i} i={i + 5} />
-              ))}
-            </ul>
-          </li>
-          <li>
-            <ul role="list" className="flex flex-col gap-y-6 sm:gap-y-8">
-              {[...Array(3)].map((e, i) => (
-                <Testimonial key={i} i={i + 7} />
-              ))}
-            </ul>
-          </li>
-        </ul>
-      </div>
+      </ResponsiveContainer>
     </section>
   );
 };

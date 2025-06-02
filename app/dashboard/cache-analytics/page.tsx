@@ -152,7 +152,7 @@ export default function CacheAnalyticsDashboard() {
         <div className="sm:flex-auto">
           <h1 className="text-base font-semibold leading-6 text-gray-900">Cache Analytics Dashboard</h1>
           <p className="mt-2 text-sm text-gray-700">
-            Monitor cache performance and optimize your application's data fetching strategy.
+            Monitor cache performance and optimize your application&apos;s data fetching strategy.
           </p>
         </div>
       </div>

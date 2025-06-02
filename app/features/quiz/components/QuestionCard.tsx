@@ -120,4 +120,6 @@ const QuestionCard: React.FC<QuestionCardProps> = memo(({ question }) => {
   );
 });
 
+QuestionCard.displayName = 'QuestionCard';
+
 export default QuestionCard;

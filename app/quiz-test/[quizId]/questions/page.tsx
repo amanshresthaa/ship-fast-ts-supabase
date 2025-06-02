@@ -13,7 +13,7 @@ export default async function QuestionTypesListPage({ params }: { params: { quiz
       <div className="min-h-screen bg-custom-light-bg py-12 px-4">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold text-custom-dark-blue mb-6">Quiz Not Found</h1>
-          <p className="mb-6">The quiz you're looking for could not be found.</p>
+          <p className="mb-6">The quiz you&apos;re looking for could not be found.</p>
           <Link href="/" className="text-custom-primary hover:underline">
             Return to Home
           </Link>

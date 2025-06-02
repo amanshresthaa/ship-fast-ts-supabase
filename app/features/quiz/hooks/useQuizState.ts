@@ -18,6 +18,7 @@ export interface QuizState {
   questions: AnyQuestion[];
   currentQuestionIndex: number;
   userAnswers: UserAnswersState;
+  flaggedQuestions: Set<string>; // Track flagged question IDs
   isLoading: boolean;
   error: string | null;
   isQuizComplete: boolean;
@@ -51,9 +52,11 @@ export type QuizAction =
   | { type: 'UPDATE_ANSWER_CORRECTNESS'; payload: { questionId: string; isCorrect: boolean, serverVerifiedCorrectAnswer?: any } }
   | { type: 'NEXT_QUESTION' }
   | { type: 'PREVIOUS_QUESTION' }
+  | { type: 'NAVIGATE_TO_QUESTION'; payload: number }
   | { type: 'COMPLETE_QUIZ' }
   | { type: 'RESET_QUIZ' }
   | { type: 'SHOW_FEEDBACK'; payload: { questionId: string } }
+  | { type: 'TOGGLE_FLAG_QUESTION'; payload: string } // questionId
   // Added action types for DB progress
   | { type: 'LOAD_DB_PROGRESS_START' }
   | { type: 'LOAD_DB_PROGRESS_SUCCESS'; payload: { currentQuestionIndex: number; userAnswers: UserAnswersState } }
@@ -73,6 +76,7 @@ const initialState: QuizState = {
   questions: [],
   currentQuestionIndex: 0,
   userAnswers: {},
+  flaggedQuestions: new Set<string>(),
   isLoading: false,
   error: null,
   isQuizComplete: false,
@@ -97,7 +101,7 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
     case 'LOAD_QUIZ_FAILURE':
       return { ...state, isLoading: false, error: action.payload };
     
-    case 'SUBMIT_ANSWER':
+    case 'SUBMIT_ANSWER': {
       let isClientCorrect: boolean | undefined = undefined;
       
       if (action.payload.questionType === 'single_selection' && action.payload.correctAnswerOptionId !== undefined) {
@@ -191,8 +195,9 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
         },
         showFeedbackForCurrentQuestion: true, 
       };
+    }
 
-    case 'UPDATE_ANSWER_CORRECTNESS':
+    case 'UPDATE_ANSWER_CORRECTNESS': {
       if (!state.userAnswers[action.payload.questionId]) {
         console.warn('UPDATE_ANSWER_CORRECTNESS called for a question not in userAnswers', action.payload.questionId);
         return state; 
@@ -208,8 +213,9 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
           },
         },
       };
+    }
 
-    case 'NEXT_QUESTION':
+    case 'NEXT_QUESTION': {
       if (state.currentQuestionIndex < state.questions.length - 1) {
         const nextQuestionId = state.questions[state.currentQuestionIndex + 1]?.id;
         const nextQuestionHasAnswer = nextQuestionId ? state.userAnswers[nextQuestionId] !== undefined : false;
@@ -220,8 +226,9 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
         };
       }
       return { ...state, isQuizComplete: true }; 
+    }
 
-    case 'PREVIOUS_QUESTION':
+    case 'PREVIOUS_QUESTION': {
       if (state.currentQuestionIndex > 0) {
         const prevQuestionId = state.questions[state.currentQuestionIndex - 1]?.id;
         const prevQuestionHasAnswer = prevQuestionId ? state.userAnswers[prevQuestionId] !== undefined : false;
@@ -232,18 +239,49 @@ const quizReducer = (state: QuizState, action: QuizAction): QuizState => {
         };
       }
       return state;
+    }
 
-    case 'COMPLETE_QUIZ':
+    case 'NAVIGATE_TO_QUESTION': {
+      if (action.payload >= 0 && action.payload < state.questions.length) {
+        const targetQuestionId = state.questions[action.payload]?.id;
+        const targetQuestionHasAnswer = targetQuestionId ? state.userAnswers[targetQuestionId] !== undefined : false;
+        return {
+          ...state,
+          currentQuestionIndex: action.payload,
+          showFeedbackForCurrentQuestion: targetQuestionHasAnswer,
+        };
+      }
+      return state;
+    }
+
+    case 'COMPLETE_QUIZ': {
       return { ...state, isQuizComplete: true, showFeedbackForCurrentQuestion: true };
+    }
 
-    case 'SHOW_FEEDBACK':
+    case 'SHOW_FEEDBACK': {
       return { ...state, showFeedbackForCurrentQuestion: true };
+    }
 
-    case 'RESET_QUIZ':
+    case 'RESET_QUIZ': {
       return initialState;
+    }
 
-    case 'DELETE_DB_PROGRESS_FAILURE':
+    case 'TOGGLE_FLAG_QUESTION': {
+      const questionId = action.payload;
+      const newFlaggedQuestions = new Set(state.flaggedQuestions);
+      
+      if (newFlaggedQuestions.has(questionId)) {
+        newFlaggedQuestions.delete(questionId);
+      } else {
+        newFlaggedQuestions.add(questionId);
+      }
+      
+      return { ...state, flaggedQuestions: newFlaggedQuestions };
+    }
+
+    case 'DELETE_DB_PROGRESS_FAILURE': {
       return { ...state, isSavingProgress: false, progressError: action.payload };
+    }
 
     case 'LOAD_DB_PROGRESS_START':
       return { ...state, isLoadingProgress: true, progressError: null };

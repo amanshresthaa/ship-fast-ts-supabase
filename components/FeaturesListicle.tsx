@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { JSX } from "react";
+import { ResponsiveContainer } from '../app/components/ResponsiveComponents';
+import { useResponsive } from '../app/hooks/useResponsive';
 
 // List of features to display:
 // - name: name of the feature
@@ -396,6 +398,7 @@ const FeaturesListicle = () => {
     features[0].name
   );
   const [hasClicked, setHasClicked] = useState<boolean>(false);
+  const { isMobile, isTablet } = useResponsive();
 
   // (Optional) Autoscroll the list of features so user know it's interactive.
   // Stop scrolling when user scroll after the featuresEndRef element (end of section)
@@ -437,73 +440,118 @@ const FeaturesListicle = () => {
   }, [featureSelected, hasClicked]);
 
   return (
-    <section className="py-24" id="features">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-base-100 max-md:px-8 max-w-3xl">
-          <p className="text-accent font-medium text-sm font-mono mb-3">
-            {/* Pure decoration, you can remove it */}
-            const launch_time = &quot;Today&quot;;
-          </p>
-          <h2 className="font-extrabold text-3xl lg:text-5xl tracking-tight mb-8">
-            {/* 💡 COPY TIP: Remind visitors about the value of your product. Why do they need it? */}
-            Supercharge your app instantly, launch faster, make $
-          </h2>
-          <div className="text-base-content/80 leading-relaxed mb-8 lg:text-lg">
-            {/* 💡 COPY TIP: Explain how your product delivers what you promise in the headline. */}
-            Login users, process payments and send emails at lightspeed. Spend
-            your time building your startup, not integrating APIs. ShipFast
-            provides you with the boilerplate code you need to launch, FAST.
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div className="grid grid-cols-4 md:flex justify-start gap-4 md:gap-12 max-md:px-8 max-w-3xl mx-auto mb-8">
-          {features.map((feature) => (
-            <span
-              key={feature.name}
-              onClick={() => {
-                if (!hasClicked) setHasClicked(true);
-                setFeatureSelected(feature.name);
-              }}
-              className={`flex flex-col items-center justify-center gap-3 select-none cursor-pointer p-2 duration-200 group`}
-            >
-              <span
-                className={`duration-100 ${
-                  featureSelected === feature.name
-                    ? "text-primary"
-                    : "text-base-content/30 group-hover:text-base-content/50"
-                }`}
-              >
-                {feature.svg}
-              </span>
-              <span
-                className={`font-semibold text-sm ${
-                  featureSelected === feature.name
-                    ? "text-primary"
-                    : "text-base-content/50"
-                }`}
-              >
-                {feature.name}
-              </span>
-            </span>
-          ))}
-        </div>
-        <div className="bg-base-200">
-          <div className="max-w-3xl mx-auto flex flex-col md:flex-row justify-center md:justify-start md:items-center gap-12">
-            <div
-              className="text-base-content/80 leading-relaxed space-y-4 px-12 md:px-0 py-12 max-w-xl animate-opacity"
-              key={featureSelected}
-            >
-              <h3 className="font-semibold text-base-content text-lg">
-                {features.find((f) => f.name === featureSelected)["name"]}
-              </h3>
-
-              {features.find((f) => f.name === featureSelected)["description"]}
+    <section className="py-16 md:py-20 lg:py-24" id="features">
+      <ResponsiveContainer>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12 md:mb-16 lg:mb-20">
+            <p className="text-accent font-medium text-sm font-mono mb-4 opacity-80">
+              {/* Pure decoration, you can remove it */}
+              const launch_time = &quot;Today&quot;;
+            </p>
+            <h2 className={`
+              font-extrabold tracking-tight mb-6 md:mb-8
+              ${isMobile ? 'text-2xl' : isTablet ? 'text-3xl' : 'text-3xl lg:text-5xl'}
+              bg-gradient-to-r from-base-content to-base-content/80 bg-clip-text text-transparent
+            `}>
+              {/* 💡 COPY TIP: Remind visitors about the value of your product. Why do they need it? */}
+              Supercharge your app instantly, launch faster, make $
+            </h2>
+            <div className={`
+              text-base-content/80 leading-relaxed max-w-2xl mx-auto
+              ${isMobile ? 'text-sm px-2' : isTablet ? 'text-base px-4' : 'text-lg px-0'}
+            `}>
+              {/* 💡 COPY TIP: Explain how your product delivers what you promise in the headline. */}
+              Login users, process payments and send emails at lightspeed. Spend
+              your time building your startup, not integrating APIs. ShipFast
+              provides you with the boilerplate code you need to launch, FAST.
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="space-y-8 md:space-y-12">
+          {/* Feature Navigation */}
+          <div className={`
+            ${isMobile 
+              ? 'grid grid-cols-2 gap-4 px-4' 
+              : isTablet 
+                ? 'flex flex-wrap justify-center gap-6 px-6' 
+                : 'flex justify-center gap-8 md:gap-12'
+            }
+            max-w-4xl mx-auto
+          `}>
+            {features.map((feature) => (
+              <button
+                key={feature.name}
+                onClick={() => {
+                  if (!hasClicked) setHasClicked(true);
+                  setFeatureSelected(feature.name);
+                }}
+                className={`
+                  flex flex-col items-center justify-center gap-2 md:gap-3 
+                  select-none cursor-pointer p-3 md:p-4 duration-200 group
+                  rounded-xl hover:bg-base-200/50 transition-all
+                  ${isMobile ? 'min-h-[80px]' : 'min-h-[100px]'}
+                  focus:outline-none focus:ring-2 focus:ring-primary/20
+                  active:scale-95
+                `}
+              >
+                <span
+                  className={`
+                    duration-200 transition-all
+                    ${isMobile ? 'w-6 h-6' : isTablet ? 'w-7 h-7' : 'w-8 h-8'}
+                    ${featureSelected === feature.name
+                      ? "text-primary scale-110"
+                      : "text-base-content/40 group-hover:text-base-content/60 group-hover:scale-105"
+                    }
+                  `}
+                >
+                  {feature.svg}
+                </span>
+                <span
+                  className={`
+                    font-semibold text-center transition-all duration-200
+                    ${isMobile ? 'text-xs' : isTablet ? 'text-sm' : 'text-sm md:text-base'}
+                    ${featureSelected === feature.name
+                      ? "text-primary"
+                      : "text-base-content/60 group-hover:text-base-content/80"
+                    }
+                  `}
+                >
+                  {feature.name}
+                </span>
+              </button>
+            ))}
+          </div>
+          
+          {/* Feature Content */}
+          <div className="bg-gradient-to-r from-base-200/50 to-base-200/30 rounded-2xl md:rounded-3xl">
+            <div className="max-w-4xl mx-auto">
+              <div className={`
+                text-base-content/80 leading-relaxed space-y-4 animate-opacity
+                ${isMobile ? 'p-6' : isTablet ? 'p-8' : 'px-12 py-12'}
+              `}
+                key={featureSelected}
+              >
+                <h3 className={`
+                  font-semibold text-base-content mb-4
+                  ${isMobile ? 'text-lg' : isTablet ? 'text-xl' : 'text-xl md:text-2xl'}
+                `}>
+                  {features.find((f) => f.name === featureSelected)?.name}
+                </h3>
+
+                <div className={`
+                  ${isMobile ? 'text-sm' : isTablet ? 'text-sm' : 'text-base'}
+                  [&_ul]:space-y-3 [&_li]:flex [&_li]:items-start [&_li]:gap-3
+                  [&_li_svg]:w-5 [&_li_svg]:h-5 [&_li_svg]:mt-0.5 [&_li_svg]:flex-shrink-0
+                `}>
+                  {features.find((f) => f.name === featureSelected)?.description}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ResponsiveContainer>
+      
       {/* Just used to know it's the end of the autoscroll feature (optional, see useEffect) */}
       <p className="opacity-0" ref={featuresEndRef}></p>
     </section>

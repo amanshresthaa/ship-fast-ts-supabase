@@ -285,6 +285,7 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
       <p>Dev Info: {allTargetsFilled ? 'All targets filled' : 'Not all targets filled'}</p>
     </div>
   ));
+  DevInfoBanner.displayName = 'DevInfoBanner';
 
   // Auto-validating feedback banner
   const AutoValidatingBanner = memo(() => (
@@ -292,6 +293,7 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
       <p className="text-sm text-yellow-700">All targets filled. Your answer will be submitted.</p>
     </div>
   ));
+  AutoValidatingBanner.displayName = 'AutoValidatingBanner';
 
   // Ready to submit banner
   const ReadyBanner = memo(() => (
@@ -299,6 +301,7 @@ const DragAndDropQuestionComponent: React.FC<DragAndDropQuestionComponentProps> 
       <p className="text-sm text-green-700">All targets filled. Ready to submit.</p>
     </div>
   ));
+  ReadyBanner.displayName = 'ReadyBanner';
   
   /**
    * Determines which feedback banner to show

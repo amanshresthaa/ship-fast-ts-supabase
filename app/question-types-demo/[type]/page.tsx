@@ -116,7 +116,7 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
         <div className="text-center">
           <h1 className="text-2xl font-bold text-red-600 mb-4">No Question Available</h1>
           <p className="text-lg text-gray-700">
-            Could not load a question of type "{questionType}" with the current filters (Difficulty: {filters.difficulty}, Tags: {filters.tags.join(', ') || 'None'}).
+            Could not load a question of type &quot;{questionType}&quot; with the current filters (Difficulty: {filters.difficulty}, Tags: {filters.tags.join(', ') || 'None'}).
           </p>
           <button 
             onClick={loadQuestion} 
@@ -279,12 +279,12 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
             </div>
             {isSubmittedDemo && (
               <p className="mt-3 text-xs text-gray-600">
-                Answers are {selectedOption || selectedOptions.length > 0 || Object.values(dropdownSelections).some(s => s !== null) ? 'locked' : 'not selected but locked'}. Toggle "Show Feedback" to see correctness.
+                Answers are {selectedOption || selectedOptions.length > 0 || Object.values(dropdownSelections).some(s => s !== null) ? 'locked' : 'not selected but locked'}. Toggle &quot;Show Feedback&quot; to see correctness.
               </p>
             )}
              {!isSubmittedDemo && (
               <p className="mt-3 text-xs text-gray-600">
-                Select an answer. Then "Lock Answers" to simulate submission.
+                Select an answer. Then &quot;Lock Answers&quot; to simulate submission.
               </p>
             )}
           </div>

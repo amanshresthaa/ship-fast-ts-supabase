@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
-import React from "react";
+import { ResponsiveContainer, ResponsiveGrid } from '../app/components/ResponsiveComponents';
+import { useResponsive } from '../app/hooks/useResponsive';
 
 const features = [
   {
@@ -238,34 +239,75 @@ const features = [
   },
 ];
 const FeaturesGrid = () => {
+  const { isMobile, isTablet } = useResponsive();
+  
   return (
-    <section className="flex justify-center items-center w-full bg-base-200/50 text-base-content py-20 lg:py-32">
-      <div className="flex flex-col max-w-[82rem] gap-16 md:gap-20 px-4">
-        <h2 className="max-w-3xl font-black text-4xl md:text-6xl tracking-[-0.01em]">
-          Ship features <br /> users{" "}
-          <span className="underline decoration-dashed underline-offset-8 decoration-base-300">
-            really want
-          </span>
-        </h2>
-        <div className="flex flex-col w-full h-fit gap-4 lg:gap-10 text-text-default max-w-[82rem]">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-10">
+    <section className="flex justify-center items-center w-full bg-base-200/50 text-base-content py-16 md:py-20 lg:py-32">
+      <ResponsiveContainer>
+        <div className="flex flex-col gap-12 md:gap-16 lg:gap-20">
+          <div className="text-center md:text-left">
+            <h2 className={`
+              font-black tracking-[-0.01em] max-w-4xl mx-auto md:mx-0
+              ${isMobile ? 'text-3xl' : isTablet ? 'text-4xl' : 'text-4xl md:text-6xl'}
+              bg-gradient-to-r from-base-content to-base-content/80 bg-clip-text text-transparent
+            `}>
+              Ship features <br /> users{" "}
+              <span className="underline decoration-dashed underline-offset-8 decoration-base-300">
+                really want
+              </span>
+            </h2>
+            <p className={`
+              mt-4 text-base-content/70 max-w-2xl mx-auto md:mx-0
+              ${isMobile ? 'text-sm' : isTablet ? 'text-base' : 'text-lg'}
+            `}>
+              Build features that matter with user feedback, prioritization, and community-driven development
+            </p>
+          </div>
+          
+          <ResponsiveGrid
+            mobileCols={1}
+            tabletCols={1}
+            desktopCols={3}
+            gap={isMobile ? "4" : isTablet ? "6" : "10"}
+            className="w-full"
+          >
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className={`${feature.styles} rounded-3xl flex flex-col gap-6 w-full h-[22rem] lg:h-[25rem] pt-6 overflow-hidden group`}
+                className={`
+                  ${feature.styles} rounded-2xl md:rounded-3xl flex flex-col gap-4 md:gap-6 w-full 
+                  ${isMobile 
+                    ? 'h-80 pt-4' 
+                    : isTablet 
+                      ? 'h-96 pt-5' 
+                      : 'h-[22rem] lg:h-[25rem] pt-6'
+                  }
+                  overflow-hidden group hover:shadow-xl transition-all duration-300
+                  ${feature.styles.includes('md:col-span-2') && !isMobile ? 'md:col-span-full lg:col-span-2' : ''}
+                `}
               >
-                <div className="px-6 space-y-2">
-                  <h3 className="font-bold text-xl lg:text-3xl tracking-tight">
+                <div className={`px-4 md:px-6 space-y-2`}>
+                  <h3 className={`
+                    font-bold tracking-tight
+                    ${isMobile ? 'text-lg' : isTablet ? 'text-xl' : 'text-xl lg:text-3xl'}
+                  `}>
                     {feature.title}
                   </h3>
-                  <p className="opacity-80">{feature.description}</p>
+                  <p className={`
+                    opacity-80 leading-relaxed
+                    ${isMobile ? 'text-sm' : isTablet ? 'text-sm' : 'text-base'}
+                  `}>
+                    {feature.description}
+                  </p>
                 </div>
-                {feature.demo}
+                <div className="flex-1 min-h-0">
+                  {feature.demo}
+                </div>
               </div>
             ))}
-          </div>
+          </ResponsiveGrid>
         </div>
-      </div>
+      </ResponsiveContainer>
     </section>
   );
 };
