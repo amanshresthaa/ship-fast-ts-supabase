@@ -10,7 +10,8 @@
     "lint": "next lint",
     "analyze": "ANALYZE=true next build",
     "setup": "./setup.sh",
-    "quick-start": "./quick-start.sh"
+    "quick-start": "./quick-start.sh",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
