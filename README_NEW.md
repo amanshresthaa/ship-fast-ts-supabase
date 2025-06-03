@@ -239,23 +239,6 @@ The application can be deployed to any platform that supports Next.js:
 2. **Database Connection**: Verify Supabase credentials
 3. **Styling Issues**: Check Tailwind CSS configuration
 4. **TypeScript Errors**: Run `npm run lint` to identify issues
-5. **Dependency Conflicts**: Run `./fix-deps.sh` or `./setup.sh --clean`
-
-### Dependency Issues
-
-If you encounter dependency conflicts during installation:
-
-```bash
-# Try the dependency fix script
-./fix-deps.sh
-
-# Or clean installation
-./setup.sh --clean
-
-# Or manual fix
-rm -rf node_modules package-lock.json
-npm install --legacy-peer-deps
-```
 
 ### Getting Help
 

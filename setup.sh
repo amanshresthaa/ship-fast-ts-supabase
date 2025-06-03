@@ -2,6 +2,11 @@
 
 # Ship Fast TypeScript Supabase - Automated Setup Script
 # This script automates the project setup process
+#
+# Usage:
+#   ./setup.sh          # Standard setup
+#   ./setup.sh --clean   # Clean installation (removes node_modules, lock files)
+#   ./setup.sh -c        # Same as --clean
 
 set -e  # Exit on any error
 
@@ -56,11 +61,66 @@ check_npm() {
     print_status "npm version: $(npm -v) ✓"
 }
 
+# Clean installation function
+clean_install() {
+    print_status "Performing clean installation..."
+    
+    # Remove node_modules and lock files
+    if [ -d "node_modules" ]; then
+        print_status "Removing existing node_modules..."
+        rm -rf node_modules
+    fi
+    
+    if [ -f "package-lock.json" ]; then
+        print_status "Removing package-lock.json..."
+        rm -f package-lock.json
+    fi
+    
+    if [ -f "yarn.lock" ]; then
+        print_status "Removing yarn.lock..."
+        rm -f yarn.lock
+    fi
+    
+    print_status "Clean installation complete ✓"
+}
+
 # Install dependencies
 install_dependencies() {
     print_status "Installing project dependencies..."
-    npm install
-    print_status "Dependencies installed successfully ✓"
+    
+    # Clean up existing installations if package-lock.json exists but node_modules doesn't
+    if [ -f "package-lock.json" ] && [ ! -d "node_modules" ]; then
+        print_status "Cleaning up previous installation artifacts..."
+        rm -f package-lock.json
+    fi
+    
+    # First, try standard npm install
+    if npm install 2>/dev/null; then
+        print_status "Dependencies installed successfully ✓"
+        return 0
+    fi
+    
+    print_warning "Standard installation failed, trying with legacy peer deps..."
+    touch .setup-warnings
+    
+    # If that fails, try with --legacy-peer-deps
+    if npm install --legacy-peer-deps 2>/dev/null; then
+        print_status "Dependencies installed with legacy peer deps ✓"
+        return 0
+    fi
+    
+    print_warning "Legacy peer deps failed, trying with --force..."
+    
+    # If that fails, try with --force
+    if npm install --force 2>/dev/null; then
+        print_warning "Dependencies installed with --force (may have warnings) ⚠️"
+        return 0
+    fi
+    
+    print_error "All installation methods failed. Please check package.json for dependency conflicts."
+    print_error "You may need to manually resolve dependency issues."
+    print_error "Try running: ./setup.sh --clean"
+    exit 1
 }
 
 # Setup environment file
@@ -174,6 +234,12 @@ verify_setup() {
 main() {
     print_header "Ship Fast TypeScript Supabase Setup"
     
+    # Check for clean install flag
+    if [[ "$1" == "--clean" || "$1" == "-c" ]]; then
+        print_status "Clean installation requested..."
+        clean_install
+    fi
+    
     print_status "Starting automated setup process..."
     
     # Pre-flight checks
@@ -202,6 +268,14 @@ main() {
     echo ""
     print_status "🚀 Your Ship Fast TypeScript Supabase project is ready!"
     print_status "Run 'npm run dev' to start developing!"
+    
+    # Show additional help if installation had issues
+    if [[ -f ".setup-warnings" ]]; then
+        echo ""
+        print_warning "Some issues were encountered during setup. Check the warnings above."
+        print_status "If you continue to have issues, try running: ./setup.sh --clean"
+        rm -f .setup-warnings
+    fi
 }
 
 # Run the main function
