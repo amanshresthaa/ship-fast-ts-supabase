@@ -1,3 +1,5 @@
+'use client';
+
 import config from "@/config";
 import ButtonCheckout from "./ButtonCheckout";
 import { useResponsive } from "@/app/hooks/useResponsive";

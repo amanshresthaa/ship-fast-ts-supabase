@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useResponsive } from '@/app/hooks/useResponsive';
 import { 
@@ -105,7 +107,7 @@ const ResponsiveDemo: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
               <h3 className="font-medium text-gray-700 dark:text-gray-300">Touch Device</h3>
               <p className={`${textClasses} text-gray-900 dark:text-white`}>
-                {isTouchDevice() ? 'Yes' : 'No'}
+                {isTouchDevice ? 'Yes' : 'No'}
               </p>
             </div>
             
@@ -329,7 +331,7 @@ const ResponsiveDemo: React.FC = () => {
   isTablet,
   isDesktop,
   orientation,
-  touchDevice: isTouchDevice(),
+  touchDevice: isTouchDevice,
   userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
 }, null, 2)}
             </pre>

@@ -93,7 +93,7 @@ const Header = () => {
   const getLinkClasses = () => {
     const baseClasses = "link link-hover transition-colors duration-200";
     
-    if (isTouchDevice()) {
+    if (isTouchDevice) {
       return `${baseClasses} min-h-[44px] flex items-center px-2 py-2 rounded-lg hover:bg-base-300`;
     }
     
@@ -277,7 +277,7 @@ const Header = () => {
           {/* Device info for debugging (only in development) */}
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-8 pt-4 border-t border-base-300 text-xs text-base-content/60">
-              Device: {deviceType} • Touch: {isTouchDevice() ? 'Yes' : 'No'}
+              Device: {deviceType} • Touch: {isTouchDevice ? 'Yes' : 'No'}
             </div>
           )}
         </div>

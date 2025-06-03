@@ -105,7 +105,7 @@ const Modal = ({
   const getCloseButtonClasses = () => {
     const baseClasses = "btn btn-square btn-ghost";
     
-    if (isTouchDevice()) {
+    if (isTouchDevice) {
       return `${baseClasses} btn-md min-h-[44px] min-w-[44px]`;
     }
     
@@ -204,7 +204,7 @@ const Modal = ({
                         </p>
                         <p className="text-base-content/70">
                           Current device: <span className="font-medium">{deviceType}</span>
-                          {isTouchDevice() && <span className="ml-2">(Touch enabled)</span>}
+                          {isTouchDevice && <span className="ml-2">(Touch enabled)</span>}
                         </p>
                       </div>
                     )}

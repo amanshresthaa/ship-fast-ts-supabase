@@ -101,7 +101,7 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
 
   // Device-specific tooltip configuration
   const getTooltipConfig = () => {
-    if (isTouchDevice()) {
+    if (isTouchDevice) {
       return {
         clickable: true,
         openOnClick: true,
@@ -137,7 +137,7 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
           className="fixed bottom-4 left-4 z-[100] bg-black/80 text-white text-xs p-2 rounded-lg font-mono pointer-events-none"
           style={{ display: 'block' }}
         >
-          {deviceType} | Touch: {isTouchDevice() ? 'Y' : 'N'}
+          {deviceType} | Touch: {isTouchDevice ? 'Y' : 'N'}
         </div>
       )}
 
@@ -188,7 +188,7 @@ const ClientLayout = ({ children }: { children: ReactNode }) => {
             }
             
             /* Enhanced tap targets for mobile */
-            ${isTouchDevice() ? `
+            ${isTouchDevice ? `
               button:not(.no-min-size), a:not(.no-min-size), [role="button"]:not(.no-min-size) {
                 min-height: 44px;
                 min-width: 44px;

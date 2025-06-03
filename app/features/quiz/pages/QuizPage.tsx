@@ -22,6 +22,7 @@ import { ConfirmationDialog } from '../components/ConfirmationDialog'; // <-- Im
 import { HelpModal } from '../components/HelpModal'; // <-- Import HelpModal
 // Using the session hook that works in this project
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useResponsive } from '@/app/hooks/useResponsive';
 
 // Learning Mode Quiz Runner Component
 const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ quizId, questionType }) => {
@@ -33,7 +34,19 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(100); // Zoom level in percentage
   const [isDarkMode, setIsDarkMode] = useState(false); // Dark mode state
+  const [showMobileQuickJump, setShowMobileQuickJump] = useState(false); // Mobile quick jump modal
   const supabase = createClientComponentClient();
+  
+  // Responsive utilities
+  const { 
+    isMobile, 
+    isTablet, 
+    isDesktop, 
+    deviceType, 
+    isTouchDevice, 
+    screenWidth,
+    breakpoint 
+  } = useResponsive();
   
   // Initialize timer with 60 minutes (can be made configurable)
   const { timeLeft, isExpired, pause, resume } = useQuizTimer({
@@ -292,6 +305,27 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   // Get current question
   const currentQuestion = state.questions[state.currentQuestionIndex];
   
+  // Responsive layout configuration
+  const layoutConfig = {
+    showSidebar: isDesktop && !isMobile, // Only show sidebar on desktop
+    useBottomNavigation: isMobile, // Bottom navigation for mobile
+    collapseHeader: isMobile, // Simplified header for mobile
+    useDrawerPattern: isTablet || isMobile, // Use drawer pattern for tablet and mobile
+    gridColumns: {
+      'desktop-xl': 10,
+      'desktop-large': 8,
+      'desktop': 6,
+      'tablet': 5,
+      'mobile-large': 4,
+      'mobile': 3
+    }[breakpoint] || 6,
+    touchTargetSize: isTouchDevice ? 'large' : 'normal',
+    showCompactHeader: isMobile || isTablet,
+    useFullWidthMain: isMobile,
+    sidebarPosition: isMobile ? 'bottom' : 'right',
+    questionSpacing: isMobile ? 'compact' : 'comfortable',
+  };
+  
   // If showing the resume prompt
   if (showResumePrompt && savedProgress) {
     return (
@@ -359,17 +393,24 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               {/* Mobile Sidebar Toggle */}
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="xl:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                className={`xl:hidden p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors ${
+                  layoutConfig.touchTargetSize === 'large' ? 'min-h-[44px] min-w-[44px]' : ''
+                }`}
+                aria-label="Open quiz overview"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
               
-              <h1 className="text-xl font-semibold text-gray-900 truncate max-w-xs sm:max-w-sm">
+              <h1 className={`text-xl font-semibold text-gray-900 truncate ${
+                layoutConfig.showCompactHeader ? 'max-w-40' : 'max-w-xs sm:max-w-sm'
+              }`}>
                 {state.quiz?.title || 'Quiz'}
               </h1>
-              <div className="hidden sm:flex items-center space-x-2">
+              <div className={`${
+                layoutConfig.showCompactHeader ? 'hidden' : 'hidden sm:flex'
+              } items-center space-x-2`}>
                 <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
                   Question {state.currentQuestionIndex + 1} of {state.questions.length}
                 </span>
@@ -424,8 +465,11 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               {/* Dark Mode Toggle */}
               <button 
                 onClick={toggleDarkMode}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className={`${
+                  layoutConfig.touchTargetSize === 'large' ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'
+                } text-gray-400 hover:text-gray-600 transition-colors`}
                 title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {isDarkMode ? (
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -440,8 +484,11 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               
               <button 
                 onClick={handleShowHelp}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className={`${
+                  layoutConfig.touchTargetSize === 'large' ? 'p-3 min-h-[44px] min-w-[44px]' : 'p-2'
+                } text-gray-400 hover:text-gray-600 transition-colors`}
                 title="Help"
+                aria-label="Show help guide"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -465,7 +512,9 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
       </div>
 
       {/* Mobile Stats Bar */}
-      <div className="xl:hidden bg-white border-b border-gray-200">
+      <div className={`xl:hidden bg-white border-b border-gray-200 ${
+        layoutConfig.useBottomNavigation ? 'pb-2' : ''
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center space-x-4">
@@ -473,7 +522,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                 <span className="font-medium">{Object.keys(state.userAnswers).length} / {state.questions.length}</span>
               </span>
-              <span className="text-gray-500">
+              <span className="text-gray-500 hidden sm:inline">
                 {Math.round((Object.keys(state.userAnswers).length / state.questions.length) * 100)}% Complete
               </span>
             </div>
@@ -488,15 +537,19 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col xl:flex-row gap-8">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ${
+        layoutConfig.useBottomNavigation ? 'pb-24' : ''
+      }`}>
+        <div className={`flex ${layoutConfig.useFullWidthMain ? 'flex-col' : 'flex-col xl:flex-row'} gap-8`}>
           
           {/* Main Question Area */}
-          <div className="flex-1 max-w-4xl">
+          <div className={`flex-1 ${layoutConfig.useFullWidthMain ? 'w-full' : 'max-w-4xl'}`}>
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
               {/* Question Header */}
               <div className="bg-gradient-to-r from-purple-500 to-blue-500 px-8 py-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className={`flex ${
+                  layoutConfig.showCompactHeader ? 'flex-col gap-3' : 'flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
+                }`}>
                   <div className="flex items-center space-x-4">
                     <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
                       <span className="text-white font-semibold text-sm">
@@ -513,9 +566,12 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                   <div className="flex items-center space-x-3">
                     <button 
                       onClick={() => dispatch({ type: 'TOGGLE_FLAG_QUESTION', payload: currentQuestion.id })}
-                      className={`bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-white/30 transition-colors flex items-center space-x-2 ${
+                      className={`bg-white/20 backdrop-blur-sm text-white ${
+                        layoutConfig.touchTargetSize === 'large' ? 'px-5 py-3 min-h-[44px]' : 'px-4 py-2'
+                      } rounded-full text-sm font-medium hover:bg-white/30 transition-colors flex items-center space-x-2 ${
                         state.flaggedQuestions.has(currentQuestion.id) ? 'bg-yellow-500/30' : ''
                       }`}
+                      aria-label={state.flaggedQuestions.has(currentQuestion.id) ? 'Remove flag from question' : 'Flag question for review'}
                     >
                       <svg className="w-4 h-4" fill={state.flaggedQuestions.has(currentQuestion.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
@@ -534,7 +590,9 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
 
               {/* Question Content */}
               <div 
-                className="px-8 py-8 transition-transform duration-200"
+                className={`${
+                  layoutConfig.questionSpacing === 'compact' ? 'px-6 py-6' : 'px-8 py-8'
+                } transition-transform duration-200`}
                 style={{ 
                   transform: `scale(${zoomLevel / 100})`,
                   transformOrigin: 'top center'
@@ -544,12 +602,17 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               </div>
 
               {/* Navigation Footer */}
-              <div className="bg-gray-50 px-8 py-6 border-t border-gray-100">
+              <div className={`bg-gray-50 ${
+                layoutConfig.questionSpacing === 'compact' ? 'px-6 py-4' : 'px-8 py-6'
+              } border-t border-gray-100`}>
                 <div className="flex justify-between items-center">
                   <button 
                     onClick={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
                     disabled={state.currentQuestionIndex === 0}
-                    className="flex items-center space-x-2 px-6 py-3 bg-white border border-gray-200 rounded-full text-gray-600 hover:text-gray-800 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                    className={`flex items-center space-x-2 ${
+                      layoutConfig.touchTargetSize === 'large' ? 'px-6 py-4 min-h-[44px]' : 'px-6 py-3'
+                    } bg-white border border-gray-200 rounded-full text-gray-600 hover:text-gray-800 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md`}
+                    aria-label="Go to previous question"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -571,7 +634,10 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                         dispatch({ type: 'NEXT_QUESTION' });
                       }
                     }}
-                    className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                    className={`flex items-center space-x-2 ${
+                      layoutConfig.touchTargetSize === 'large' ? 'px-6 py-4 min-h-[44px]' : 'px-6 py-3'
+                    } bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105`}
+                    aria-label={state.currentQuestionIndex === state.questions.length - 1 ? 'Submit quiz' : 'Go to next question'}
                   >
                     <span>{state.currentQuestionIndex === state.questions.length - 1 ? 'Submit Quiz' : 'Next'}</span>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -583,8 +649,9 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="xl:w-80 space-y-6">
+          {/* Right Sidebar - Only show on desktop */}
+          {layoutConfig.showSidebar && (
+            <div className="xl:w-80 space-y-6">
             {/* Quiz Overview Card */}
             <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
@@ -649,7 +716,12 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                 </h3>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-8 gap-1.5">
+                <div className={`grid gap-1.5 ${
+                  layoutConfig.gridColumns === 3 ? 'grid-cols-5' :
+                  layoutConfig.gridColumns === 4 ? 'grid-cols-6' :
+                  layoutConfig.gridColumns === 5 ? 'grid-cols-7' :
+                  'grid-cols-8'
+                }`}>
                   {state.questions.map((question, index) => {
                     const isAnswered = !!state.userAnswers[question.id];
                     const isCurrent = index === state.currentQuestionIndex;
@@ -716,8 +788,73 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               </div>
             </div>
           </div>
+          )}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {layoutConfig.useBottomNavigation && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+          <div className="flex items-center justify-around py-3 px-4">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex flex-col items-center space-y-1 p-2 text-gray-600 hover:text-purple-600 transition-colors"
+              aria-label="Open overview"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className="text-xs font-medium">Overview</span>
+            </button>
+            
+            <button
+              onClick={() => dispatch({ type: 'PREVIOUS_QUESTION' })}
+              disabled={state.currentQuestionIndex === 0}
+              className="flex flex-col items-center space-y-1 p-2 text-gray-600 hover:text-purple-600 disabled:text-gray-400 disabled:opacity-50 transition-colors"
+              aria-label="Previous question"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="text-xs font-medium">Previous</span>
+            </button>
+            
+            <button
+              onClick={() => dispatch({ type: 'TOGGLE_FLAG_QUESTION', payload: currentQuestion.id })}
+              className={`flex flex-col items-center space-y-1 p-2 transition-colors ${
+                state.flaggedQuestions.has(currentQuestion.id) 
+                  ? 'text-yellow-600' 
+                  : 'text-gray-600 hover:text-yellow-600'
+              }`}
+              aria-label={state.flaggedQuestions.has(currentQuestion.id) ? 'Remove flag' : 'Flag question'}
+            >
+              <svg className="w-6 h-6" fill={state.flaggedQuestions.has(currentQuestion.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+              </svg>
+              <span className="text-xs font-medium">Flag</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                if (state.currentQuestionIndex === state.questions.length - 1) {
+                  handleQuizSubmit();
+                } else {
+                  dispatch({ type: 'NEXT_QUESTION' });
+                }
+              }}
+              className="flex flex-col items-center space-y-1 p-2 text-purple-600 hover:text-purple-700 transition-colors"
+              aria-label={state.currentQuestionIndex === state.questions.length - 1 ? 'Submit quiz' : 'Next question'}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+              <span className="text-xs font-medium">
+                {state.currentQuestionIndex === state.questions.length - 1 ? 'Submit' : 'Next'}
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
@@ -728,7 +865,8 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
               <h2 className="text-lg font-semibold text-gray-900">Quiz Overview</h2>
               <button
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                className="p-3 text-gray-400 hover:text-gray-600 rounded-lg transition-colors min-h-[44px] min-w-[44px]"
+                aria-label="Close overview"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -791,7 +929,9 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                 </div>
                 
                 <div className="p-4">
-                  <div className="grid grid-cols-6 gap-1.5">
+                  <div className={`grid gap-1.5 ${
+                    isMobile ? 'grid-cols-5' : 'grid-cols-6'
+                  }`}>
                     {state.questions.map((question, index) => {
                       const isAnswered = !!state.userAnswers[question.id];
                       const isCurrent = index === state.currentQuestionIndex;
@@ -837,7 +977,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                     handleQuizSubmit();
                     setIsSidebarOpen(false);
                   }}
-                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-4 px-4 rounded-xl font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 min-h-[44px]"
                 >
                   Submit Quiz
                 </button>
@@ -847,7 +987,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                     handleSaveAndExit();
                     setIsSidebarOpen(false);
                   }}
-                  className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200"
+                  className="w-full bg-gray-100 text-gray-700 py-4 px-4 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 min-h-[44px]"
                 >
                   Save & Exit
                 </button>
@@ -857,7 +997,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
                     handleShowHelp();
                     setIsSidebarOpen(false);
                   }}
-                  className="w-full bg-blue-50 text-blue-600 py-3 px-4 rounded-xl font-medium hover:bg-blue-100 transition-all duration-200 border border-blue-200"
+                  className="w-full bg-blue-50 text-blue-600 py-4 px-4 rounded-xl font-medium hover:bg-blue-100 transition-all duration-200 border border-blue-200 min-h-[44px]"
                 >
                   View Help Guide
                 </button>

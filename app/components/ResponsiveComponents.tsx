@@ -1,5 +1,7 @@
+'use client';
+
 import React from 'react';
-import { useResponsive, BreakpointKey, DeviceType } from '@/app/hooks/useResponsive';
+import { useResponsive, BreakpointKey, DeviceType, ExtendedDeviceType } from '@/app/hooks/useResponsive';
 
 interface ResponsiveProps {
   children: React.ReactNode;
@@ -11,7 +13,7 @@ interface BreakpointProps extends ResponsiveProps {
 }
 
 interface DeviceProps extends ResponsiveProps {
-  device: DeviceType | DeviceType[];
+  device: ExtendedDeviceType | ExtendedDeviceType[];
 }
 
 /**

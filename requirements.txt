@@ -1,0 +1,62 @@
+# Requirements for Ship Fast TypeScript Supabase Quiz Application
+# Note: This is a Node.js/Next.js project. Dependencies are managed via package.json
+# This file is for reference purposes only
+
+# Core Framework
+next>=14.0.0
+react>=18.0.0
+react-dom>=18.0.0
+
+# TypeScript
+typescript>=5.0.0
+@types/node
+@types/react
+@types/react-dom
+
+# Supabase (Database & Auth)
+@supabase/supabase-js>=2.0.0
+@supabase/auth-helpers-nextjs
+@supabase/auth-helpers-react
+
+# UI Components & Styling
+tailwindcss>=3.0.0
+@tailwindcss/forms
+@tailwindcss/typography
+@headlessui/react
+@heroicons/react
+lucide-react
+class-variance-authority
+clsx
+tailwind-merge
+
+# State Management & Data Fetching
+@tanstack/react-query>=4.0.0
+zustand
+
+# Forms & Validation
+react-hook-form
+@hookform/resolvers
+zod
+
+# Payments
+stripe
+
+# Email
+@sendgrid/mail
+
+# Utilities
+date-fns
+uuid
+@types/uuid
+
+# Development & Testing
+eslint
+eslint-config-next
+jest
+@testing-library/react
+@testing-library/jest-dom
+@types/jest
+
+# Build & Development Tools
+postcss
+autoprefixer

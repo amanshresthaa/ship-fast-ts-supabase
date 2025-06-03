@@ -68,7 +68,7 @@ const Testimonial1Small = () => {
                         ${config.starSize} text-warning
                         transition-all duration-300
                         hover:text-warning/80 hover:scale-125
-                        ${isTouchDevice() ? 'active:scale-75' : ''}
+                        ${isTouchDevice ? 'active:scale-75' : ''}
                       `}
                     >
                       <path
@@ -114,14 +114,14 @@ const Testimonial1Small = () => {
               flex justify-center items-center 
               ${isMobile ? 'gap-3' : 'gap-3 md:gap-4'}
               transition-all duration-300
-              ${isTouchDevice() ? 'hover:scale-105' : 'hover:scale-110'}
+              ${isTouchDevice ? 'hover:scale-105' : 'hover:scale-110'}
             `}>
               <div className={`
                 ${config.avatarSize} rounded-full overflow-hidden
                 ring-2 ring-warning/20 ring-offset-2 ring-offset-base-100
                 transition-all duration-300
                 hover:ring-warning/40 hover:ring-offset-4
-                ${isTouchDevice() ? 'active:scale-95' : 'hover:scale-110'}
+                ${isTouchDevice ? 'active:scale-95' : 'hover:scale-110'}
               `}>
                 <Image
                   className="w-full h-full object-cover"
@@ -152,7 +152,7 @@ const Testimonial1Small = () => {
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-6 text-center">
               <div className="inline-block px-3 py-1 rounded-full text-xs bg-base-300 text-base-content/60">
-                Layout: {deviceType} • Touch: {isTouchDevice() ? 'Yes' : 'No'}
+                Layout: {deviceType} • Touch: {isTouchDevice ? 'Yes' : 'No'}
               </div>
             </div>
           )}

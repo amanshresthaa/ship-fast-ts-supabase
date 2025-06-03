@@ -1,284 +1,202 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
-// Enhanced breakpoint definitions following mobile-first approach
-export const BREAKPOINTS = {
-  xs: 0,      // 0px - 575px (Mobile phones)
-  sm: 576,    // 576px - 767px (Mobile large)  
-  md: 768,    // 768px - 991px (Tablets)
-  lg: 992,    // 992px - 1199px (Desktop)
-  xl: 1200,   // 1200px - 1399px (Large desktop)
-  xxl: 1400,  // 1400px+ (Extra large)
-} as const;
+// Define breakpoint keys and their corresponding pixel values
+export type BreakpointKey = 'mobile' | 'mobile-large' | 'tablet' | 'desktop' | 'desktop-large' | 'desktop-xl';
 
-export type BreakpointKey = keyof typeof BREAKPOINTS;
-export type DeviceType = 'mobile' | 'mobile-large' | 'tablet' | 'desktop' | 'desktop-large' | 'desktop-xl';
+export type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
-// Device type mapping based on breakpoints
-const getDeviceType = (width: number): DeviceType => {
-  if (width < BREAKPOINTS.sm) return 'mobile';
-  if (width < BREAKPOINTS.md) return 'mobile-large';
-  if (width < BREAKPOINTS.lg) return 'tablet';
-  if (width < BREAKPOINTS.xl) return 'desktop';
-  if (width < BREAKPOINTS.xxl) return 'desktop-large';
-  return 'desktop-xl';
+// Extended device type that includes all breakpoints for more granular control
+export type ExtendedDeviceType = BreakpointKey;
+
+// Breakpoint definitions (matching Tailwind CSS defaults)
+const BREAKPOINTS: Record<BreakpointKey, number> = {
+  'mobile': 0,
+  'mobile-large': 425,
+  'tablet': 768,
+  'desktop': 1024,
+  'desktop-large': 1440,
+  'desktop-xl': 1920,
 };
 
-// Get current breakpoint based on width
-const getCurrentBreakpoint = (width: number): BreakpointKey => {
-  if (width >= BREAKPOINTS.xxl) return 'xxl';
-  if (width >= BREAKPOINTS.xl) return 'xl';
-  if (width >= BREAKPOINTS.lg) return 'lg';
-  if (width >= BREAKPOINTS.md) return 'md';
-  if (width >= BREAKPOINTS.sm) return 'sm';
-  return 'xs';
-};
+interface ResponsiveClasses {
+  mobile?: string;
+  'mobile-large'?: string;
+  tablet?: string;
+  desktop?: string;
+  'desktop-large'?: string;
+  'desktop-xl'?: string;
+}
 
-interface ResponsiveState {
-  width: number;
-  height: number;
-  breakpoint: BreakpointKey;
-  deviceType: DeviceType;
+interface UseResponsiveReturn {
+  // Device detection
   isMobile: boolean;
   isTablet: boolean;
   isDesktop: boolean;
-  isLarge: boolean;
+  
+  // Device type
+  deviceType: DeviceType;
+  
+  // Touch device detection
+  isTouchDevice: boolean;
+  
+  // Screen dimensions
+  screenWidth: number;
+  screenHeight: number;
+  width: number; // Alias for screenWidth
+  height: number; // Alias for screenHeight
+  
+  // Orientation
   orientation: 'portrait' | 'landscape';
+  
+  // Breakpoint utilities
+  isBreakpointUp: (breakpoint: BreakpointKey) => boolean;
+  isBreakpointDown: (breakpoint: BreakpointKey) => boolean;
+  isBreakpointBetween: (min: BreakpointKey, max: BreakpointKey) => boolean;
+  
+  // Responsive class utilities
+  getResponsiveClasses: (classes: ResponsiveClasses) => string;
+  
+  // Current breakpoint
+  currentBreakpoint: BreakpointKey;
+  breakpoint: BreakpointKey; // Alias for currentBreakpoint
 }
 
-interface UseResponsiveOptions {
-  debounceMs?: number;
-  ssr?: boolean;
-  initialWidth?: number;
-  initialHeight?: number;
-}
+// Custom hook for responsive design utilities
+export const useResponsive = (): UseResponsiveReturn => {
+  const [screenWidth, setScreenWidth] = useState<number>(0);
+  const [screenHeight, setScreenHeight] = useState<number>(0);
+  const [isTouchDevice, setIsTouchDevice] = useState<boolean>(false);
 
-/**
- * Enhanced responsive hook with comprehensive device detection and breakpoint management
- * 
- * Features:
- * - Real-time screen size tracking
- * - Device type detection (mobile, tablet, desktop, etc.)
- * - Breakpoint-based conditional rendering helpers
- * - Orientation detection
- * - SSR-safe with fallback values
- * - Performance optimized with debouncing
- * - Memory leak prevention with proper cleanup
- * 
- * @param options - Configuration options
- * @returns Responsive state and utility functions
- */
-export const useResponsive = (options: UseResponsiveOptions = {}) => {
-  const {
-    debounceMs = 150,
-    ssr = true,
-    initialWidth = 1200,
-    initialHeight = 800,
-  } = options;
-
-  // Initialize state with SSR-safe defaults
-  const [state, setState] = useState<ResponsiveState>(() => {
-    if (typeof window === 'undefined' && ssr) {
-      // SSR fallback - assume desktop for initial render
-      return {
-        width: initialWidth,
-        height: initialHeight,
-        breakpoint: getCurrentBreakpoint(initialWidth),
-        deviceType: getDeviceType(initialWidth),
-        isMobile: false,
-        isTablet: false,
-        isDesktop: true,
-        isLarge: true,
-        orientation: initialWidth > initialHeight ? 'landscape' : 'portrait',
-      };
-    }
-
-    // Client-side initialization
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    
-    return {
-      width,
-      height,
-      breakpoint: getCurrentBreakpoint(width),
-      deviceType: getDeviceType(width),
-      isMobile: width < BREAKPOINTS.md,
-      isTablet: width >= BREAKPOINTS.md && width < BREAKPOINTS.lg,
-      isDesktop: width >= BREAKPOINTS.lg,
-      isLarge: width >= BREAKPOINTS.xl,
-      orientation: width > height ? 'landscape' : 'portrait',
-    };
-  });
-
-  // Debounced resize handler to prevent excessive re-renders
-  const updateDimensions = useCallback(() => {
-    if (typeof window === 'undefined') return;
-
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const breakpoint = getCurrentBreakpoint(width);
-    const deviceType = getDeviceType(width);
-
-    setState({
-      width,
-      height,
-      breakpoint,
-      deviceType,
-      isMobile: width < BREAKPOINTS.md,
-      isTablet: width >= BREAKPOINTS.md && width < BREAKPOINTS.lg,
-      isDesktop: width >= BREAKPOINTS.lg,
-      isLarge: width >= BREAKPOINTS.xl,
-      orientation: width > height ? 'landscape' : 'portrait',
-    });
-  }, []);
-
-  // Setup resize listener with debouncing
+  // Initialize dimensions and touch detection
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    let timeoutId: NodeJS.Timeout;
-
-    const debouncedResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(updateDimensions, debounceMs);
+    const updateDimensions = () => {
+      setScreenWidth(window.innerWidth);
+      setScreenHeight(window.innerHeight);
     };
 
-    // Initial call to set correct dimensions on mount
+    const detectTouchDevice = () => {
+      setIsTouchDevice(
+        'ontouchstart' in window ||
+        navigator.maxTouchPoints > 0 ||
+        // @ts-ignore
+        navigator.msMaxTouchPoints > 0
+      );
+    };
+
+    // Initial setup
     updateDimensions();
+    detectTouchDevice();
 
     // Add event listeners
-    window.addEventListener('resize', debouncedResize, { passive: true });
-    window.addEventListener('orientationchange', debouncedResize, { passive: true });
+    window.addEventListener('resize', updateDimensions);
+    window.addEventListener('orientationchange', updateDimensions);
 
-    // Cleanup function
+    // Cleanup
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', debouncedResize);
-      window.removeEventListener('orientationchange', debouncedResize);
+      window.removeEventListener('resize', updateDimensions);
+      window.removeEventListener('orientationchange', updateDimensions);
     };
-  }, [updateDimensions, debounceMs]);
+  }, []);
 
-  // Utility functions for conditional rendering and breakpoint checks
-  const utilities = useMemo(() => ({
-    // Breakpoint comparison utilities
-    isBreakpoint: (bp: BreakpointKey) => state.breakpoint === bp,
-    isBreakpointUp: (bp: BreakpointKey) => state.width >= BREAKPOINTS[bp],
-    isBreakpointDown: (bp: BreakpointKey) => state.width < BREAKPOINTS[bp],
-    isBreakpointBetween: (min: BreakpointKey, max: BreakpointKey) => 
-      state.width >= BREAKPOINTS[min] && state.width < BREAKPOINTS[max],
+  // Device detection based on screen width
+  const isMobile = screenWidth < BREAKPOINTS.tablet;
+  const isTablet = screenWidth >= BREAKPOINTS.tablet && screenWidth < BREAKPOINTS.desktop;
+  const isDesktop = screenWidth >= BREAKPOINTS.desktop;
 
-    // Device type utilities
-    isDevice: (device: DeviceType) => state.deviceType === device,
-    isMobileDevice: () => state.isMobile,
-    isTabletDevice: () => state.isTablet,
-    isDesktopDevice: () => state.isDesktop,
-    isLargeDevice: () => state.isLarge,
+  // Determine device type
+  const deviceType: DeviceType = 
+    isMobile ? 'mobile' : 
+    isTablet ? 'tablet' : 
+    'desktop';
 
-    // Touch device detection (approximate)
-    isTouchDevice: () => {
-      if (typeof window === 'undefined') return false;
-      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    },
+  // Get current breakpoint
+  const currentBreakpoint: BreakpointKey = 
+    screenWidth >= BREAKPOINTS['desktop-xl'] ? 'desktop-xl' :
+    screenWidth >= BREAKPOINTS['desktop-large'] ? 'desktop-large' :
+    screenWidth >= BREAKPOINTS.desktop ? 'desktop' :
+    screenWidth >= BREAKPOINTS.tablet ? 'tablet' :
+    screenWidth >= BREAKPOINTS['mobile-large'] ? 'mobile-large' :
+    'mobile';
 
-    // Orientation utilities
-    isPortrait: () => state.orientation === 'portrait',
-    isLandscape: () => state.orientation === 'landscape',
+  // Calculate orientation
+  const orientation: 'portrait' | 'landscape' = screenWidth < screenHeight ? 'portrait' : 'landscape';
 
-    // Conditional rendering helpers
-    showOn: (breakpoints: BreakpointKey | BreakpointKey[]) => {
-      const bps = Array.isArray(breakpoints) ? breakpoints : [breakpoints];
-      return bps.includes(state.breakpoint);
-    },
+  // Breakpoint utility functions
+  const isBreakpointUp = useCallback((breakpoint: BreakpointKey): boolean => {
+    return screenWidth >= BREAKPOINTS[breakpoint];
+  }, [screenWidth]);
 
-    hideOn: (breakpoints: BreakpointKey | BreakpointKey[]) => {
-      const bps = Array.isArray(breakpoints) ? breakpoints : [breakpoints];
-      return !bps.includes(state.breakpoint);
-    },
+  const isBreakpointDown = useCallback((breakpoint: BreakpointKey): boolean => {
+    return screenWidth < BREAKPOINTS[breakpoint];
+  }, [screenWidth]);
 
-    // CSS classes generator for responsive design
-    getResponsiveClasses: (classMap: Partial<Record<BreakpointKey | DeviceType, string>>) => {
-      const classes: string[] = [];
-      
-      // Add breakpoint-specific classes
-      if (classMap[state.breakpoint]) {
-        classes.push(classMap[state.breakpoint]!);
-      }
-      
-      // Add device-type-specific classes
-      if (classMap[state.deviceType]) {
-        classes.push(classMap[state.deviceType]!);
-      }
-      
-      return classes.join(' ');
-    },
+  const isBreakpointBetween = useCallback((min: BreakpointKey, max: BreakpointKey): boolean => {
+    return screenWidth >= BREAKPOINTS[min] && screenWidth < BREAKPOINTS[max];
+  }, [screenWidth]);
 
-    // Media query string generators
-    getMediaQuery: (bp: BreakpointKey, direction: 'up' | 'down' = 'up') => {
-      if (direction === 'up') {
-        return `(min-width: ${BREAKPOINTS[bp]}px)`;
-      }
-      return `(max-width: ${BREAKPOINTS[bp] - 1}px)`;
-    },
-  }), [state]);
-
-  return {
-    // Current state
-    ...state,
+  // Get responsive classes based on current breakpoint
+  const getResponsiveClasses = useCallback((classes: ResponsiveClasses): string => {
+    const activeClasses: string[] = [];
     
-    // Utility functions
-    ...utilities,
-    
-    // Raw breakpoint values for advanced usage
-    BREAKPOINTS,
-  };
-};
-
-// Hook for simple breakpoint-based conditional rendering
-export const useBreakpoint = (breakpoint: BreakpointKey, direction: 'up' | 'down' = 'up') => {
-  const { isBreakpointUp, isBreakpointDown } = useResponsive();
-  
-  return direction === 'up' ? isBreakpointUp(breakpoint) : isBreakpointDown(breakpoint);
-};
-
-// Hook for device type detection
-export const useDeviceType = () => {
-  const { deviceType, isMobile, isTablet, isDesktop } = useResponsive();
-  
-  return {
-    deviceType,
-    isMobile,
-    isTablet, 
-    isDesktop,
-  };
-};
-
-// Hook for media query matching
-export const useMediaQuery = (query: string) => {
-  const [matches, setMatches] = useState(false);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const mediaQuery = window.matchMedia(query);
-    setMatches(mediaQuery.matches);
-
-    const handler = (event: MediaQueryListEvent) => {
-      setMatches(event.matches);
-    };
-
-    // Use the newer API if available, fallback to deprecated one
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handler);
-      return () => mediaQuery.removeEventListener('change', handler);
-    } else {
-      // @ts-ignore - For older browsers
-      mediaQuery.addListener(handler);
-      return () => mediaQuery.removeListener(handler);
+    // Get the current breakpoint class
+    const currentClass = classes[currentBreakpoint];
+    if (currentClass) {
+      activeClasses.push(currentClass);
     }
-  }, [query]);
+    
+    // Fallback to lower breakpoints if current is not defined
+    if (!currentClass) {
+      const breakpointOrder: BreakpointKey[] = [
+        'desktop-xl', 'desktop-large', 'desktop', 'tablet', 'mobile-large', 'mobile'
+      ];
+      
+      for (const bp of breakpointOrder) {
+        if (screenWidth >= BREAKPOINTS[bp] && classes[bp]) {
+          activeClasses.push(classes[bp]);
+          break;
+        }
+      }
+    }
+    
+    return activeClasses.join(' ');
+  }, [currentBreakpoint, screenWidth]);
 
-  return matches;
+  return {
+    // Device detection
+    isMobile,
+    isTablet,
+    isDesktop,
+    
+    // Device type
+    deviceType,
+    
+    // Touch device detection
+    isTouchDevice,
+    
+    // Screen dimensions
+    screenWidth,
+    screenHeight,
+    width: screenWidth, // Alias for screenWidth
+    height: screenHeight, // Alias for screenHeight
+    
+    // Orientation
+    orientation,
+    
+    // Breakpoint utilities
+    isBreakpointUp,
+    isBreakpointDown,
+    isBreakpointBetween,
+    
+    // Responsive class utilities
+    getResponsiveClasses,
+    
+    // Current breakpoint
+    currentBreakpoint,
+    breakpoint: currentBreakpoint, // Alias for currentBreakpoint
+  };
 };
 
+// Default export for convenience
 export default useResponsive;

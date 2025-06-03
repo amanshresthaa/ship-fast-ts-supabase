@@ -75,7 +75,7 @@ const TestimonialsAvatars = ({ priority }: { priority?: boolean }) => {
             <div className={`
               ${config.spacing} avatar-group justify-center
               transition-transform duration-300
-              ${isTouchDevice() ? 'hover:scale-105' : 'hover:scale-110'}
+              ${isTouchDevice ? 'hover:scale-105' : 'hover:scale-110'}
             `}>
               {avatars.map((image, i) => (
                 <AnimatedElement 
@@ -88,7 +88,7 @@ const TestimonialsAvatars = ({ priority }: { priority?: boolean }) => {
                     ring-2 ring-white ring-offset-2 ring-offset-base-200
                     transition-all duration-300
                     hover:ring-primary hover:ring-offset-primary/10 hover:z-10
-                    ${isTouchDevice() ? 'active:scale-95' : 'hover:scale-110'}
+                    ${isTouchDevice ? 'active:scale-95' : 'hover:scale-110'}
                   `}>
                     <Image
                       src={image.src}
@@ -114,7 +114,7 @@ const TestimonialsAvatars = ({ priority }: { priority?: boolean }) => {
               {/* Star Rating */}
               <div className={`
                 rating transition-all duration-300
-                ${isTouchDevice() ? 'hover:scale-105' : 'hover:scale-110'}
+                ${isTouchDevice ? 'hover:scale-105' : 'hover:scale-110'}
               `}>
                 {[...Array(5)].map((_, i) => (
                   <AnimatedElement 
@@ -130,7 +130,7 @@ const TestimonialsAvatars = ({ priority }: { priority?: boolean }) => {
                         ${config.ratingSize} text-yellow-500
                         transition-all duration-300
                         hover:text-yellow-400 hover:drop-shadow-lg
-                        ${isTouchDevice() ? 'active:scale-75' : 'hover:scale-125'}
+                        ${isTouchDevice ? 'active:scale-75' : 'hover:scale-125'}
                       `}
                     >
                       <path

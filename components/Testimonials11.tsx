@@ -500,7 +500,7 @@ const Testimonials11 = () => {
           {/* Debug info for development */}
           {process.env.NODE_ENV === 'development' && (
             <div className="mt-8 pt-4 border-t border-base-300 text-center text-xs text-base-content/60">
-              Layout: {gridConfig.columns} columns • Device: {deviceType} • Touch: {isTouchDevice() ? 'Yes' : 'No'}
+              Layout: {gridConfig.columns} columns • Device: {deviceType} • Touch: {isTouchDevice ? 'Yes' : 'No'}
             </div>
           )}
         </div>
