@@ -8,7 +8,9 @@
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint",
-    "analyze": "ANALYZE=true next build"
+    "analyze": "ANALYZE=true next build",
+    "setup": "./setup.sh",
+    "quick-start": "./quick-start.sh"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
