@@ -15,8 +15,8 @@ interface BlogPageParams {
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 interface PageProps {
-  params: Promise<BlogPageParams>;
-  searchParams?: Promise<SearchParams>;
+  params: BlogPageParams;
+  searchParams?: SearchParams;
 }
 
 export async function generateMetadata({

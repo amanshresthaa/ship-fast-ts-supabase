@@ -4,11 +4,14 @@ import CardCategory from "../../_assets/components/CardCategory";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+interface PageProps {
+  params: { categoryId: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
 export async function generateMetadata({
   params,
-}: {
-  params: { categoryId: string };
-}) {
+}: PageProps) {
   const category = categories.find(
     (category) => category.slug === params.categoryId
   );
@@ -22,9 +25,7 @@ export async function generateMetadata({
 
 export default async function Category({
   params,
-}: {
-  params: { categoryId: string };
-}) {
+}: PageProps) {
   const category = categories.find(
     (category) => category.slug === params.categoryId
   );
