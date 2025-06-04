@@ -1,18 +1,27 @@
 import Link from "next/link";
 import Script from "next/script";
+import { notFound } from "next/navigation";
 import { articles } from "../_assets/content";
 import BadgeCategory from "../_assets/components/BadgeCategory";
 import Avatar from "../_assets/components/Avatar";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+interface PageProps {
+  params: {
+    articleId: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
 export async function generateMetadata({
   params,
-}: {
-  params: { articleId: string };
-}) {
-  const resolvedParams = params;
-  const article = articles.find((article) => article.slug === resolvedParams.articleId);
+}: PageProps) {
+  const article = articles.find((article) => article.slug === params.articleId);
+  
+  if (!article) {
+    return {};
+  }
 
   return getSEOTags({
     title: article.title,
@@ -39,17 +48,18 @@ export async function generateMetadata({
 
 export default async function Article({
   params,
-}: {
-  params: { articleId: string };
-}) {
-  const resolvedParams = params;
-  const article = articles.find((article) => article.slug === resolvedParams.articleId);
+}: PageProps) {
+  const article = articles.find((article) => article.slug === params.articleId);
+  
+  if (!article) {
+    notFound();
+  }
   const articlesRelated = articles
     .filter(
       (a) =>
-        a.slug !== resolvedParams.articleId &&
+        a.slug !== params.articleId &&
         a.categories.some((c) =>
-          article.categories.map((c) => c.slug).includes(c.slug)
+          article.categories.some(articleCat => articleCat.slug === c.slug)
         )
     )
     .sort(
