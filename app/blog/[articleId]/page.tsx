@@ -7,17 +7,25 @@ import Avatar from "../_assets/components/Avatar";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+interface BlogPageParams {
+  articleId: string;
+}
+
 interface PageProps {
-  params: {
-    articleId: string;
-  };
+  params: BlogPageParams | Promise<BlogPageParams>;
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata({
   params,
 }: PageProps) {
-  const article = articles.find((article) => article.slug === params.articleId);
+  // Extract article ID from params, handling both direct and Promise cases
+  const articleId = await (async () => {
+    const p = await Promise.resolve(params);
+    return p.articleId;
+  })();
+  
+  const article = articles.find((article) => article.slug === articleId);
   
   if (!article) {
     return {};
@@ -49,7 +57,13 @@ export async function generateMetadata({
 export default async function Article({
   params,
 }: PageProps) {
-  const article = articles.find((article) => article.slug === params.articleId);
+  // Extract article ID from params, handling both direct and Promise cases
+  const articleId = await (async () => {
+    const p = await Promise.resolve(params);
+    return p.articleId;
+  })();
+  
+  const article = articles.find((article) => article.slug === articleId);
   
   if (!article) {
     notFound();
@@ -57,7 +71,7 @@ export default async function Article({
   const articlesRelated = articles
     .filter(
       (a) =>
-        a.slug !== params.articleId &&
+        a.slug !== articleId &&
         a.categories.some((c) =>
           article.categories.some(articleCat => articleCat.slug === c.slug)
         )

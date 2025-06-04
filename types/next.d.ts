@@ -1,8 +1,8 @@
-import { NextPage, NextPageContext } from 'next';
+import type { NextPage, NextPageContext, NextComponentType } from 'next';
 
 declare module 'next' {
   export interface PageProps {
-    params: { [key: string]: string | string[] };
+    params: { [key: string]: string | string[] } | Promise<{ [key: string]: string | string[] }>;
     searchParams?: { [key: string]: string | string[] | undefined };
   }
 
@@ -13,7 +13,9 @@ declare module 'next' {
 
 declare module 'next/app' {
   export interface AppProps {
-    Component: NextPageWithLayout;
+    Component: NextComponentType<NextPageContext, any, any> & {
+      getLayout?: (page: React.ReactElement) => React.ReactNode;
+    };
     pageProps: any;
     router: any;
   }
