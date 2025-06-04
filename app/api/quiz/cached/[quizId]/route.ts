@@ -6,9 +6,9 @@ export const revalidate = 3600; // Revalidate cache every hour
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
-  const { quizId } = params;
+  const { quizId } = await params;
   
   // Get optional questionType from search params
   const searchParams = request.nextUrl.searchParams;

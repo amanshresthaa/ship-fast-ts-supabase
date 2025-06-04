@@ -3,10 +3,10 @@ import { fetchQuizById } from '../../../lib/supabaseQuizService'; // We'll keep 
 
 export async function GET(
   request: Request,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
-  // Need to properly handle params in Next.js 13+
-  const quizId = (await Promise.resolve(params)).quizId;
+  // Need to properly handle params in Next.js 15+
+  const { quizId } = await params;
   
   // Extract questionType and types from URL
   const url = new URL(request.url);
