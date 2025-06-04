@@ -21,14 +21,15 @@ export class OrderValidator extends AnswerValidator<OrderQuestion, OrderQuestion
     // Check if we have the right number of slots and none are null
     const slotCount = this.question.correctOrder.length;
     let filledSlots = 0;
-    
+
     for (let i = 0; i < slotCount; i++) {
       const slotKey = `slot_${i}`;
-      if (answer[slotKey] !== undefined && answer[slotKey] !== null) {
+      const value = answer[slotKey];
+      if (typeof value === 'string' && value.trim() !== '') {
         filledSlots++;
       }
     }
-    
+
     return filledSlots === slotCount;
   }
   
@@ -39,24 +40,22 @@ export class OrderValidator extends AnswerValidator<OrderQuestion, OrderQuestion
    */
   getCorrectnessMap(answer: OrderQuestionAnswer): CorrectnessMap {
     const correctnessMap: CorrectnessMap = {};
-    
-    // If no answer object, return empty map
+
     if (!answer || typeof answer !== 'object') {
       return correctnessMap;
     }
-    
-    // Check each slot against the correctOrder
-    this.question.correctOrder.forEach((correctItemId, index) => {
-      const slotKey = `slot_${index}`;
+
+    const slotCount = this.question.correctOrder.length;
+    for (let i = 0; i < slotCount; i++) {
+      const slotKey = `slot_${i}`;
       const placedItemId = answer[slotKey];
-      
-      // Mark the placed item as correct or incorrect
-      if (placedItemId) {
-        const isCorrect = correctItemId === placedItemId;
-        correctnessMap[placedItemId] = isCorrect;
+      if (typeof placedItemId !== 'string') {
+        correctnessMap[slotKey] = false;
+        continue;
       }
-    });
-    
+      correctnessMap[slotKey] = placedItemId === this.question.correctOrder[i];
+    }
+
     return correctnessMap;
   }
 }

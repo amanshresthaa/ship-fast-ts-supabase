@@ -170,6 +170,10 @@ npm run test:watch
 npm run test:coverage
 ```
 
+## 🔄 Continuous Integration
+
+GitHub Actions automatically runs linting, unit tests and a production build on every pull request. Deployments are triggered via `scripts/deploy.sh` when changes land on the `main` branch. Configure the `SLACK_WEBHOOK_URL` secret to receive build notifications in Slack.
+
 ## 📁 Project Structure
 
 ```

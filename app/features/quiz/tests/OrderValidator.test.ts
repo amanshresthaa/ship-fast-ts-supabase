@@ -31,12 +31,12 @@ describe('OrderValidator', () => {
 
   describe('isComplete', () => {
     it('should return true when all items are ordered', () => {
-      const userAnswer = ['i1', 'i2', 'i3', 'i4']; // All items present
+      const userAnswer = { 'slot_0': 'i1', 'slot_1': 'i2', 'slot_2': 'i3', 'slot_3': 'i4' };
       expect(validator.isComplete(userAnswer)).toBe(true);
     });
 
     it('should return false when not all items are ordered', () => {
-      const userAnswer = ['i1', 'i2', 'i3']; // Missing an item
+      const userAnswer = { 'slot_0': 'i1', 'slot_1': 'i2', 'slot_2': 'i3' } as any;
       expect(validator.isComplete(userAnswer)).toBe(false);
     });
 
@@ -45,41 +45,45 @@ describe('OrderValidator', () => {
       expect(validator.isComplete(undefined as any)).toBe(false);
     });
 
-    it('should return false when answer is not an array', () => {
-      expect(validator.isComplete({} as any)).toBe(false);
+    it('should return false when answer is not an object', () => {
       expect(validator.isComplete('string' as any)).toBe(false);
     });
   });
 
   describe('getCorrectnessMap', () => {
     it('should mark items in correct positions as true', () => {
-      const userAnswer = ['i2', 'i4', 'i1', 'i3']; // Exactly correct order
+      const userAnswer = {
+        'slot_0': 'i2',
+        'slot_1': 'i4',
+        'slot_2': 'i1',
+        'slot_3': 'i3'
+      };
       const correctnessMap = validator.getCorrectnessMap(userAnswer);
-      
-      expect(correctnessMap['i1']).toBe(true);
-      expect(correctnessMap['i2']).toBe(true);
-      expect(correctnessMap['i3']).toBe(true);
-      expect(correctnessMap['i4']).toBe(true);
+
+      expect(correctnessMap['slot_0']).toBe(true);
+      expect(correctnessMap['slot_1']).toBe(true);
+      expect(correctnessMap['slot_2']).toBe(true);
+      expect(correctnessMap['slot_3']).toBe(true);
     });
 
     it('should mark items in incorrect positions as false', () => {
-      const userAnswer = ['i1', 'i2', 'i3', 'i4']; // Incorrect order
+      const userAnswer = { 'slot_0': 'i1', 'slot_1': 'i2', 'slot_2': 'i3', 'slot_3': 'i4' };
       const correctnessMap = validator.getCorrectnessMap(userAnswer);
-      
-      expect(correctnessMap['i1']).toBe(false);
-      expect(correctnessMap['i2']).toBe(false);
-      expect(correctnessMap['i3']).toBe(false);
-      expect(correctnessMap['i4']).toBe(false);
+
+      expect(correctnessMap['slot_0']).toBe(false);
+      expect(correctnessMap['slot_1']).toBe(false);
+      expect(correctnessMap['slot_2']).toBe(false);
+      expect(correctnessMap['slot_3']).toBe(false);
     });
 
     it('should mark some items correct and others incorrect', () => {
-      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // i2 and i3 are correct, i1 and i4 are wrong
+      const userAnswer = { 'slot_0': 'i2', 'slot_1': 'i1', 'slot_2': 'i4', 'slot_3': 'i3' };
       const correctnessMap = validator.getCorrectnessMap(userAnswer);
-      
-      expect(correctnessMap['i2']).toBe(true);  // Correct position (index 0)
-      expect(correctnessMap['i1']).toBe(false); // Wrong position
-      expect(correctnessMap['i4']).toBe(false); // Wrong position
-      expect(correctnessMap['i3']).toBe(true);  // Correct position (index 3)
+
+      expect(correctnessMap['slot_0']).toBe(true);  // Correct position
+      expect(correctnessMap['slot_1']).toBe(false); // Wrong position
+      expect(correctnessMap['slot_2']).toBe(false); // Wrong position
+      expect(correctnessMap['slot_3']).toBe(true);  // Correct position
     });
 
     it('should return empty map when answer is null or undefined', () => {
@@ -87,8 +91,7 @@ describe('OrderValidator', () => {
       expect(Object.keys(validator.getCorrectnessMap(undefined as any)).length).toBe(0);
     });
 
-    it('should return empty map when answer is not an array', () => {
-      expect(Object.keys(validator.getCorrectnessMap({} as any)).length).toBe(0);
+    it('should return empty map when answer is not an object', () => {
       expect(Object.keys(validator.getCorrectnessMap('string' as any)).length).toBe(0);
     });
   });
@@ -96,34 +99,34 @@ describe('OrderValidator', () => {
   // Test the inherited methods via the validator instance
   describe('getCorrectnessScore', () => {
     it('should return 1 for completely correct answers', () => {
-      const userAnswer = ['i2', 'i4', 'i1', 'i3']; // Exactly correct order
+      const userAnswer = { 'slot_0': 'i2', 'slot_1': 'i4', 'slot_2': 'i1', 'slot_3': 'i3' };
       expect(validator.getCorrectnessScore(userAnswer)).toBe(1);
     });
     
     it('should return 0.5 for partially correct answers', () => {
-      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // 2/4 correct positions
+      const userAnswer = { 'slot_0': 'i2', 'slot_1': 'i1', 'slot_2': 'i4', 'slot_3': 'i3' };
       expect(validator.getCorrectnessScore(userAnswer)).toBe(0.5);
     });
     
     it('should return 0 for completely incorrect answers', () => {
-      const userAnswer = ['i3', 'i1', 'i4', 'i2']; // No correct positions
+      const userAnswer = { 'slot_0': 'i3', 'slot_1': 'i1', 'slot_2': 'i4', 'slot_3': 'i2' };
       expect(validator.getCorrectnessScore(userAnswer)).toBe(0);
     });
   });
   
   describe('isCorrect', () => {
     it('should return true for completely correct answers', () => {
-      const userAnswer = ['i2', 'i4', 'i1', 'i3']; // Exactly correct order
+      const userAnswer = { 'slot_0': 'i2', 'slot_1': 'i4', 'slot_2': 'i1', 'slot_3': 'i3' };
       expect(validator.isCorrect(userAnswer)).toBe(true);
     });
     
     it('should return false for partially correct answers', () => {
-      const userAnswer = ['i2', 'i1', 'i4', 'i3']; // 2/4 correct positions
+      const userAnswer = { 'slot_0': 'i2', 'slot_1': 'i1', 'slot_2': 'i4', 'slot_3': 'i3' };
       expect(validator.isCorrect(userAnswer)).toBe(false);
     });
     
     it('should return false for completely incorrect answers', () => {
-      const userAnswer = ['i3', 'i1', 'i4', 'i2']; // No correct positions
+      const userAnswer = { 'slot_0': 'i3', 'slot_1': 'i1', 'slot_2': 'i4', 'slot_3': 'i2' };
       expect(validator.isCorrect(userAnswer)).toBe(false);
     });
   });

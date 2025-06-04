@@ -23,6 +23,7 @@ export { default as SingleSelectionComponent } from './components/question-types
 
 // Services
 export { QuizService } from './services/quizService';
+export { QuizProgressService } from './services/quizProgressService';
 
 // Pages
 export { default as QuizPage } from './pages/QuizPage';
