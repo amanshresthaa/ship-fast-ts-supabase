@@ -11,7 +11,7 @@ export async function generateMetadata({
 }: {
   params: { articleId: string };
 }) {
-  const resolvedParams = await params;
+  const resolvedParams = params;
   const article = articles.find((article) => article.slug === resolvedParams.articleId);
 
   return getSEOTags({
@@ -42,7 +42,7 @@ export default async function Article({
 }: {
   params: { articleId: string };
 }) {
-  const resolvedParams = await params;
+  const resolvedParams = params;
   const article = articles.find((article) => article.slug === resolvedParams.articleId);
   const articlesRelated = articles
     .filter(
