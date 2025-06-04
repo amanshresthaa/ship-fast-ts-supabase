@@ -28,7 +28,7 @@ export default function useAnimationFrame({
     // Track animation start time
     let startTime = performance.now();
     let animationFrameId: number;
-    let delayTimeout: NodeJS.Timeout | null = null;
+    let delayTimeout: ReturnType<typeof setTimeout> | null = null;
     
     // Function to run the animation loop
     const runAnimation = (currentTime: number) => {

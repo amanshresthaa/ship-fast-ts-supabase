@@ -52,7 +52,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   }, [fn]);
   
   // Use ref to store the timeout between renders
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Clear timeout when component unmounts or deps change
   useEffect(() => {

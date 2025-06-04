@@ -1,7 +1,10 @@
 // app/hooks/useIntersectionObserver.ts
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-interface IntersectionOptions extends IntersectionObserverInit {
+interface IntersectionOptions {
+  root?: Element | null;
+  rootMargin?: string;
+  threshold?: number | number[];
   freezeOnceVisible?: boolean;
   initialInView?: boolean; // New option to set initial state for SSR
   skipObserver?: boolean; // Option to skip observer (for testing or force values)

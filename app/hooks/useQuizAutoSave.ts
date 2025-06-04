@@ -17,7 +17,7 @@ export const useQuizAutoSave = (
   saveOnUnmount: boolean = true
 ) => {
   const { state } = useQuiz();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveCountRef = useRef(0);
   const lastSavedStateRef = useRef({
     currentQuestionIndex: -1,

@@ -347,18 +347,22 @@ const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({
   };
 
   // Auto-validating feedback banner
-  const AutoValidatingBanner = memo(() => (
-    <div className="mt-4 p-2 border rounded bg-blue-50 text-blue-700">
-      Auto-validating your answer... All slots filled.
-    </div>
-  ));
+  const AutoValidatingBanner = memo(function AutoValidatingBanner() {
+    return (
+      <div className="mt-4 p-2 border rounded bg-blue-50 text-blue-700">
+        Auto-validating your answer... All slots filled.
+      </div>
+    );
+  });
 
   // Ready to submit banner
-  const ReadyBanner = memo(() => (
-    <div className="mt-4 p-2 border rounded bg-green-50 text-green-700">
-      All slots filled. Ready to submit!
-    </div>
-  ));
+  const ReadyBanner = memo(function ReadyBanner() {
+    return (
+      <div className="mt-4 p-2 border rounded bg-green-50 text-green-700">
+        All slots filled. Ready to submit!
+      </div>
+    );
+  });
 
   /**
    * Determines which feedback banner to show
@@ -376,40 +380,46 @@ const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({
   };
 
   // Position indicator component
-  const PositionIndicator = memo(({ position }: { position: number }) => (
-    <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center bg-gray-100 border-r border-gray-300 text-gray-700 font-bold">
-      {position + 1}
-    </div>
-  ));
+  const PositionIndicator = memo(function PositionIndicator({ position }: { position: number }) {
+    return (
+      <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center bg-gray-100 border-r border-gray-300 text-gray-700 font-bold">
+        {position + 1}
+      </div>
+    );
+  });
 
   // Feedback icon component
-  const FeedbackIcon = memo(({ isCorrect }: { isCorrect: boolean }) => (
-    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-      {isCorrect ? (
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-green-500 shadow-md">
-          ✓
-        </span>
-      ) : (
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-red-500 shadow-md">
-          ✗
-        </span>
-      )}
-    </div>
-  ));
+  const FeedbackIcon = memo(function FeedbackIcon({ isCorrect }: { isCorrect: boolean }) {
+    return (
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+        {isCorrect ? (
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-green-500 shadow-md">
+            ✓
+          </span>
+        ) : (
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-red-500 shadow-md">
+            ✗
+          </span>
+        )}
+      </div>
+    );
+  });
 
   // Show the correct order if needed
-  const CorrectOrderDisplay = memo(() => (
-    <div className="mt-6 p-4 border rounded bg-blue-50">
-      <h3 className="font-semibold text-blue-800 mb-2">Correct Order:</h3>
-      <ol className="list-decimal list-inside">
-        {controller.getCorrectOrder().map((itemId, index) => (
-          <li key={`correct-${itemId}`} className="py-1 text-gray-800">
-            {getItemTextById(itemId)}
-          </li>
-        ))}
-      </ol>
-    </div>
-  ));
+  const CorrectOrderDisplay = memo(function CorrectOrderDisplay() {
+    return (
+      <div className="mt-6 p-4 border rounded bg-blue-50">
+        <h3 className="font-semibold text-blue-800 mb-2">Correct Order:</h3>
+        <ol className="list-decimal list-inside">
+          {controller.getCorrectOrder().map((itemId) => (
+            <li key={`correct-${itemId}`} className="py-1 text-gray-800">
+              {getItemTextById(itemId)}
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  });
 
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">

@@ -66,7 +66,7 @@ export default function TestResponsiveQuizPage() {
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-semibold text-red-800 mb-2">📱 Mobile View</h3>
                 <p className="text-red-700">
-                  You're viewing this on a mobile device! This content is optimized for touch interactions:
+                  You&apos;re viewing this on a mobile device! This content is optimized for touch interactions:
                 </p>
                 <ul className="list-disc list-inside text-red-700 mt-2 space-y-1">
                   <li>Bottom navigation bar for easy thumb access</li>
@@ -82,7 +82,7 @@ export default function TestResponsiveQuizPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">📄 Tablet View</h3>
                 <p className="text-blue-700">
-                  You're viewing this on a tablet! This content is optimized for both touch and mouse:
+                  You&apos;re viewing this on a tablet! This content is optimized for both touch and mouse:
                 </p>
                 <ul className="list-disc list-inside text-blue-700 mt-2 space-y-1">
                   <li>Drawer pattern for quiz overview</li>
@@ -97,7 +97,7 @@ export default function TestResponsiveQuizPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-semibold text-green-800 mb-2">🖥️ Desktop View</h3>
                 <p className="text-green-700">
-                  You're viewing this on a desktop! This content is optimized for productivity:
+                  You&apos;re viewing this on a desktop! This content is optimized for productivity:
                 </p>
                 <ul className="list-disc list-inside text-green-700 mt-2 space-y-1">
                   <li>Fixed sidebar for quick navigation</li>

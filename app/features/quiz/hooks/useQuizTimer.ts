@@ -24,7 +24,7 @@ export const useQuizTimer = ({
   const [totalSeconds, setTotalSeconds] = useState(initialTimeInMinutes * 60);
   const [isPaused, setIsPaused] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const formatTime = useCallback((seconds: number): string => {
     if (seconds <= 0) return '00:00';
