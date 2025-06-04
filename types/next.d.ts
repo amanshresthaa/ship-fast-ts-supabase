@@ -2,8 +2,10 @@ import type { NextPage, NextPageContext, NextComponentType } from 'next';
 
 declare module 'next' {
   export type PageProps = {
-    params: { [key: string]: string | string[] };
-    searchParams?: { [key: string]: string | string[] | undefined };
+    params: Promise<{ [key: string]: string | string[] }> | { [key: string]: string | string[] };
+    searchParams?:
+      | Promise<{ [key: string]: string | string[] | undefined }>
+      | { [key: string]: string | string[] | undefined };
   }
 
   export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
