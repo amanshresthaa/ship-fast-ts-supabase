@@ -9,21 +9,23 @@ import config from "@/config";
 
 interface BlogPageParams {
   articleId: string;
+  [key: string]: string | string[];
 }
 
 interface PageProps {
-  params: BlogPageParams | Promise<BlogPageParams>;
+  params: Promise<BlogPageParams>;
   searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 export async function generateMetadata({
   params,
 }: PageProps) {
-  // Extract article ID from params, handling both direct and Promise cases
-  const articleId = await (async () => {
-    const p = await Promise.resolve(params);
-    return p.articleId;
-  })();
+  // Await the params promise and extract articleId
+  const { articleId } = await params;
+  
+  if (typeof articleId !== 'string') {
+    return {};
+  }
   
   const article = articles.find((article) => article.slug === articleId);
   
@@ -57,11 +59,12 @@ export async function generateMetadata({
 export default async function Article({
   params,
 }: PageProps) {
-  // Extract article ID from params, handling both direct and Promise cases
-  const articleId = await (async () => {
-    const p = await Promise.resolve(params);
-    return p.articleId;
-  })();
+  // Await the params promise and extract articleId
+  const { articleId } = await params;
+  
+  if (typeof articleId !== 'string') {
+    notFound();
+  }
   
   const article = articles.find((article) => article.slug === articleId);
   
