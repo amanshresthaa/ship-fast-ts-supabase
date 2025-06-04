@@ -12,9 +12,11 @@ interface BlogPageParams {
   [key: string]: string | string[];
 }
 
+type SearchParams = { [key: string]: string | string[] | undefined };
+
 interface PageProps {
   params: Promise<BlogPageParams>;
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?: Promise<SearchParams>;
 }
 
 export async function generateMetadata({
@@ -58,6 +60,7 @@ export async function generateMetadata({
 
 export default async function Article({
   params,
+  searchParams,
 }: PageProps) {
   // Await the params promise and extract articleId
   const { articleId } = await params;
@@ -65,6 +68,9 @@ export default async function Article({
   if (typeof articleId !== 'string') {
     notFound();
   }
+  
+  // Handle searchParams if needed
+  const search = searchParams ? await searchParams : {};
   
   const article = articles.find((article) => article.slug === articleId);
   
