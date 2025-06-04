@@ -165,6 +165,20 @@ describe('OrderValidator', () => {
       };
       expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
     });
+
+    it('should mark slots with non-string values as incorrect', () => {
+      const answer: OrderQuestionAnswer = {
+        'slot_0': 'item1',
+        'slot_1': 123 as any,
+        'slot_2': undefined as any,
+      };
+      const expectedMap = {
+        'slot_0': true,
+        'slot_1': false,
+        'slot_2': false,
+      };
+      expect(validator.getCorrectnessMap(answer)).toEqual(expectedMap);
+    });
     
     it('should return an empty map if slotCount is 0', () => {
         const emptyQuestion: OrderQuestion = {

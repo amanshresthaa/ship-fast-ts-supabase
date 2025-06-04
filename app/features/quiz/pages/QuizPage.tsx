@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useQuiz } from '../context/QuizContext';
 import { QuizService } from '../services/quizService';
+import { QuizProgressService } from '../services/quizProgressService';
 import QuestionCard from '../components/QuestionCard';
 import QuizProgress from '../components/QuizProgress';
 import QuizNavigation from '../components/QuizNavigation';
@@ -26,7 +27,7 @@ import { useResponsive } from '@/app/hooks/useResponsive';
 
 // Learning Mode Quiz Runner Component
 const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ quizId, questionType }) => {
-  const { state, dispatch, loadProgress, deleteProgress } = useQuiz();
+  const { state, dispatch } = useQuiz();
   const searchParams = useSearchParams();
   const [user, setUser] = useState<any>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -143,7 +144,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   const lastLoadedQuizRef = useRef({ quizId: '', questionTypes: '', userId: '' });
   
   // Memoize loadProgress function to prevent it from causing re-renders
-  const memoizedLoadProgress = useCallback(loadProgress, []);
+  const memoizedLoadProgress = useCallback(QuizProgressService.loadProgress, []);
   
   // Load quiz data and check for existing progress when component mounts or important params change
   useEffect(() => {
@@ -224,7 +225,7 @@ const QuizPageContent: React.FC<{ quizId: string; questionType?: string }> = ({ 
   const handleRestartQuiz = async () => {
     // Delete the saved progress first
     if (user) {
-      await deleteProgress(quizId, effectiveQuestionType);
+      await QuizProgressService.deleteProgress(quizId, effectiveQuestionType);
     }
     
     // Reset the quiz state

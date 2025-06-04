@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useQuiz } from '../features/quiz/context/QuizContext';
+import { QuizProgressService } from '../features/quiz/services/quizProgressService';
 
 /**
  * Hook to automatically save quiz progress periodically and on relevant state changes.
@@ -15,7 +16,7 @@ export const useQuizAutoSave = (
   debounceMs: number = 2000,
   saveOnUnmount: boolean = true
 ) => {
-  const { state, saveProgress } = useQuiz();
+  const { state } = useQuiz();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const saveCountRef = useRef(0);
   const lastSavedStateRef = useRef({
@@ -44,7 +45,13 @@ export const useQuizAutoSave = (
 
     timerRef.current = setTimeout(async () => {
       try {
-        const saved = await saveProgress();
+        const saved = await QuizProgressService.saveProgress({
+          quizId: state.quiz!.id,
+          questionTypeFilter: state.quiz!.quiz_type || null,
+          currentQuestionIndex: state.currentQuestionIndex,
+          userAnswers: state.userAnswers,
+          isExplicitlyCompleted: state.isQuizComplete,
+        });
         if (saved) {
           saveCountRef.current += 1;
           lastSavedStateRef.current = {
@@ -56,7 +63,7 @@ export const useQuizAutoSave = (
         console.error("Auto-save error:", error);
       }
     }, debounceMs);
-  }, [isEnabled, state.currentQuestionIndex, state.userAnswers, saveProgress, debounceMs, clearTimer]);
+  }, [isEnabled, state.currentQuestionIndex, state.userAnswers, state.quiz, state.isQuizComplete, debounceMs, clearTimer]);
 
   // Use ref to track previous state to avoid unnecessary saves
   const prevStateRef = useRef({
@@ -103,17 +110,29 @@ export const useQuizAutoSave = (
   useEffect(() => {
     return () => {
       clearTimer();
-      if (saveOnUnmount && isEnabled) {
-        saveProgress(true).catch(console.error);
+      if (saveOnUnmount && isEnabled && state.quiz) {
+        QuizProgressService.saveProgress({
+          quizId: state.quiz.id,
+          questionTypeFilter: state.quiz.quiz_type || null,
+          currentQuestionIndex: state.currentQuestionIndex,
+          userAnswers: state.userAnswers,
+          isExplicitlyCompleted: state.isQuizComplete,
+        }).catch(console.error);
       }
     };
-  }, [clearTimer, saveOnUnmount, isEnabled, saveProgress]);
+  }, [clearTimer, saveOnUnmount, isEnabled, state]);
 
   // Force an immediate save
   const forceSave = useCallback(async (): Promise<boolean> => {
     clearTimer();
     try {
-      const result = await saveProgress(true);
+      const result = await QuizProgressService.saveProgress({
+        quizId: state.quiz!.id,
+        questionTypeFilter: state.quiz!.quiz_type || null,
+        currentQuestionIndex: state.currentQuestionIndex,
+        userAnswers: state.userAnswers,
+        isExplicitlyCompleted: state.isQuizComplete,
+      });
       if (result) {
         saveCountRef.current += 1;
         lastSavedStateRef.current = {
@@ -126,7 +145,7 @@ export const useQuizAutoSave = (
       console.error("Force save error:", error);
       return false;
     }
-  }, [clearTimer, saveProgress, state.currentQuestionIndex, state.userAnswers]);
+  }, [clearTimer, state]);
 
   return {
     forceSave,
