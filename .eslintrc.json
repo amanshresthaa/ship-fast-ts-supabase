@@ -8,5 +8,16 @@
   "rules": {
     // Your specific rules.
     "no-unused-vars": "warn"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/__tests__/**/*.[jt]s?(x)",
+        "**/?(*.)+(spec|test).[jt]s?(x)"
+      ],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
 }
