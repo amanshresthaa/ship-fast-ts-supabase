@@ -11,7 +11,7 @@ interface UseAnimationFrameOptions {
 
 /**
  * Custom hook for smooth animations using requestAnimationFrame
- * Returns a progress value between 0 and 1
+ * Returns a progress value between 0 and 1 adf
  */
 export default function useAnimationFrame({
   duration = 300,
