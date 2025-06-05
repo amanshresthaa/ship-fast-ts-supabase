@@ -20,10 +20,7 @@ export default function Home() {
       <main>
         <Hero />
         
-        {/* Show responsive demo only on desktop */}
-        <ShowOn breakpoint="desktop">
-          <ResponsiveDemo />
-        </ShowOn>
+        
         
         <Problem />
         <QuizCTA />

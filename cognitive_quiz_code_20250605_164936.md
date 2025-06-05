@@ -1,6 +1,6 @@
 # Cognitive Quiz Codebase
 
-Generated on: 2025-06-04 18:10:03
+Generated on: 2025-06-05 16:49:36
 
 ## Project Structure
 
@@ -19,6 +19,7 @@ Generated on: 2025-06-04 18:10:03
 .eslintrc.json
 .storybook/main.ts
 .storybook/preview.ts
+.vercelignore
 .vscode/tasks.json
 __tests__/components/modals/QuizConfigurationModal.test.tsx
 __tests__/components/question-types/OrderQuestionComponent.test.tsx
@@ -28,8 +29,8 @@ __tests__/supabaseQuizService.test.ts
 __tests__/validators/OrderValidator.test.ts
 app/api/admin/cache/route.ts
 app/api/auth/callback/route.ts
+app/api/health/route.ts
 app/api/lead/route.ts
-app/api/questions/route.ts
 app/api/quiz/[quizId]/route.ts
 app/api/quiz/cached/[quizId]/route.ts
 app/api/stripe/create-checkout/route.ts
@@ -260,7 +261,7 @@ libs/mailgun.ts
 libs/seo.tsx
 libs/stripe.ts
 logs/migration.log
-middleware.js
+middleware.ts
 migrate-quiz-data.js
 next-env.d.ts
 next-sitemap.config.js
@@ -301,6 +302,8 @@ types/config.ts
 types/global.d.ts
 types/index.ts
 types/next-auth.d.ts
+types/next.d.ts
+vercel.json
 ```
 
 ## File Contents
@@ -590,6 +593,49 @@ main() {
 
 # Run the main function
 main "$@"
+
+```
+
+### middleware.ts
+
+```typescript
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+// The middleware is used to refresh the user's session before loading Server Component routes
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next();
+  
+  try {
+    const supabase = createMiddlewareClient({ req, res });
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // Optional: Add session-based redirects
+    if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/signin', req.url));
+    }
+    
+    return res;
+  } catch (error) {
+    console.error('Middleware error:', error);
+    return res;
+  }
+}
+
+// Configure middleware to only run on specific paths that need authentication
+// This improves performance by not running the middleware on all routes
+export const config = {
+  matcher: [
+    // Only match routes that need auth session
+    '/dashboard/:path*',
+    '/api/protected/:path*',
+    '/quiz-test/:path*',
+    
+    // Exclude static files, images, and API routes that don't need auth
+    '/((?!api/health|api/webhook|quiz-cached|quiz-optimized|api/quiz/cached|api/admin/cache|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)'
+  ],
+}
 
 ```
 
@@ -1189,6 +1235,58 @@ testFetchQuizzes();
 
 ```
 
+### vercel.json
+
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/*/route.js": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/sitemap.xml", 
+      "destination": "/sitemap.xml"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard/",
+      "permanent": true
+    }
+  ]
+}
+
+```
+
 ### requirements.txt
 
 ```txt
@@ -1697,6 +1795,15 @@ const withBundleAnalyzer = require("@next/bundle-analyzer")({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
+  generateEtags: false,
+  
+  // Optimized for Vercel deployment
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@headlessui/react'],
+  },
+  
   images: {
     domains: [
       // NextJS <Image> component needs to whitelist domains for src={}
@@ -1705,6 +1812,49 @@ const nextConfig = {
       "images.unsplash.com",
       "logos-world.net",
     ],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 86400, // 24 hours
+  },
+  
+  // Environment variable configuration for build time
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
+  
+  // Optimize builds
+  output: 'standalone',
+  
+  // Headers for better performance
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin',
+          },
+        ],
+      },
+      {
+        source: '/api/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400',
+          },
+        ],
+      },
+    ];
   },
 };
 
@@ -1765,10 +1915,31 @@ echo "🌐 Development server will be available at: http://localhost:3000"
 ```javascript
 module.exports = {
   // REQUIRED: add your own domain name here (e.g. https://shipfa.st),
-  siteUrl: process.env.SITE_URL || "https://shipfa.st",
-  generateRobotsTxt: true,
+  siteUrl: process.env.SITE_URL || process.env.NEXT_PUBLIC_APP_URL || "https://shipfa.st",
+  generateRobotsTxt: false, // We have a custom robots.txt
+  changefreq: 'daily',
+  priority: 0.7,
+  sitemapSize: 5000,
   // use this to exclude routes from the sitemap (i.e. a user dashboard). By default, NextJS app router metadata files are excluded (https://nextjs.org/docs/app/api-reference/file-conventions/metadata)
-  exclude: ["/twitter-image.*", "/opengraph-image.*", "/icon.*"],
+  exclude: [
+    "/twitter-image.*", 
+    "/opengraph-image.*", 
+    "/icon.*",
+    "/dashboard/*",
+    "/api/*",
+    "/admin/*",
+    "/quiz-test/*",
+    "/debug-components/*"
+  ],
+  robotsTxtOptions: {
+    policies: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/', '/dashboard/', '/admin/']
+      }
+    ]
+  }
 };
 
 ```
@@ -15437,7 +15608,9 @@ if __name__ == "__main__":
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "vercel-build": "next build",
+    "export": "next build && next export"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
@@ -15511,7 +15684,7 @@ SUPABASE_URL=https://rvwvnralrlsdtugtgict.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2d3ZucmFscmxzZHR1Z3RnaWN0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTQ0NzM0NCwiZXhwIjoyMDYxMDIzMzQ0fQ.hFRjn5zq24WmKEoCLbWDRUY6dUdEjlPS-c4OemCaFM4
 NEXT_PUBLIC_SUPABASE_URL=https://rvwvnralrlsdtugtgict.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ2d3ZucmFscmxzZHR1Z3RnaWN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU0NDczNDQsImV4cCI6MjA2MTAyMzM0NH0.6pBET5OCcZ8hfJrexg83vtXhmes9bnk7iFz3wCLHGWc
-
+NEXTAUTH_SECRET=WK2lauLvKzZFzu1+MhMHZecYtkKYQOBlnPNOVAIDVow=
 
 # -----------------------------------------------------------------------------
 # Mailgun: https://shipfa.st/docs/features/emails
@@ -15527,37 +15700,6 @@ MAILGUN_API_KEY=
 STRIPE_PUBLIC_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
-```
-
-### middleware.js
-
-```javascript
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { NextResponse } from "next/server";
-
-// The middleware is used to refresh the user's session before loading Server Component routes
-export async function middleware(req) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
-  await supabase.auth.getSession();
-  return res;
-}
-
-// Configure middleware to only run on specific paths that need authentication
-// This improves performance by not running the middleware on all routes
-export const config = {
-  matcher: [
-    // Only match routes that need auth session
-    '/dashboard/:path*',
-    '/api/protected/:path*',
-    // Add other paths that require authentication
-    '/quiz-test/:path*',
-    
-    // Exclude cached and optimized routes for better performance
-    '/((?!quiz-cached|quiz-optimized|api/quiz/cached|api/admin/cache|_next/static|_next/image|favicon.ico).*)'
-  ],
-}
-
 ```
 
 ### fix-deps.sh
@@ -15668,7 +15810,8 @@ exit 1
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "**/*.stories.*"
   ]
 }
 
@@ -15693,17 +15836,20 @@ export default defineConfig({
 
 ```example
 # -----------------------------------------------------------------------------
+# Database URI: https://shipfa.st/docs/features/supabase
+# -----------------------------------------------------------------------------
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# NextAuth Secret (required for authentication)
+NEXTAUTH_SECRET=your_nextauth_secret_here
+
+# -----------------------------------------------------------------------------
 # Mailgun: https://shipfa.st/docs/features/emails
 # -----------------------------------------------------------------------------
 EMAIL_SERVER=
 MAILGUN_API_KEY=
-
-# -----------------------------------------------------------------------------
-# Database URI: https://shipfa.st/docs/features/supabase
-# -----------------------------------------------------------------------------
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
 
 # -----------------------------------------------------------------------------
 # Stripe: https://shipfa.st/docs/features/payments
@@ -15711,6 +15857,13 @@ SUPABASE_SERVICE_ROLE_KEY=
 STRIPE_PUBLIC_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+
+# -----------------------------------------------------------------------------
+# Production Environment Variables for Vercel
+# -----------------------------------------------------------------------------
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+NEXT_PUBLIC_PLAUSIBLE_DOMAIN=your-domain.com
 ```
 
 ### config.ts
@@ -15832,6 +15985,94 @@ module.exports = {
 
 ```
 
+### .vercelignore
+
+```text
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+.next/
+out/
+dist/
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files
+coverage/
+.nyc_output
+
+# Temporary files
+*.tmp
+*.temp
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Local development
+.env
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Jest
+jest.config.*.js
+
+# Scripts (avoid deploying local scripts)
+setup.sh
+quick-start.sh
+fix-deps.sh
+
+# Documentation files
+*.md
+!README.md
+
+# Temporary development files
+temp/
+logs/
+uploads/
+cognitive_quiz_code_*.json
+cognitive_quiz_code_*.md
+collect_code_for_llm.py
+requirements.txt
+routing-spike.md
+drag_and_drop_fix.md
+dropdownguide.md
+
+# Ignore Storybook stories for Vercel/Next.js build
+**/*.stories.*
+
+```
+
 ### .eslintrc.json
 
 ```json
@@ -15845,7 +16086,18 @@ module.exports = {
   "rules": {
     // Your specific rules.
     "no-unused-vars": "warn"
-  }
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/__tests__/**/*.[jt]s?(x)",
+        "**/?(*.)+(spec|test).[jt]s?(x)"
+      ],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
 }
 
 ```
@@ -15992,6 +16244,36 @@ description:
 globs:
 alwaysApply: false
 ---
+
+```
+
+### types/next.d.ts
+
+```typescript
+import type { NextPage, NextPageContext, NextComponentType } from 'next';
+
+declare module 'next' {
+  export type PageProps = {
+    params: Promise<{ [key: string]: string | string[] }> | { [key: string]: string | string[] };
+    searchParams?:
+      | Promise<{ [key: string]: string | string[] | undefined }>
+      | { [key: string]: string | string[] | undefined };
+  }
+
+  export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+    getLayout?: (page: React.ReactElement) => React.ReactNode;
+  };
+}
+
+declare module 'next/app' {
+  export interface AppProps {
+    Component: NextComponentType<NextPageContext, any, any> & {
+      getLayout?: (page: React.ReactElement) => React.ReactNode;
+    };
+    pageProps: any;
+    router: any;
+  }
+}
 
 ```
 
@@ -16433,7 +16715,7 @@ export default function Home() {
         <Hero />
         
         {/* Show responsive demo only on desktop */}
-        <ShowOn breakpoint="lg">
+        <ShowOn breakpoint="desktop">
           <ResponsiveDemo />
         </ShowOn>
         
@@ -17076,8 +17358,8 @@ export const revalidate = 3600; // Revalidate page every hour
 // export const dynamic = 'force-dynamic';
 
 // Server Component for Quiz Rendering
-export default async function CachedQuizPage({ params }: { params: { quizId: string } }) {
-  const { quizId } = params;
+export default async function CachedQuizPage({ params }: { params: Promise<{ quizId: string }> }) {
+  const { quizId } = await params;
   
   // Pre-fetch quiz data on the server (will be cached according to revalidate setting)
   const quizData = await fetchQuizByIdOptimized(quizId);
@@ -17480,21 +17762,21 @@ export default function TestResponsivePage() {
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-bold">Breakpoint-Based Components</h2>
             
-            <ShowOn breakpoint="sm">
+            <ShowOn breakpoint="mobile-large">
               <div className="bg-yellow-100 text-yellow-800 p-4 rounded border border-yellow-300">
-                📏 Small and Up - Shows on SM and larger breakpoints
+                📏 Small and Up - Shows on mobile-large and larger breakpoints
               </div>
             </ShowOn>
             
-            <ShowOn breakpoint="md">
+            <ShowOn breakpoint="tablet">
               <div className="bg-purple-100 text-purple-800 p-4 rounded border border-purple-300">
-                📐 Medium and Up - Shows on MD and larger breakpoints
+                📐 Medium and Up - Shows on tablet and larger breakpoints
               </div>
             </ShowOn>
             
-            <HideOn breakpoint="lg">
+            <HideOn breakpoint="desktop">
               <div className="bg-orange-100 text-orange-800 p-4 rounded border border-orange-300">
-                📱📟 Mobile & Tablet Only - Hidden on LG and larger breakpoints
+                📱📟 Mobile & Tablet Only - Hidden on desktop and larger breakpoints
               </div>
             </HideOn>
           </div>
@@ -22271,18 +22553,22 @@ const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({
   };
 
   // Auto-validating feedback banner
-  const AutoValidatingBanner = memo(() => (
-    <div className="mt-4 p-2 border rounded bg-blue-50 text-blue-700">
-      Auto-validating your answer... All slots filled.
-    </div>
-  ));
+  const AutoValidatingBanner = memo(function AutoValidatingBanner() {
+    return (
+      <div className="mt-4 p-2 border rounded bg-blue-50 text-blue-700">
+        Auto-validating your answer... All slots filled.
+      </div>
+    );
+  });
 
   // Ready to submit banner
-  const ReadyBanner = memo(() => (
-    <div className="mt-4 p-2 border rounded bg-green-50 text-green-700">
-      All slots filled. Ready to submit!
-    </div>
-  ));
+  const ReadyBanner = memo(function ReadyBanner() {
+    return (
+      <div className="mt-4 p-2 border rounded bg-green-50 text-green-700">
+        All slots filled. Ready to submit!
+      </div>
+    );
+  });
 
   /**
    * Determines which feedback banner to show
@@ -22300,40 +22586,46 @@ const OrderQuestionComponent: React.FC<OrderQuestionComponentProps> = ({
   };
 
   // Position indicator component
-  const PositionIndicator = memo(({ position }: { position: number }) => (
-    <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center bg-gray-100 border-r border-gray-300 text-gray-700 font-bold">
-      {position + 1}
-    </div>
-  ));
+  const PositionIndicator = memo(function PositionIndicator({ position }: { position: number }) {
+    return (
+      <div className="absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center bg-gray-100 border-r border-gray-300 text-gray-700 font-bold">
+        {position + 1}
+      </div>
+    );
+  });
 
   // Feedback icon component
-  const FeedbackIcon = memo(({ isCorrect }: { isCorrect: boolean }) => (
-    <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-      {isCorrect ? (
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-green-500 shadow-md">
-          ✓
-        </span>
-      ) : (
-        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-red-500 shadow-md">
-          ✗
-        </span>
-      )}
-    </div>
-  ));
+  const FeedbackIcon = memo(function FeedbackIcon({ isCorrect }: { isCorrect: boolean }) {
+    return (
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+        {isCorrect ? (
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-green-500 shadow-md">
+            ✓
+          </span>
+        ) : (
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white font-bold text-sm bg-red-500 shadow-md">
+            ✗
+          </span>
+        )}
+      </div>
+    );
+  });
 
   // Show the correct order if needed
-  const CorrectOrderDisplay = memo(() => (
-    <div className="mt-6 p-4 border rounded bg-blue-50">
-      <h3 className="font-semibold text-blue-800 mb-2">Correct Order:</h3>
-      <ol className="list-decimal list-inside">
-        {controller.getCorrectOrder().map((itemId, index) => (
-          <li key={`correct-${itemId}`} className="py-1 text-gray-800">
-            {getItemTextById(itemId)}
-          </li>
-        ))}
-      </ol>
-    </div>
-  ));
+  const CorrectOrderDisplay = memo(function CorrectOrderDisplay() {
+    return (
+      <div className="mt-6 p-4 border rounded bg-blue-50">
+        <h3 className="font-semibold text-blue-800 mb-2">Correct Order:</h3>
+        <ol className="list-decimal list-inside">
+          {controller.getCorrectOrder().map((itemId) => (
+            <li key={`correct-${itemId}`} className="py-1 text-gray-800">
+              {getItemTextById(itemId)}
+            </li>
+          ))}
+        </ol>
+      </div>
+    );
+  });
 
   return (
     <div className="p-4 bg-white shadow-md rounded-lg">
@@ -22839,7 +23131,7 @@ export const useQuizTimer = ({
   const [totalSeconds, setTotalSeconds] = useState(initialTimeInMinutes * 60);
   const [isPaused, setIsPaused] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const formatTime = useCallback((seconds: number): string => {
     if (seconds <= 0) return '00:00';
@@ -26039,7 +26331,7 @@ import React from 'react';
 import ClientQuizPage from './client-page';
 
 // Server component for canonical quiz route
-export default async function QuizPage({ params }: { params: { quizId: string } }) {
+export default async function QuizPage({ params }: { params: Promise<{ quizId: string }> }) {
   // Properly await the params object itself before destructuring
   const { quizId } = await params;
   return <ClientQuizPage quizId={quizId} />;
@@ -26109,7 +26401,7 @@ export default function QuizResultsPage() {
 import React from 'react';
 import ClientQuizPage from '../../client-page';
 
-export default async function QuizByTypePage({ params }: { params: { quizId: string; questionType: string } }) {
+export default async function QuizByTypePage({ params }: { params: Promise<{ quizId: string; questionType: string }> }) {
   const { quizId, questionType } = await params;
   return <ClientQuizPage quizId={quizId} questionType={questionType} />;
 }
@@ -26119,7 +26411,16 @@ export default async function QuizByTypePage({ params }: { params: { quizId: str
 ### app/learn-fast/page.tsx
 
 ```tsx
+import React from 'react';
 
+export default function LearnFastPage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold">Learn Fast</h1>
+      <p className="mt-4">Learn fast feature is coming soon!</p>
+    </div>
+  );
+}
 ```
 
 ### app/utils/tw.ts
@@ -28077,13 +28378,17 @@ import CardCategory from "../../_assets/components/CardCategory";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+interface PageProps {
+  params: Promise<{ categoryId: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
 export async function generateMetadata({
   params,
-}: {
-  params: { categoryId: string };
-}) {
+}: PageProps) {
+  const resolvedParams = await params;
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === resolvedParams.categoryId
   );
 
   return getSEOTags({
@@ -28095,11 +28400,10 @@ export async function generateMetadata({
 
 export default async function Category({
   params,
-}: {
-  params: { categoryId: string };
-}) {
+}: PageProps) {
+  const resolvedParams = await params;
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === resolvedParams.categoryId
   );
   const articlesInCategory = articles
     .filter((article) =>
@@ -28163,19 +28467,40 @@ export default async function Category({
 ```tsx
 import Link from "next/link";
 import Script from "next/script";
+import { notFound } from "next/navigation";
 import { articles } from "../_assets/content";
 import BadgeCategory from "../_assets/components/BadgeCategory";
 import Avatar from "../_assets/components/Avatar";
 import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
+interface BlogPageParams {
+  articleId: string;
+  [key: string]: string | string[];
+}
+
+type SearchParams = { [key: string]: string | string[] | undefined };
+
+interface PageProps {
+  params: Promise<BlogPageParams>;
+  searchParams?: Promise<SearchParams>;
+}
+
 export async function generateMetadata({
   params,
-}: {
-  params: { articleId: string };
-}) {
-  const resolvedParams = await params;
-  const article = articles.find((article) => article.slug === resolvedParams.articleId);
+}: PageProps) {
+  // Await the params promise and extract articleId
+  const { articleId } = await params;
+  
+  if (typeof articleId !== 'string') {
+    return {};
+  }
+  
+  const article = articles.find((article) => article.slug === articleId);
+  
+  if (!article) {
+    return {};
+  }
 
   return getSEOTags({
     title: article.title,
@@ -28202,17 +28527,29 @@ export async function generateMetadata({
 
 export default async function Article({
   params,
-}: {
-  params: { articleId: string };
-}) {
-  const resolvedParams = await params;
-  const article = articles.find((article) => article.slug === resolvedParams.articleId);
+  searchParams,
+}: PageProps) {
+  // Await the params promise and extract articleId
+  const { articleId } = await params;
+  
+  if (typeof articleId !== 'string') {
+    notFound();
+  }
+  
+  // Handle searchParams if needed
+  const search = searchParams ? await searchParams : {};
+  
+  const article = articles.find((article) => article.slug === articleId);
+  
+  if (!article) {
+    notFound();
+  }
   const articlesRelated = articles
     .filter(
       (a) =>
-        a.slug !== resolvedParams.articleId &&
+        a.slug !== articleId &&
         a.categories.some((c) =>
-          article.categories.map((c) => c.slug).includes(c.slug)
+          article.categories.some(articleCat => articleCat.slug === c.slug)
         )
     )
     .sort(
@@ -28361,10 +28698,10 @@ import config from "@/config";
 export async function generateMetadata({
   params,
 }: {
-  params: { authorId: string };
+  params: Promise<{ authorId: string }>;
 }) {
-  const resolvedParams = await params;
-  const author = authors.find((author) => author.slug === resolvedParams.authorId);
+  const { authorId } = await params;
+  const author = authors.find((author) => author.slug === authorId);
 
   return getSEOTags({
     title: `${author.name}, Author at ${config.appName}'s Blog`,
@@ -28376,10 +28713,10 @@ export async function generateMetadata({
 export default async function Author({
   params,
 }: {
-  params: { authorId: string };
+  params: Promise<{ authorId: string }>;
 }) {
-  const resolvedParams = await params;
-  const author = authors.find((author) => author.slug === resolvedParams.authorId);
+  const { authorId } = await params;
+  const author = authors.find((author) => author.slug === authorId);
   const articlesByAuthor = articles
     .filter((article) => article.author.slug === author.slug)
     .sort(
@@ -28792,6 +29129,35 @@ export default function CacheAnalyticsDashboard() {
 ### app/quiz-responsive/[quizId]/page.tsx
 
 ```tsx
+import { notFound } from 'next/navigation';
+
+interface QuizResponsivePageProps {
+  params: Promise<{
+    quizId: string;
+  }>;
+}
+
+export default async function QuizResponsivePage({ params }: QuizResponsivePageProps) {
+  const { quizId } = await params;
+  
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-6">Responsive Quiz: {quizId}</h1>
+      <p className="text-gray-600">
+        This is a placeholder for the responsive quiz page. 
+        Quiz ID: {quizId}
+      </p>
+      <div className="mt-4">
+        <a 
+          href={`/quiz/${quizId}`}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Go to Quiz
+        </a>
+      </div>
+    </div>
+  );
+}
 
 ```
 
@@ -29093,10 +29459,9 @@ const TestOrderQuestionsPage = () => {
             <OrderQuestionComponent
               question={currentQuestion}
               onAnswerSelect={(answer) => handleAnswerSelect(currentQuestion.id, answer as OrderQuestionAnswer)}
-              initialAnswer={answers[currentQuestion.id]}
+              userAnswer={answers[currentQuestion.id]}
               isSubmitted={isSubmitted[currentQuestion.id] || false}
               isQuizReviewMode={isSubmitted[currentQuestion.id] || false} // Simulate review mode post-submit
-              correctnessMap={correctnessMap[currentQuestion.id]}
             />
             {isSubmitted[currentQuestion.id] && (
               <div className="mt-4 p-3 rounded-md bg-gray-100 dark:bg-gray-800">
@@ -30092,7 +30457,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
   className = '',
   ...props
 }) => {
-  const { deviceType, width, isTouchDevice, isBreakpointDown } = useResponsive();
+  const { currentBreakpoint, deviceType, width, isTouchDevice, isBreakpointDown } = useResponsive();
   const [imageSrc, setImageSrc] = useState<string>(src);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -30102,7 +30467,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
   const getOptimalImageSrc = () => {
     if (!sources) return src;
 
-    switch (deviceType) {
+    switch (currentBreakpoint) {
       case 'mobile':
         return sources.mobile || src;
       case 'mobile-large':
@@ -30131,7 +30496,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
     let baseQuality = 85; // Default high quality
 
     // Reduce quality for mobile devices
-    if (deviceType === 'mobile' || deviceType === 'mobile-large') {
+    if (currentBreakpoint === 'mobile' || currentBreakpoint === 'mobile-large') {
       baseQuality = 75;
     }
 
@@ -30170,7 +30535,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
       setImageLoaded(false);
       setImageError(false);
     }
-  }, [deviceType, sources]);
+  }, [currentBreakpoint, sources]);
 
   // Track image load performance
   const handleImageLoad = () => {
@@ -30297,10 +30662,10 @@ export const LazyImageGrid: React.FC<LazyImageGridProps> = ({
   gap = 'gap-4',
   aspectRatio = '16/9',
 }) => {
-  const { deviceType } = useResponsive();
+  const { deviceType, currentBreakpoint } = useResponsive();
   
   const getColumnCount = () => {
-    switch (deviceType) {
+    switch (currentBreakpoint) {
       case 'mobile':
       case 'mobile-large':
         return columns.mobile || 1;
@@ -30341,7 +30706,7 @@ export const LazyImageGrid: React.FC<LazyImageGridProps> = ({
 export const useImagePreloader = (images: string[]) => {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set());
-  const { deviceType } = useResponsive();
+  const { currentBreakpoint } = useResponsive();
 
   const preloadImage = (src: string): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -30369,7 +30734,7 @@ export const useImagePreloader = (images: string[]) => {
 
   const preloadImages = async (imagesToPreload: string[] = images) => {
     // Limit preloading on mobile devices to save bandwidth
-    const maxPreload = deviceType === 'mobile' || deviceType === 'mobile-large' ? 3 : 6;
+    const maxPreload = currentBreakpoint === 'mobile' || currentBreakpoint === 'mobile-large' ? 3 : 6;
     const limitedImages = imagesToPreload.slice(0, maxPreload);
 
     try {
@@ -30777,7 +31142,7 @@ export const usePerformanceTracking = () => {
       let score = 100;
       
       // Penalize mobile devices less as they're expected to be slower
-      if (deviceType === 'mobile' || deviceType === 'mobile-large') {
+      if (deviceType === 'mobile') {
         score = Math.max(score - 10, 0);
       }
       
@@ -30988,10 +31353,10 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   sizes = '100vw',
   priority = false,
 }) => {
-  const { deviceType } = useResponsive();
+  const { currentBreakpoint } = useResponsive();
   
   const getImageSrc = () => {
-    switch (deviceType) {
+    switch (currentBreakpoint) {
       case 'mobile':
       case 'mobile-large':
         return mobileSrc || src;
@@ -32115,21 +32480,27 @@ export default ErrorBoundary;
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion, OrderQuestion } from '../../types/quiz'; // Added OrderQuestion
+import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion, OrderQuestion, OrderQuestionAnswer } from '../../types/quiz'; // Added OrderQuestion and OrderQuestionAnswer
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
 import DropdownSelectionComponent from '../../features/quiz/components/question-types/DropdownSelectionComponent'; // Import DropdownSelectionComponent
 import OrderQuestionComponent from '../../features/quiz/components/question-types/OrderQuestionComponent'; // Import OrderQuestionComponent
 import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
 
-export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
+export default function QuestionTypeDemo({ params }: { params: Promise<{ type: string }> }) {
+  const [resolvedParams, setResolvedParams] = useState<{ type: string } | null>(null);
+  
+  useEffect(() => {
+    params.then(setResolvedParams);
+  }, [params]);
+
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Added isLoading state
   const [error, setError] = useState<string | null>(null); // Added error state
   const [selectedOption, setSelectedOption] = useState<string | null>(null); // single_selection
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // multi
   const [dropdownSelections, setDropdownSelections] = useState<Record<string, string | null>>({}); // dropdown_selection
-  const [orderedItems, setOrderedItems] = useState<string[]>([]); // order
+  const [orderedItems, setOrderedItems] = useState<Record<string, string | null>>({}); // order
   const [isSubmittedDemo, setIsSubmittedDemo] = useState(false);
   const [showCorrectAnswerDemo, setShowCorrectAnswerDemo] = useState(false);
 
@@ -32137,9 +32508,11 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     difficulty: 'all',
     tags: [] as string[]
   });
-  const questionType = params.type as QuestionType;
+  const questionType = resolvedParams?.type as QuestionType;
   
   const loadQuestion = useCallback(async () => {
+    if (!questionType) return; // Don't load if questionType is not available yet
+    
     setIsLoading(true);
     setError(null);
     setCurrentQuestion(null); // Clear previous question
@@ -32159,15 +32532,17 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
   }, [questionType, filters]); // Added dependencies to useCallback
 
   useEffect(() => {
-    loadQuestion();
-    // Reset selections when question or filters change
-    setSelectedOption(null);
-    setSelectedOptions([]);
-    setDropdownSelections({}); // Reset dropdown selections
-    setOrderedItems([]); // Reset order selections
-    setIsSubmittedDemo(false);
-    setShowCorrectAnswerDemo(false);
-  }, [loadQuestion]); // useEffect now depends on loadQuestion
+    if (resolvedParams) { // Only run when params are resolved
+      loadQuestion();
+      // Reset selections when question or filters change
+      setSelectedOption(null);
+      setSelectedOptions([]);
+      setDropdownSelections({}); // Reset dropdown selections
+      setOrderedItems({}); // Reset order selections
+      setIsSubmittedDemo(false);
+      setShowCorrectAnswerDemo(false);
+    }
+  }, [loadQuestion, resolvedParams]); // useEffect now depends on loadQuestion and resolvedParams
 
   const handleSingleSelect = (optionId: string) => {
     if (!isSubmittedDemo) {
@@ -32187,9 +32562,9 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     }
   };
   
-  const handleOrderSelect = (itemIds: string[]) => {
+  const handleOrderSelect = (answer: Record<string, string | null>) => {
     if (!isSubmittedDemo) {
-      setOrderedItems(itemIds);
+      setOrderedItems(answer);
     }
   };
 
@@ -32666,7 +33041,7 @@ export default function TestResponsiveQuizPage() {
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-semibold text-red-800 mb-2">📱 Mobile View</h3>
                 <p className="text-red-700">
-                  You're viewing this on a mobile device! This content is optimized for touch interactions:
+                  You&apos;re viewing this on a mobile device! This content is optimized for touch interactions:
                 </p>
                 <ul className="list-disc list-inside text-red-700 mt-2 space-y-1">
                   <li>Bottom navigation bar for easy thumb access</li>
@@ -32682,7 +33057,7 @@ export default function TestResponsiveQuizPage() {
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-semibold text-blue-800 mb-2">📄 Tablet View</h3>
                 <p className="text-blue-700">
-                  You're viewing this on a tablet! This content is optimized for both touch and mouse:
+                  You&apos;re viewing this on a tablet! This content is optimized for both touch and mouse:
                 </p>
                 <ul className="list-disc list-inside text-blue-700 mt-2 space-y-1">
                   <li>Drawer pattern for quiz overview</li>
@@ -32697,7 +33072,7 @@ export default function TestResponsiveQuizPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                 <h3 className="text-lg font-semibold text-green-800 mb-2">🖥️ Desktop View</h3>
                 <p className="text-green-700">
-                  You're viewing this on a desktop! This content is optimized for productivity:
+                  You&apos;re viewing this on a desktop! This content is optimized for productivity:
                 </p>
                 <ul className="list-disc list-inside text-green-700 mt-2 space-y-1">
                   <li>Fixed sidebar for quick navigation</li>
@@ -32825,7 +33200,10 @@ export default function TestResponsiveQuizPage() {
 // app/hooks/useIntersectionObserver.ts
 import { useState, useEffect, useRef, useCallback } from 'react';
 
-interface IntersectionOptions extends IntersectionObserverInit {
+interface IntersectionOptions {
+  root?: Element | null;
+  rootMargin?: string;
+  threshold?: number | number[];
   freezeOnceVisible?: boolean;
   initialInView?: boolean; // New option to set initial state for SSR
   skipObserver?: boolean; // Option to skip observer (for testing or force values)
@@ -33240,7 +33618,7 @@ interface UseAnimationFrameOptions {
 
 /**
  * Custom hook for smooth animations using requestAnimationFrame
- * Returns a progress value between 0 and 1
+ * Returns a progress value between 0 and 1 adf
  */
 export default function useAnimationFrame({
   duration = 300,
@@ -33257,7 +33635,7 @@ export default function useAnimationFrame({
     // Track animation start time
     let startTime = performance.now();
     let animationFrameId: number;
-    let delayTimeout: NodeJS.Timeout | null = null;
+    let delayTimeout: ReturnType<typeof setTimeout> | null = null;
     
     // Function to run the animation loop
     const runAnimation = (currentTime: number) => {
@@ -33584,7 +33962,7 @@ function useThrottle<T extends (...args: any[]) => any>(
   delay: number = 200
 ): (...args: Parameters<T>) => void {
   const lastCall = useRef<number>(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastArgs = useRef<Parameters<T> | null>(null);
 
   // Clean up any pending timeouts when the component unmounts
@@ -33655,7 +34033,7 @@ export const useQuizAutoSave = (
   saveOnUnmount: boolean = true
 ) => {
   const { state } = useQuiz();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const saveCountRef = useRef(0);
   const lastSavedStateRef = useRef({
     currentQuestionIndex: -1,
@@ -33857,7 +34235,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   }, [fn]);
   
   // Use ref to store the timeout between renders
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Clear timeout when component unmounts or deps change
   useEffect(() => {
@@ -35947,9 +36325,9 @@ export async function batchFetchQuizzes(
       // Return partial results - quizzes with no questions
       for (const quizId of quizIdsToFetch) {
         if (quizzesById[quizId]) {
-          const emptyQuiz = {
+          const emptyQuiz: Quiz = {
             ...(quizzesById[quizId] as Quiz),
-            questions: [],
+            questions: [] as AnyQuestion[], // Explicitly type the empty array
           };
           result[quizId] = emptyQuiz;
           
@@ -36618,9 +36996,9 @@ export async function fetchQuizByIdRedis(
 
     // If no questions found, return quiz with empty questions array
     if (!baseQuestionsData.length) {
-      const emptyQuiz = {
+      const emptyQuiz: Quiz = {
         ...(quizData as Quiz),
-        questions: [],
+        questions: [] as AnyQuestion[], // Explicitly type the empty array
       };
       
       // Cache the result if caching is enabled
@@ -36805,7 +37183,7 @@ const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 export async function POST(req: NextRequest) {
   const body = await req.text();
 
-  const signature = headers().get("stripe-signature");
+  const signature = (await headers()).get("stripe-signature");
 
   let eventType;
   let event;
@@ -36966,6 +37344,45 @@ export async function GET(req: NextRequest) {
 
 ```
 
+### app/api/health/route.ts
+
+```typescript
+import { NextResponse } from "next/server";
+
+export const runtime = 'edge';
+
+// Simple health check endpoint for Vercel monitoring
+export async function GET() {
+  try {
+    return NextResponse.json(
+      {
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || "development",
+        version: process.env.npm_package_version || "unknown"
+      },
+      { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { 
+        status: "unhealthy", 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    );
+  }
+}
+
+```
+
 ### app/api/admin/cache/route.ts
 
 ```typescript
@@ -37100,9 +37517,9 @@ export const revalidate = 3600; // Revalidate cache every hour
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
-  const { quizId } = params;
+  const { quizId } = await params;
   
   // Get optional questionType from search params
   const searchParams = request.nextUrl.searchParams;
@@ -37140,10 +37557,10 @@ import { fetchQuizById } from '../../../lib/supabaseQuizService'; // We'll keep 
 
 export async function GET(
   request: Request,
-  { params }: { params: { quizId: string } }
+  { params }: { params: Promise<{ quizId: string }> }
 ) {
-  // Need to properly handle params in Next.js 13+
-  const quizId = (await Promise.resolve(params)).quizId;
+  // Need to properly handle params in Next.js 15+
+  const { quizId } = await params;
   
   // Extract questionType and types from URL
   const url = new URL(request.url);
@@ -37551,12 +37968,6 @@ export async function POST(req: NextRequest) {
 
 ```
 
-### app/api/questions/route.ts
-
-```typescript
-
-```
-
 ### app/quiz-test/layout.tsx
 
 ```tsx
@@ -37664,7 +38075,7 @@ import React from 'react';
 import ClientQuizPage from './client-page';
 
 // This is a server component that properly handles async params in Next.js 15
-export default async function QuizTestPage({ params }: { params: { quizId: string } }) {
+export default async function QuizTestPage({ params }: { params: Promise<{ quizId: string }> }) {
   // Using server component to access params properly
   const { quizId } = await params;
   
@@ -37883,10 +38294,9 @@ import React from 'react';
 import ClientQuizPage from '../client-page';
 
 // This is a server component that properly handles async params in Next.js 15
-export default async function QuizTestByTypePage({ params }: { params: { quizId: string, questionType: string } }) {
+export default async function QuizTestByTypePage({ params }: { params: Promise<{ quizId: string, questionType: string }> }) {
   // Using server component to access params properly - need to await params in Next.js 13+
-  const resolvedParams = await Promise.resolve(params);
-  const { quizId, questionType } = resolvedParams;
+  const { quizId, questionType } = await params;
   
   // Pass the quizId and questionType to the client component
   return <ClientQuizPage quizId={quizId} questionType={questionType} />;
@@ -37901,7 +38311,7 @@ import React from 'react';
 import Link from 'next/link';
 import { fetchQuizById } from '../../../lib/supabaseQuizService';
 
-export default async function QuestionTypesListPage({ params }: { params: { quizId: string } }) {
+export default async function QuestionTypesListPage({ params }: { params: Promise<{ quizId: string }> }) {
   const { quizId } = await params;
   
   // Fetch the quiz data to get all available question types
@@ -37972,9 +38382,9 @@ import React from 'react';
 import QuizTypeClientPage from '../../type-client-page';
 
 // This is a server component that properly handles async params in Next.js
-export default async function QuizByTypeAndQuestionTypePage({ params }: { params: { quizId: string, type: string } }) {
+export default async function QuizByTypeAndQuestionTypePage({ params }: { params: Promise<{ quizId: string, type: string }> }) {
   // Using server component to access params properly
-  const { quizId, type } = params;
+  const { quizId, type } = await params;
   
   // Pass the quizId and questionType to the client component
   return <QuizTypeClientPage quizId={quizId} questionType={type} />;
@@ -43161,9 +43571,9 @@ export const revalidate = 3600; // 1 hour
 
 // Define the page props
 interface OptimizedQuizPageProps {
-  params: {
+  params: Promise<{
     quizId: string;
-  };
+  }>;
 }
 
 // Sample related quiz data - in a real app, this would come from a recommendation engine
@@ -43179,7 +43589,7 @@ const getRelatedQuizIds = (quizId: string): string[] => {
 
 // Server Component for the optimized quiz page
 export default async function OptimizedQuizPage({ params }: OptimizedQuizPageProps) {
-  const { quizId } = params;
+  const { quizId } = await params;
   
   // Fetch the initial quiz data with server-side caching
   const initialQuizData = await fetchQuizById(quizId);
@@ -43733,13 +44143,20 @@ export default QuestionTypesDemoPage;
 ### app/demos/question-types/[type]/page.tsx
 
 ```tsx
-'use client';
-
 import React from 'react';
-import QuestionTypeDemo from '../../../question-types-demo/type-client-page';
 
-export default function DemoQuestionTypePage({ params }: { params: { type: string } }) {
-  return <QuestionTypeDemo params={params} />;
+interface DemoPageProps {
+  params: Promise<{ type: string }>;
+}
+
+export default async function DemoQuestionTypePage({ params }: DemoPageProps) {
+  const resolvedParams = await params;
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold">Question Type Demo: {resolvedParams.type}</h1>
+      <p className="mt-4">Demo component for {resolvedParams.type} question type is not yet implemented.</p>
+    </div>
+  );
 }
 
 ```
@@ -49390,7 +49807,7 @@ const Testimonials11 = () => {
           </AnimatedElement>
 
           {/* Responsive testimonials grid */}
-          <StaggeredContainer delay={200} staggerDelay={100}>
+          <StaggeredContainer staggerDelay={100}>
             {isMobile ? (
               // Mobile: Single column layout
               <ul role="list" className={`flex flex-col ${gridConfig.testimonialGap}`}>
@@ -49409,9 +49826,9 @@ const Testimonials11 = () => {
             ) : (
               // Tablet/Desktop: Multi-column layout
               <ResponsiveGrid
-                mobile={1}
-                tablet={2}
-                desktop={4}
+                mobileCols={1}
+                tabletCols={2}
+                desktopCols={4}
                 gap={gridConfig.gap}
                 className="max-w-2xl mx-auto lg:max-w-none"
               >
@@ -51083,27 +51500,21 @@ export { Button, buttonVariants }
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-<url><loc>https://shipfa.st/apple-icon.png</loc><lastmod>2025-05-31T16:30:56.339Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/demos/question-types</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/live-quiz-demo</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/diagnostic</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/quiz-data-test</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/simple-demo</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/quizzes</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/smart-session-demo</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/spaced-repetition-demo</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/test-no-auth</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/test-order-questions</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/tos</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/progress-analytics-demo</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/question-types</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/privacy-policy</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/debug-components</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/project-completion</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/blog</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/signin</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-<url><loc>https://shipfa.st/quiz-type-filters</loc><lastmod>2025-05-31T16:30:56.340Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/apple-icon.png</loc><lastmod>2025-06-05T06:18:56.221Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/learn-fast</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/question-types</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/demos/question-types</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/test-responsive-quiz</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/quizzes</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/tos</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/test-order-questions</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/test-responsive</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/privacy-policy</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/blog</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/quiz-type-filters</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/signin</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://shipfa.st/debug-components</loc><lastmod>2025-06-05T06:18:56.222Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
 </urlset>
 ```
 
@@ -51122,6 +51533,15 @@ export { Button, buttonVariants }
 # *
 User-agent: *
 Allow: /
+
+# Block admin and API routes for security
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+
+# Allow specific public API routes
+Allow: /api/health
+Allow: /api/docs
 
 # Host
 Host: https://shipfa.st

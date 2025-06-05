@@ -15,6 +15,11 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:quiz": "playwright test quiz-lifecycle",
+    "test:e2e:quiz-pom": "playwright test quiz-lifecycle-pom",
+    "test:e2e:quiz-debug": "playwright test quiz-lifecycle --ui",
+    "test:e2e:quiz-headed": "playwright test quiz-lifecycle --headed",
+    "test:e2e:quiz-all": "playwright test tests/e2e/ --reporter=html",
     "vercel-build": "next build",
     "export": "next build && next export"
   },
