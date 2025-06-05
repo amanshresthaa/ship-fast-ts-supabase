@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { fetchQuizById } from '../../../lib/supabaseQuizService';
 
-export default async function QuestionTypesListPage({ params }: { params: { quizId: string } }) {
+export default async function QuestionTypesListPage({ params }: { params: Promise<{ quizId: string }> }) {
   const { quizId } = await params;
   
   // Fetch the quiz data to get all available question types

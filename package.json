@@ -14,7 +14,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "vercel-build": "next build",
+    "export": "next build && next export"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",

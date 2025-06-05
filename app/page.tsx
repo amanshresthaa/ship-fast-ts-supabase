@@ -21,7 +21,7 @@ export default function Home() {
         <Hero />
         
         {/* Show responsive demo only on desktop */}
-        <ShowOn breakpoint="lg">
+        <ShowOn breakpoint="desktop">
           <ResponsiveDemo />
         </ShowOn>
         

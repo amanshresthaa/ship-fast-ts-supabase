@@ -229,7 +229,7 @@ export const usePerformanceTracking = () => {
       let score = 100;
       
       // Penalize mobile devices less as they're expected to be slower
-      if (deviceType === 'mobile' || deviceType === 'mobile-large') {
+      if (deviceType === 'mobile') {
         score = Math.max(score - 10, 0);
       }
       

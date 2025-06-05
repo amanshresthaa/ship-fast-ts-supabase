@@ -8,9 +8,9 @@ export const revalidate = 3600; // 1 hour
 
 // Define the page props
 interface OptimizedQuizPageProps {
-  params: {
+  params: Promise<{
     quizId: string;
-  };
+  }>;
 }
 
 // Sample related quiz data - in a real app, this would come from a recommendation engine
@@ -26,7 +26,7 @@ const getRelatedQuizIds = (quizId: string): string[] => {
 
 // Server Component for the optimized quiz page
 export default async function OptimizedQuizPage({ params }: OptimizedQuizPageProps) {
-  const { quizId } = params;
+  const { quizId } = await params;
   
   // Fetch the initial quiz data with server-side caching
   const initialQuizData = await fetchQuizById(quizId);

@@ -52,7 +52,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
   className = '',
   ...props
 }) => {
-  const { deviceType, width, isTouchDevice, isBreakpointDown } = useResponsive();
+  const { currentBreakpoint, deviceType, width, isTouchDevice, isBreakpointDown } = useResponsive();
   const [imageSrc, setImageSrc] = useState<string>(src);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
@@ -62,7 +62,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
   const getOptimalImageSrc = () => {
     if (!sources) return src;
 
-    switch (deviceType) {
+    switch (currentBreakpoint) {
       case 'mobile':
         return sources.mobile || src;
       case 'mobile-large':
@@ -91,7 +91,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
     let baseQuality = 85; // Default high quality
 
     // Reduce quality for mobile devices
-    if (deviceType === 'mobile' || deviceType === 'mobile-large') {
+    if (currentBreakpoint === 'mobile' || currentBreakpoint === 'mobile-large') {
       baseQuality = 75;
     }
 
@@ -130,7 +130,7 @@ export const OptimizedResponsiveImage: React.FC<OptimizedResponsiveImageProps> =
       setImageLoaded(false);
       setImageError(false);
     }
-  }, [deviceType, sources]);
+  }, [currentBreakpoint, sources]);
 
   // Track image load performance
   const handleImageLoad = () => {
@@ -257,10 +257,10 @@ export const LazyImageGrid: React.FC<LazyImageGridProps> = ({
   gap = 'gap-4',
   aspectRatio = '16/9',
 }) => {
-  const { deviceType } = useResponsive();
+  const { deviceType, currentBreakpoint } = useResponsive();
   
   const getColumnCount = () => {
-    switch (deviceType) {
+    switch (currentBreakpoint) {
       case 'mobile':
       case 'mobile-large':
         return columns.mobile || 1;
@@ -301,7 +301,7 @@ export const LazyImageGrid: React.FC<LazyImageGridProps> = ({
 export const useImagePreloader = (images: string[]) => {
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [loadingImages, setLoadingImages] = useState<Set<string>>(new Set());
-  const { deviceType } = useResponsive();
+  const { currentBreakpoint } = useResponsive();
 
   const preloadImage = (src: string): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -329,7 +329,7 @@ export const useImagePreloader = (images: string[]) => {
 
   const preloadImages = async (imagesToPreload: string[] = images) => {
     // Limit preloading on mobile devices to save bandwidth
-    const maxPreload = deviceType === 'mobile' || deviceType === 'mobile-large' ? 3 : 6;
+    const maxPreload = currentBreakpoint === 'mobile' || currentBreakpoint === 'mobile-large' ? 3 : 6;
     const limitedImages = imagesToPreload.slice(0, maxPreload);
 
     try {

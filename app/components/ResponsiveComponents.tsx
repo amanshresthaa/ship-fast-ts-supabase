@@ -161,10 +161,10 @@ export const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
   sizes = '100vw',
   priority = false,
 }) => {
-  const { deviceType } = useResponsive();
+  const { currentBreakpoint } = useResponsive();
   
   const getImageSrc = () => {
-    switch (deviceType) {
+    switch (currentBreakpoint) {
       case 'mobile':
       case 'mobile-large':
         return mobileSrc || src;

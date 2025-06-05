@@ -423,7 +423,7 @@ const Testimonials11 = () => {
           </AnimatedElement>
 
           {/* Responsive testimonials grid */}
-          <StaggeredContainer delay={200} staggerDelay={100}>
+          <StaggeredContainer staggerDelay={100}>
             {isMobile ? (
               // Mobile: Single column layout
               <ul role="list" className={`flex flex-col ${gridConfig.testimonialGap}`}>
@@ -442,9 +442,9 @@ const Testimonials11 = () => {
             ) : (
               // Tablet/Desktop: Multi-column layout
               <ResponsiveGrid
-                mobile={1}
-                tablet={2}
-                desktop={4}
+                mobileCols={1}
+                tabletCols={2}
+                desktopCols={4}
                 gap={gridConfig.gap}
                 className="max-w-2xl mx-auto lg:max-w-none"
               >

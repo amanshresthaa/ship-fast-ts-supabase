@@ -528,9 +528,9 @@ export async function batchFetchQuizzes(
       // Return partial results - quizzes with no questions
       for (const quizId of quizIdsToFetch) {
         if (quizzesById[quizId]) {
-          const emptyQuiz = {
+          const emptyQuiz: Quiz = {
             ...(quizzesById[quizId] as Quiz),
-            questions: [],
+            questions: [] as AnyQuestion[], // Explicitly type the empty array
           };
           result[quizId] = emptyQuiz;
           

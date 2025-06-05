@@ -103,9 +103,9 @@ export async function fetchQuizByIdRedis(
 
     // If no questions found, return quiz with empty questions array
     if (!baseQuestionsData.length) {
-      const emptyQuiz = {
+      const emptyQuiz: Quiz = {
         ...(quizData as Quiz),
-        questions: [],
+        questions: [] as AnyQuestion[], // Explicitly type the empty array
       };
       
       // Cache the result if caching is enabled

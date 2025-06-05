@@ -9,8 +9,8 @@ export const revalidate = 3600; // Revalidate page every hour
 // export const dynamic = 'force-dynamic';
 
 // Server Component for Quiz Rendering
-export default async function CachedQuizPage({ params }: { params: { quizId: string } }) {
-  const { quizId } = params;
+export default async function CachedQuizPage({ params }: { params: Promise<{ quizId: string }> }) {
+  const { quizId } = await params;
   
   // Pre-fetch quiz data on the server (will be cached according to revalidate setting)
   const quizData = await fetchQuizByIdOptimized(quizId);

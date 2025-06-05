@@ -5,15 +5,16 @@ import { getSEOTags } from "@/libs/seo";
 import config from "@/config";
 
 interface PageProps {
-  params: { categoryId: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ categoryId: string }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps) {
+  const resolvedParams = await params;
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === resolvedParams.categoryId
   );
 
   return getSEOTags({
@@ -26,8 +27,9 @@ export async function generateMetadata({
 export default async function Category({
   params,
 }: PageProps) {
+  const resolvedParams = await params;
   const category = categories.find(
-    (category) => category.slug === params.categoryId
+    (category) => category.slug === resolvedParams.categoryId
   );
   const articlesInCategory = articles
     .filter((article) =>

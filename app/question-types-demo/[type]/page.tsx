@@ -1,21 +1,27 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
-import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion, OrderQuestion } from '../../types/quiz'; // Added OrderQuestion
+import { AnyQuestion, MultiChoiceQuestion, SingleSelectionQuestion, QuestionType, DropdownSelectionQuestion, OrderQuestion, OrderQuestionAnswer } from '../../types/quiz'; // Added OrderQuestion and OrderQuestionAnswer
 import SingleSelectionComponent from '../../features/quiz/components/question-types/SingleSelectionComponent';
 import MultiChoiceComponent from '../../features/quiz/components/question-types/MultiChoiceComponent';
 import DropdownSelectionComponent from '../../features/quiz/components/question-types/DropdownSelectionComponent'; // Import DropdownSelectionComponent
 import OrderQuestionComponent from '../../features/quiz/components/question-types/OrderQuestionComponent'; // Import OrderQuestionComponent
 import { fetchRandomQuestionByTypeAndFilters } from '../../lib/supabaseQuizService'; // Import the new service function
 
-export default function QuestionTypeDemo({ params }: { params: { type: string } }) {
+export default function QuestionTypeDemo({ params }: { params: Promise<{ type: string }> }) {
+  const [resolvedParams, setResolvedParams] = useState<{ type: string } | null>(null);
+  
+  useEffect(() => {
+    params.then(setResolvedParams);
+  }, [params]);
+
   const [currentQuestion, setCurrentQuestion] = useState<AnyQuestion | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Added isLoading state
   const [error, setError] = useState<string | null>(null); // Added error state
   const [selectedOption, setSelectedOption] = useState<string | null>(null); // single_selection
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]); // multi
   const [dropdownSelections, setDropdownSelections] = useState<Record<string, string | null>>({}); // dropdown_selection
-  const [orderedItems, setOrderedItems] = useState<string[]>([]); // order
+  const [orderedItems, setOrderedItems] = useState<Record<string, string | null>>({}); // order
   const [isSubmittedDemo, setIsSubmittedDemo] = useState(false);
   const [showCorrectAnswerDemo, setShowCorrectAnswerDemo] = useState(false);
 
@@ -23,9 +29,11 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     difficulty: 'all',
     tags: [] as string[]
   });
-  const questionType = params.type as QuestionType;
+  const questionType = resolvedParams?.type as QuestionType;
   
   const loadQuestion = useCallback(async () => {
+    if (!questionType) return; // Don't load if questionType is not available yet
+    
     setIsLoading(true);
     setError(null);
     setCurrentQuestion(null); // Clear previous question
@@ -45,15 +53,17 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
   }, [questionType, filters]); // Added dependencies to useCallback
 
   useEffect(() => {
-    loadQuestion();
-    // Reset selections when question or filters change
-    setSelectedOption(null);
-    setSelectedOptions([]);
-    setDropdownSelections({}); // Reset dropdown selections
-    setOrderedItems([]); // Reset order selections
-    setIsSubmittedDemo(false);
-    setShowCorrectAnswerDemo(false);
-  }, [loadQuestion]); // useEffect now depends on loadQuestion
+    if (resolvedParams) { // Only run when params are resolved
+      loadQuestion();
+      // Reset selections when question or filters change
+      setSelectedOption(null);
+      setSelectedOptions([]);
+      setDropdownSelections({}); // Reset dropdown selections
+      setOrderedItems({}); // Reset order selections
+      setIsSubmittedDemo(false);
+      setShowCorrectAnswerDemo(false);
+    }
+  }, [loadQuestion, resolvedParams]); // useEffect now depends on loadQuestion and resolvedParams
 
   const handleSingleSelect = (optionId: string) => {
     if (!isSubmittedDemo) {
@@ -73,9 +83,9 @@ export default function QuestionTypeDemo({ params }: { params: { type: string } 
     }
   };
   
-  const handleOrderSelect = (itemIds: string[]) => {
+  const handleOrderSelect = (answer: Record<string, string | null>) => {
     if (!isSubmittedDemo) {
-      setOrderedItems(itemIds);
+      setOrderedItems(answer);
     }
   };
 

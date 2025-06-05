@@ -182,10 +182,9 @@ const TestOrderQuestionsPage = () => {
             <OrderQuestionComponent
               question={currentQuestion}
               onAnswerSelect={(answer) => handleAnswerSelect(currentQuestion.id, answer as OrderQuestionAnswer)}
-              initialAnswer={answers[currentQuestion.id]}
+              userAnswer={answers[currentQuestion.id]}
               isSubmitted={isSubmitted[currentQuestion.id] || false}
               isQuizReviewMode={isSubmitted[currentQuestion.id] || false} // Simulate review mode post-submit
-              correctnessMap={correctnessMap[currentQuestion.id]}
             />
             {isSubmitted[currentQuestion.id] && (
               <div className="mt-4 p-3 rounded-md bg-gray-100 dark:bg-gray-800">

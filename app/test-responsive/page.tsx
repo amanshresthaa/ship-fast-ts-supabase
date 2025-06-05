@@ -180,21 +180,21 @@ export default function TestResponsivePage() {
           <div className="space-y-6">
             <h2 className="text-xl md:text-2xl font-bold">Breakpoint-Based Components</h2>
             
-            <ShowOn breakpoint="sm">
+            <ShowOn breakpoint="mobile-large">
               <div className="bg-yellow-100 text-yellow-800 p-4 rounded border border-yellow-300">
-                📏 Small and Up - Shows on SM and larger breakpoints
+                📏 Small and Up - Shows on mobile-large and larger breakpoints
               </div>
             </ShowOn>
             
-            <ShowOn breakpoint="md">
+            <ShowOn breakpoint="tablet">
               <div className="bg-purple-100 text-purple-800 p-4 rounded border border-purple-300">
-                📐 Medium and Up - Shows on MD and larger breakpoints
+                📐 Medium and Up - Shows on tablet and larger breakpoints
               </div>
             </ShowOn>
             
-            <HideOn breakpoint="lg">
+            <HideOn breakpoint="desktop">
               <div className="bg-orange-100 text-orange-800 p-4 rounded border border-orange-300">
-                📱📟 Mobile & Tablet Only - Hidden on LG and larger breakpoints
+                📱📟 Mobile & Tablet Only - Hidden on desktop and larger breakpoints
               </div>
             </HideOn>
           </div>
