@@ -1,0 +1,32 @@
+{
+  "type": "order",
+  "structure": {
+    "id": "string",
+    "type": "order",
+    "question": "string",
+    "points": "number",
+    "items": [
+      { "id": "string", "text": "string" }
+    ],
+    "correctOrder": ["string", "..."],
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "quiz_tag": "string"
+  },
+  "example": {
+    "id": "q-order-01",
+    "type": "order",
+    "question": "Chronologically order these inventions:",
+    "points": 3,
+    "items": [
+      { "id": "i-printing", "text": "Printing press" },
+      { "id": "i-radio", "text": "Radio" },
+      { "id": "i-internet", "text": "Internet" }
+    ],
+    "correctOrder": ["i-printing", "i-radio", "i-internet"],
+    "feedback": {
+      "correct": "Correct sequence!",
+      "incorrect": "Think 15th c., early 20th c., late 20th c."
+    },
+    "quiz_tag": "technology_history"
+  }
+}

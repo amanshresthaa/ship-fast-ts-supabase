@@ -1,0 +1,35 @@
+{
+  "type": "single_selection",
+  "structure": {
+    "id": "string",
+    "type": "single_selection",
+    "question": "string",
+    "points": "number",
+    "correctAnswers": ["string"],
+    "options": [
+      { "id": "string", "text": "string" }
+    ],
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "quiz_tag": "string",
+    "difficulty?": "string"
+  },
+  "example": {
+    "id": "q-single-01",
+    "type": "single_selection",
+    "question": "What planet is known as the Red Planet?",
+    "points": 1,
+    "correctAnswers": ["o-mars"],
+    "options": [
+      { "id": "o-earth", "text": "Earth" },
+      { "id": "o-mars", "text": "Mars" },
+      { "id": "o-venus", "text": "Venus" },
+      { "id": "o-jupiter", "text": "Jupiter" }
+    ],
+    "feedback": {
+      "correct": "Right—Mars has a reddish hue.",
+      "incorrect": "Hint: it's named after the Roman god of war."
+    },
+    "quiz_tag": "astronomy",
+    "difficulty": "easy"
+  }
+}

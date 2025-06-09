@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "id": "question-structure-examples",
+    "title": "Question Structure Examples and Templates",
+    "description": "A comprehensive collection of example questions demonstrating all supported question types and their structure. This serves as a reference for understanding the expected format and schema for each question type including drag_and_drop, dropdown_selection, multi, order, single_selection, yes_no, and yesno_multi.",
+    "version": "1.0.0",
+    "lastUpdated": "2024-12-19",
+    "author": "system",
+    "source": "Generated from consolidated question structures",
+    "quizType": "mixed",
+    "quiz_tags": [
+      "example_questions",
+      "question_structure_reference", 
+      "programming_fundamentals",
+      "web_development",
+      "cloud_computing",
+      "data_structures",
+      "algorithms",
+      "databases",
+      "software_engineering",
+      "machine_learning",
+      "computer_hardware",
+      "networking",
+      "project_management"
+    ],
+    "settings": {
+      "randomizeQuestions": false,
+      "randomizeOptions": false,
+      "passingScore": 70,
+      "showFeedback": true,
+      "timeLimit": null,
+      "attemptsAllowed": null
+    }
+  },
+  "quiz_topic": "Question Structure Examples and Templates"
+}

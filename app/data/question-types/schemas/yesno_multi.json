@@ -1,0 +1,33 @@
+{
+  "type": "yesno_multi",
+  "structure": {
+    "id": "string",
+    "type": "yesno_multi",
+    "question": "string",
+    "points": "number",
+    "statements": [
+      { "id": "string", "text": "string" }
+    ],
+    "correctAnswers": ["yes|no", "..."],
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "quiz_tag": "string",
+    "difficulty?": "string"
+  },
+  "example": {
+    "id": "q-ynmulti-01",
+    "type": "yesno_multi",
+    "question": "For each, answer Yes or No:",
+    "points": 2,
+    "statements": [
+      { "id": "s-tree", "text": "Trees produce oxygen." },
+      { "id": "s-volcano", "text": "Volcanoes emit nitrogen." }
+    ],
+    "correctAnswers": ["yes", "no"],
+    "feedback": {
+      "correct": "Well done!",
+      "incorrect": "Trees do; volcanoes mostly emit CO₂, not N₂."
+    },
+    "quiz_tag": "earth_science",
+    "difficulty": "medium"
+  }
+}

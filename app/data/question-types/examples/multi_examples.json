@@ -1,0 +1,65 @@
+{
+  "questions": [
+    {
+      "id": "q-multi-example-01",
+      "type": "multi",
+      "question": "Which of the following are programming languages? (Select all that apply)",
+      "points": 3,
+      "correctAnswers": ["o-python", "o-java", "o-javascript"],
+      "options": [
+        { "id": "o-python", "text": "Python" },
+        { "id": "o-java", "text": "Java" },
+        { "id": "o-html", "text": "HTML" },
+        { "id": "o-javascript", "text": "JavaScript" },
+        { "id": "o-css", "text": "CSS" }
+      ],
+      "feedback": {
+        "correct": "Perfect! Python, Java, and JavaScript are programming languages.",
+        "incorrect": "Remember: HTML and CSS are markup/styling languages, not programming languages."
+      },
+      "quiz_tag": "programming_fundamentals",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-multi-example-02",
+      "type": "multi",
+      "question": "Which of these are valid HTTP methods? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-get", "o-post", "o-put", "o-delete"],
+      "options": [
+        { "id": "o-get", "text": "GET" },
+        { "id": "o-post", "text": "POST" },
+        { "id": "o-send", "text": "SEND" },
+        { "id": "o-put", "text": "PUT" },
+        { "id": "o-delete", "text": "DELETE" },
+        { "id": "o-fetch", "text": "FETCH" }
+      ],
+      "feedback": {
+        "correct": "Excellent! GET, POST, PUT, and DELETE are standard HTTP methods.",
+        "incorrect": "SEND and FETCH are not standard HTTP methods."
+      },
+      "quiz_tag": "web_development",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-multi-example-03",
+      "type": "multi",
+      "question": "Which of these are characteristics of agile methodology? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-iterative", "o-customer-collaboration", "o-working-software"],
+      "options": [
+        { "id": "o-iterative", "text": "Iterative development" },
+        { "id": "o-customer-collaboration", "text": "Customer collaboration" },
+        { "id": "o-comprehensive-documentation", "text": "Comprehensive documentation over working software" },
+        { "id": "o-working-software", "text": "Working software over comprehensive documentation" },
+        { "id": "o-contract-negotiation", "text": "Contract negotiation over customer collaboration" }
+      ],
+      "feedback": {
+        "correct": "Great! These are core agile principles and values.",
+        "incorrect": "Review the Agile Manifesto values and principles."
+      },
+      "quiz_tag": "project_management",
+      "difficulty": "medium"
+    }
+  ]
+}

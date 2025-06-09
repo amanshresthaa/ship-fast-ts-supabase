@@ -1,0 +1,78 @@
+{
+  "questions": [
+    {
+      "id": "q-ynmulti-example-01",
+      "type": "yesno_multi",
+      "question": "For each statement about HTTP, answer Yes or No:",
+      "points": 3,
+      "statements": [
+        { "id": "s-stateless", "text": "HTTP is a stateless protocol." },
+        { "id": "s-secure", "text": "HTTP provides built-in encryption." },
+        { "id": "s-request-response", "text": "HTTP follows a request-response model." }
+      ],
+      "correctAnswers": ["yes", "no", "yes"],
+      "feedback": {
+        "correct": "Perfect! You understand HTTP fundamentals well.",
+        "incorrect": "HTTP is stateless and request-response based, but HTTPS (not HTTP) provides encryption."
+      },
+      "quiz_tag": "web_development",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-ynmulti-example-02",
+      "type": "yesno_multi",
+      "question": "For each programming paradigm, determine if JavaScript supports it:",
+      "points": 4,
+      "statements": [
+        { "id": "s-oop", "text": "Object-Oriented Programming" },
+        { "id": "s-functional", "text": "Functional Programming" },
+        { "id": "s-procedural", "text": "Procedural Programming" },
+        { "id": "s-logic", "text": "Logic Programming" }
+      ],
+      "correctAnswers": ["yes", "yes", "yes", "no"],
+      "feedback": {
+        "correct": "Excellent! JavaScript is indeed a multi-paradigm language.",
+        "incorrect": "JavaScript supports OOP, functional, and procedural paradigms, but not logic programming natively."
+      },
+      "quiz_tag": "programming_fundamentals",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q-ynmulti-example-03",
+      "type": "yesno_multi",
+      "question": "For each cloud service model, determine if it includes infrastructure management:",
+      "points": 3,
+      "statements": [
+        { "id": "s-iaas", "text": "Infrastructure as a Service (IaaS)" },
+        { "id": "s-paas", "text": "Platform as a Service (PaaS)" },
+        { "id": "s-saas", "text": "Software as a Service (SaaS)" }
+      ],
+      "correctAnswers": ["yes", "no", "no"],
+      "feedback": {
+        "correct": "Great! You understand the different levels of cloud service abstraction.",
+        "incorrect": "Only IaaS requires you to manage infrastructure. PaaS and SaaS abstract that away."
+      },
+      "quiz_tag": "cloud_computing",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-ynmulti-example-04",
+      "type": "yesno_multi",
+      "question": "For each database type, determine if it supports ACID transactions:",
+      "points": 4,
+      "statements": [
+        { "id": "s-mysql", "text": "MySQL (with InnoDB)" },
+        { "id": "s-mongodb", "text": "MongoDB" },
+        { "id": "s-redis", "text": "Redis" },
+        { "id": "s-cassandra", "text": "Cassandra" }
+      ],
+      "correctAnswers": ["yes", "yes", "yes", "no"],
+      "feedback": {
+        "correct": "Excellent knowledge of database transaction support!",
+        "incorrect": "MySQL (InnoDB), MongoDB (4.0+), and Redis support ACID. Cassandra prioritizes availability over consistency."
+      },
+      "quiz_tag": "databases",
+      "difficulty": "hard"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "questions": [
+    {
+      "id": "q-single-example-01",
+      "type": "single_selection",
+      "question": "What is the primary language used for web styling?",
+      "points": 1,
+      "correctAnswers": ["o-css"],
+      "options": [
+        { "id": "o-html", "text": "HTML" },
+        { "id": "o-css", "text": "CSS" },
+        { "id": "o-javascript", "text": "JavaScript" },
+        { "id": "o-python", "text": "Python" }
+      ],
+      "feedback": {
+        "correct": "Correct! CSS (Cascading Style Sheets) is used for styling web pages.",
+        "incorrect": "HTML is for structure, JavaScript for behavior, but CSS is for styling."
+      },
+      "quiz_tag": "web_development",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-single-example-02",
+      "type": "single_selection",
+      "question": "Which HTTP status code indicates 'Not Found'?",
+      "points": 2,
+      "correctAnswers": ["o-404"],
+      "options": [
+        { "id": "o-200", "text": "200" },
+        { "id": "o-301", "text": "301" },
+        { "id": "o-404", "text": "404" },
+        { "id": "o-500", "text": "500" }
+      ],
+      "feedback": {
+        "correct": "Right! 404 is the standard 'Not Found' status code.",
+        "incorrect": "200=OK, 301=Redirect, 500=Server Error. 404=Not Found."
+      },
+      "quiz_tag": "web_development",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-single-example-03",
+      "type": "single_selection",
+      "question": "What does CPU stand for?",
+      "points": 1,
+      "correctAnswers": ["o-central-processing-unit"],
+      "options": [
+        { "id": "o-computer-processing-unit", "text": "Computer Processing Unit" },
+        { "id": "o-central-processing-unit", "text": "Central Processing Unit" },
+        { "id": "o-control-processing-unit", "text": "Control Processing Unit" },
+        { "id": "o-core-processing-unit", "text": "Core Processing Unit" }
+      ],
+      "feedback": {
+        "correct": "Correct! CPU stands for Central Processing Unit.",
+        "incorrect": "CPU is the Central Processing Unit, the main processor of a computer."
+      },
+      "quiz_tag": "computer_hardware",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-single-example-04",
+      "type": "single_selection",
+      "question": "Which sorting algorithm has the best average-case time complexity?",
+      "points": 3,
+      "correctAnswers": ["o-quicksort"],
+      "options": [
+        { "id": "o-bubblesort", "text": "Bubble Sort" },
+        { "id": "o-insertionsort", "text": "Insertion Sort" },
+        { "id": "o-quicksort", "text": "Quick Sort" },
+        { "id": "o-selectionsort", "text": "Selection Sort" }
+      ],
+      "feedback": {
+        "correct": "Excellent! Quick Sort has O(n log n) average-case complexity.",
+        "incorrect": "Bubble, Insertion, and Selection sorts are O(n²). Quick Sort is O(n log n) on average."
+      },
+      "quiz_tag": "algorithms",
+      "difficulty": "hard"
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "questions": [
+    {
+      "id": "q-yesno-example-01",
+      "type": "yes_no",
+      "question": "Is JavaScript a compiled language?",
+      "points": 1,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! JavaScript is an interpreted language, not compiled.",
+        "incorrect": "JavaScript is interpreted at runtime, not compiled beforehand."
+      },
+      "quiz_tag": "programming_fundamentals",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-yesno-example-02",
+      "type": "yes_no",
+      "question": "Can CSS be used to create animations?",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Yes! CSS3 introduced animation and transition properties.",
+        "incorrect": "CSS can indeed create animations using @keyframes and transitions."
+      },
+      "quiz_tag": "web_development",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-yesno-example-03",
+      "type": "yes_no",
+      "question": "Is Big O notation used to describe space complexity?",
+      "points": 2,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Big O describes both time and space complexity.",
+        "incorrect": "Big O notation is used for both time complexity and space complexity analysis."
+      },
+      "quiz_tag": "algorithms",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-yesno-example-04",
+      "type": "yes_no",
+      "question": "Are all NoSQL databases schema-less?",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Some NoSQL databases enforce schemas (e.g., column-family stores).",
+        "incorrect": "While many NoSQL databases are schema-flexible, not all are completely schema-less."
+      },
+      "quiz_tag": "databases",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-yesno-example-05",
+      "type": "yes_no",
+      "question": "Does TCP guarantee data delivery?",
+      "points": 2,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Yes! TCP provides reliable, ordered delivery with error checking.",
+        "incorrect": "TCP is a reliable protocol that guarantees data delivery through acknowledgments and retransmission."
+      },
+      "quiz_tag": "networking",
+      "difficulty": "medium"
+    }
+  ]
+}

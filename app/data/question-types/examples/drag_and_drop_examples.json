@@ -1,0 +1,61 @@
+{
+  "questions": [
+    {
+      "id": "q-dnd-example-01",
+      "type": "drag_and_drop",
+      "question": "Match each programming language to its primary use case.",
+      "points": 4,
+      "targets": [
+        { "id": "t-web", "text": "Web Development" },
+        { "id": "t-mobile", "text": "Mobile Development" },
+        { "id": "t-data", "text": "Data Science" },
+        { "id": "t-systems", "text": "Systems Programming" }
+      ],
+      "options": [
+        { "id": "o-javascript", "text": "JavaScript", "target_id": null },
+        { "id": "o-swift", "text": "Swift", "target_id": null },
+        { "id": "o-python", "text": "Python", "target_id": null },
+        { "id": "o-rust", "text": "Rust", "target_id": null }
+      ],
+      "correct_pairs": [
+        { "option_id": "o-javascript", "target_id": "t-web" },
+        { "option_id": "o-swift", "target_id": "t-mobile" },
+        { "option_id": "o-python", "target_id": "t-data" },
+        { "option_id": "o-rust", "target_id": "t-systems" }
+      ],
+      "feedback": {
+        "correct": "Excellent! You correctly matched each language to its primary domain.",
+        "incorrect": "Review the primary use cases for each programming language."
+      },
+      "explanation": "JavaScript dominates web development, Swift is Apple's choice for iOS/macOS, Python excels in data science, and Rust is designed for systems programming.",
+      "quiz_tag": "programming_fundamentals"
+    },
+    {
+      "id": "q-dnd-example-02",
+      "type": "drag_and_drop",
+      "question": "Match each cloud service type to its description.",
+      "points": 3,
+      "targets": [
+        { "id": "t-iaas", "text": "Infrastructure as a Service" },
+        { "id": "t-paas", "text": "Platform as a Service" },
+        { "id": "t-saas", "text": "Software as a Service" }
+      ],
+      "options": [
+        { "id": "o-virtual-machines", "text": "Virtual Machines", "target_id": null },
+        { "id": "o-app-hosting", "text": "Application Hosting Platform", "target_id": null },
+        { "id": "o-email-service", "text": "Email Service", "target_id": null }
+      ],
+      "correct_pairs": [
+        { "option_id": "o-virtual-machines", "target_id": "t-iaas" },
+        { "option_id": "o-app-hosting", "target_id": "t-paas" },
+        { "option_id": "o-email-service", "target_id": "t-saas" }
+      ],
+      "feedback": {
+        "correct": "Perfect! You understand the cloud service models well.",
+        "incorrect": "Think about the level of abstraction each service provides."
+      },
+      "explanation": "IaaS provides virtualized computing resources, PaaS offers development platforms, and SaaS delivers ready-to-use applications.",
+      "quiz_tag": "cloud_computing"
+    }
+  ]
+}

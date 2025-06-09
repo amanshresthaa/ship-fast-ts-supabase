@@ -1,0 +1,36 @@
+{
+  "type": "multi",
+  "structure": {
+    "id": "string",
+    "type": "multi",
+    "question": "string",
+    "points": "number",
+    "correctAnswers": ["string", "..."],
+    "options": [
+      { "id": "string", "text": "string" }
+    ],
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "quiz_tag": "string",
+    "difficulty?": "string"
+  },
+  "example": {
+    "id": "q-multi-01",
+    "type": "multi",
+    "question": "Select all even numbers:",
+    "points": 2,
+    "correctAnswers": ["o-2", "o-4", "o-6"],
+    "options": [
+      { "id": "o-1", "text": "1" },
+      { "id": "o-2", "text": "2" },
+      { "id": "o-3", "text": "3" },
+      { "id": "o-4", "text": "4" },
+      { "id": "o-6", "text": "6" }
+    ],
+    "feedback": {
+      "correct": "Great—2, 4, and 6 are even.",
+      "incorrect": "Remember: even numbers are divisible by 2."
+    },
+    "quiz_tag": "math",
+    "difficulty": "medium"
+  }
+}

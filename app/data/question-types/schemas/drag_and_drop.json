@@ -1,0 +1,45 @@
+{
+  "type": "drag_and_drop",
+  "structure": {
+    "id": "string",
+    "type": "drag_and_drop",
+    "question": "string",
+    "points": "number",
+    "targets": [
+      { "id": "string", "text": "string" }
+    ],
+    "options": [
+      { "id": "string", "text": "string", "target_id": "string|null", "is_correct?": "boolean" }
+    ],
+    "correct_pairs": [
+      { "option_id": "string", "target_id": "string" }
+    ],
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "explanation": "string",
+    "quiz_tag": "string"
+  },
+  "example": {
+    "id": "q-dnd-01",
+    "type": "drag_and_drop",
+    "question": "Match each composer to their era.",
+    "points": 4,
+    "targets": [
+      { "id": "t-baroque", "text": "Baroque" },
+      { "id": "t-classical", "text": "Classical" }
+    ],
+    "options": [
+      { "id": "o-bach", "text": "J. S. Bach", "target_id": null },
+      { "id": "o-mozart", "text": "W. A. Mozart", "target_id": null }
+    ],
+    "correct_pairs": [
+      { "option_id": "o-bach", "target_id": "t-baroque" },
+      { "option_id": "o-mozart", "target_id": "t-classical" }
+    ],
+    "feedback": {
+      "correct": "Exactly—Bach is Baroque; Mozart is Classical.",
+      "incorrect": "Try again: check the composers' active periods."
+    },
+    "explanation": "Bach (1685–1750) wrote Baroque music; Mozart (1756–1791) wrote Classical.",
+    "quiz_tag": "music_history"
+  }
+}

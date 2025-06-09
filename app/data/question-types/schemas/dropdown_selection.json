@@ -1,0 +1,36 @@
+{
+  "type": "dropdown_selection",
+  "structure": {
+    "id": "string",
+    "type": "dropdown_selection",
+    "question": "string",
+    "questionText": "string",
+    "points": "number",
+    "options": [
+      { "id": "string", "text": "string", "is_correct": "boolean" }
+    ],
+    "target": { "placeholder": "string" },
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "quiz_tag": "string",
+    "difficulty?": "string"
+  },
+  "example": {
+    "id": "q-drop-01",
+    "type": "dropdown_selection",
+    "question": "Complete the sentence:",
+    "questionText": "Water boils at _____ °C.",
+    "points": 1,
+    "options": [
+      { "id": "o-90", "text": "90", "is_correct": false },
+      { "id": "o-100", "text": "100", "is_correct": true },
+      { "id": "o-110", "text": "110", "is_correct": false }
+    ],
+    "target": { "placeholder": "_____" },
+    "feedback": {
+      "correct": "Right—100 °C at standard pressure.",
+      "incorrect": "Not quite. Remember standard boiling point."
+    },
+    "quiz_tag": "physics",
+    "difficulty": "easy"
+  }
+}

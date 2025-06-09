@@ -1,0 +1,47 @@
+2025-06-09T13:15:46.121Z 🚀 === Project Management Quiz Migration Started (v1.0) ===
+2025-06-09T13:15:46.122Z 🚀 Creating quiz - ID: project-management, Topic: Project Management (Agile)
+2025-06-09T13:15:46.122Z 🚀 Upserting 1 rows into quizzes in 1 chunks...
+2025-06-09T13:15:46.565Z ✅ ✓ Finished upserting to quizzes.
+2025-06-09T13:15:46.566Z 🚀 Found 5 topic files: topic-1-fundamentals-of-agile.json, topic-2-agile-lifecycles-methodologies.json, topic-3-creating-agile-environment.json, topic-4-agile-planning-execution.json, topic-5-business-value-justification.json
+2025-06-09T13:15:46.568Z 🚀 Loaded 53 questions from topic-1-fundamentals-of-agile.json
+2025-06-09T13:15:46.568Z 🚀 Loaded 47 questions from topic-2-agile-lifecycles-methodologies.json
+2025-06-09T13:15:46.568Z 🚀 Loaded 45 questions from topic-5-business-value-justification.json
+2025-06-09T13:15:46.568Z 🚀 Loaded 45 questions from topic-3-creating-agile-environment.json
+2025-06-09T13:15:46.569Z 🚀 Loaded 45 questions from topic-4-agile-planning-execution.json
+2025-06-09T13:15:46.569Z 🚀 Loaded 235 total questions from 5 topic files.
+2025-06-09T13:15:46.570Z 🚀 Prepared 235 questions with quiz_tag: project-management
+2025-06-09T13:15:46.570Z 🚀 Upserting 235 rows into questions in 1 chunks...
+2025-06-09T13:15:47.172Z ✅ ✓ Finished upserting to questions.
+2025-06-09T13:15:47.173Z 🚀 Prepared 298 rows for multi_options
+2025-06-09T13:15:47.173Z 🚀 Prepared 200 rows for multi_correct_answers
+2025-06-09T13:15:47.173Z 🚀 Prepared 276 rows for single_selection_options
+2025-06-09T13:15:47.173Z 🚀 Prepared 44 rows for single_selection_correct_answer
+2025-06-09T13:15:47.173Z 🚀 Prepared 114 rows for yes_no_answer
+2025-06-09T13:15:47.173Z 🚀 === Upserting child table data ===
+2025-06-09T13:15:47.173Z 🚀 Upserting 298 rows into multi_options in 1 chunks...
+2025-06-09T13:15:47.175Z 🚀 Upserting 276 rows into single_selection_options in 1 chunks...
+2025-06-09T13:15:47.175Z 🚀 Upserting 114 rows into yes_no_answer in 1 chunks...
+2025-06-09T13:15:47.175Z ... No rows for yesno_multi_statements (skipped)
+2025-06-09T13:15:47.419Z ✅ ✓ Finished upserting to multi_options.
+2025-06-09T13:15:47.531Z ✅ ✓ Finished upserting to single_selection_options.
+2025-06-09T13:15:47.539Z ✅ ✓ Finished upserting to yes_no_answer.
+2025-06-09T13:15:47.539Z 🚀 Upserting 200 rows into multi_correct_answers in 1 chunks...
+2025-06-09T13:15:47.542Z 🚀 Upserting 44 rows into single_selection_correct_answer in 1 chunks...
+2025-06-09T13:15:47.542Z ... No rows for yesno_multi_correct_answers (skipped)
+2025-06-09T13:15:47.886Z ✅ ✓ Finished upserting to single_selection_correct_answer.
+2025-06-09T13:15:47.886Z ✅ ✓ Finished upserting to multi_correct_answers.
+2025-06-09T13:15:47.887Z 🚀 === Final Validation ===
+2025-06-09T13:15:48.496Z ✅ ✓ Found quiz: Project Management Professional (PMP) Agile Practice Quiz
+2025-06-09T13:15:48.496Z ✅ ✓ Total questions: 235
+2025-06-09T13:15:48.496Z 🚀   - yes_no: 114 questions
+2025-06-09T13:15:48.496Z 🚀   - single_selection: 69 questions
+2025-06-09T13:15:48.496Z 🚀   - multi: 52 questions
+2025-06-09T13:15:48.496Z ✅ === Project Management Quiz Migration Finished Successfully ===
+2025-06-09T13:15:48.496Z 🚀 Migration Summary:
+    - Quiz ID: project-management
+    - Quiz Title: Project Management Professional (PMP) Agile Practice Quiz
+    - Quiz Topic: Project Management (Agile)
+    - Total Questions: 235
+    - Topic Files Processed: 5
+    - Child Tables Updated: 7
+    - Validation: ✅ Completed

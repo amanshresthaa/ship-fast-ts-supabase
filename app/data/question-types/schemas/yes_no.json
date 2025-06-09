@@ -1,0 +1,26 @@
+{
+  "type": "yes_no",
+  "structure": {
+    "id": "string",
+    "type": "yes_no",
+    "question": "string",
+    "points": "number",
+    "correctAnswer": "yes|no",
+    "feedback": { "correct": "string", "incorrect": "string" },
+    "quiz_tag": "string",
+    "difficulty?": "string"
+  },
+  "example": {
+    "id": "q-yesno-01",
+    "type": "yes_no",
+    "question": "Is sound faster in water than in air?",
+    "points": 1,
+    "correctAnswer": "yes",
+    "feedback": {
+      "correct": "Correct—sound travels ~1,480 m/s in water.",
+      "incorrect": "Actually, it's faster in water (~1,480 m/s) than in air."
+    },
+    "quiz_tag": "physics",
+    "difficulty": "medium"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "questions": [
+    {
+      "id": "q-order-example-01",
+      "type": "order",
+      "question": "Arrange these software development phases in the correct order:",
+      "points": 4,
+      "items": [
+        { "id": "i-testing", "text": "Testing" },
+        { "id": "i-design", "text": "Design" },
+        { "id": "i-requirements", "text": "Requirements Analysis" },
+        { "id": "i-implementation", "text": "Implementation" },
+        { "id": "i-deployment", "text": "Deployment" }
+      ],
+      "correctOrder": ["i-requirements", "i-design", "i-implementation", "i-testing", "i-deployment"],
+      "feedback": {
+        "correct": "Perfect! You know the SDLC phases well.",
+        "incorrect": "Think about the logical flow: analyze → design → build → test → deploy."
+      },
+      "quiz_tag": "software_engineering"
+    },
+    {
+      "id": "q-order-example-02",
+      "type": "order",
+      "question": "Order these data structures by their typical search time complexity (fastest to slowest):",
+      "points": 3,
+      "items": [
+        { "id": "i-hashtable", "text": "Hash Table" },
+        { "id": "i-linkedlist", "text": "Linked List" },
+        { "id": "i-bst", "text": "Binary Search Tree" },
+        { "id": "i-array", "text": "Sorted Array" }
+      ],
+      "correctOrder": ["i-hashtable", "i-array", "i-bst", "i-linkedlist"],
+      "feedback": {
+        "correct": "Excellent understanding of time complexities!",
+        "incorrect": "Consider: Hash Table O(1), Sorted Array O(log n), BST O(log n), Linked List O(n)."
+      },
+      "quiz_tag": "data_structures"
+    },
+    {
+      "id": "q-order-example-03",
+      "type": "order",
+      "question": "Arrange these machine learning steps in the correct workflow:",
+      "points": 3,
+      "items": [
+        { "id": "i-evaluate", "text": "Model Evaluation" },
+        { "id": "i-collect", "text": "Data Collection" },
+        { "id": "i-train", "text": "Model Training" },
+        { "id": "i-preprocess", "text": "Data Preprocessing" }
+      ],
+      "correctOrder": ["i-collect", "i-preprocess", "i-train", "i-evaluate"],
+      "feedback": {
+        "correct": "Great! You understand the ML workflow.",
+        "incorrect": "ML workflow: collect data → clean/preprocess → train model → evaluate performance."
+      },
+      "quiz_tag": "machine_learning"
+    }
+  ]
+}

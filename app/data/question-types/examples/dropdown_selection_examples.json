@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "id": "q-drop-example-01",
+      "type": "dropdown_selection",
+      "question": "Complete the sentence:",
+      "questionText": "The capital of France is _____.",
+      "points": 1,
+      "options": [
+        { "id": "o-london", "text": "London", "is_correct": false },
+        { "id": "o-paris", "text": "Paris", "is_correct": true },
+        { "id": "o-berlin", "text": "Berlin", "is_correct": false },
+        { "id": "o-madrid", "text": "Madrid", "is_correct": false }
+      ],
+      "target": { "placeholder": "_____" },
+      "feedback": {
+        "correct": "Correct! Paris is indeed the capital of France.",
+        "incorrect": "Not quite. Think about the largest city in France."
+      },
+      "quiz_tag": "geography",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-drop-example-02",
+      "type": "dropdown_selection",
+      "question": "Fill in the blank:",
+      "questionText": "HTTP status code _____ indicates a successful request.",
+      "points": 2,
+      "options": [
+        { "id": "o-404", "text": "404", "is_correct": false },
+        { "id": "o-200", "text": "200", "is_correct": true },
+        { "id": "o-500", "text": "500", "is_correct": false },
+        { "id": "o-301", "text": "301", "is_correct": false }
+      ],
+      "target": { "placeholder": "_____" },
+      "feedback": {
+        "correct": "Right! HTTP 200 OK indicates successful request processing.",
+        "incorrect": "Remember: 2xx status codes indicate success."
+      },
+      "quiz_tag": "web_development",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-drop-example-03",
+      "type": "dropdown_selection",
+      "question": "Complete the equation:",
+      "questionText": "The derivative of x² is _____.",
+      "points": 2,
+      "options": [
+        { "id": "o-x", "text": "x", "is_correct": false },
+        { "id": "o-2x", "text": "2x", "is_correct": true },
+        { "id": "o-x3", "text": "x³", "is_correct": false },
+        { "id": "o-2x2", "text": "2x²", "is_correct": false }
+      ],
+      "target": { "placeholder": "_____" },
+      "feedback": {
+        "correct": "Excellent! Using the power rule: d/dx(x²) = 2x.",
+        "incorrect": "Apply the power rule: bring down the exponent and reduce it by 1."
+      },
+      "quiz_tag": "mathematics",
+      "difficulty": "medium"
+    }
+  ]
+}

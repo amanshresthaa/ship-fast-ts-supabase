@@ -15,7 +15,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 // --- Enhanced Logger with Colors & Emojis ---
 const LOG_DIR = path.join(__dirname, 'logs');
@@ -213,7 +213,7 @@ async function performBasicValidation(quizId) {
     
     // Step 2: Quiz Data Migration
     logger.info('=== Starting Quiz Data Migration ===');
-    const quizDir = path.join(__dirname, 'app', 'data', 'quizzes', 'azure-a102');
+    const quizDir = path.join(__dirname, '..', 'app', 'data', 'quizzes', 'azure-a102');
 
     // 2.1. Upsert Quiz Metadata
     const metaFile = path.join(quizDir, 'quiz_metadata.json');

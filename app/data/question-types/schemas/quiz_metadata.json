@@ -1,0 +1,111 @@
+{
+  "type": "object",
+  "description": "Schema for quiz metadata that provides information about a quiz including its settings, tags, and general information",
+  "required": ["metadata", "quiz_topic"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Main metadata container for quiz information",
+      "required": ["id", "title", "description", "version", "lastUpdated", "author", "quizType"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the quiz",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable title of the quiz",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed description of what the quiz covers",
+          "minLength": 10,
+          "maxLength": 1000
+        },
+        "version": {
+          "type": "string",
+          "description": "Version number of the quiz (semantic versioning recommended)",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "description": "Date when the quiz was last updated (YYYY-MM-DD format)",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or creator of the quiz",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "source": {
+          "type": "string",
+          "description": "Source or reference for the quiz content (URL or description)",
+          "maxLength": 500
+        },
+        "quizType": {
+          "type": "string",
+          "description": "Type/category of the quiz",
+          "enum": ["mixed", "single_selection", "multi", "yes_no", "drag_and_drop", "dropdown_selection", "order", "yesno_multi", "certification", "practice", "assessment"]
+        },
+        "quiz_tags": {
+          "type": "array",
+          "description": "Array of tags/topics that the quiz covers",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "settings": {
+          "type": "object",
+          "description": "Quiz behavior and display settings",
+          "required": ["randomizeQuestions", "randomizeOptions", "passingScore", "showFeedback"],
+          "properties": {
+            "randomizeQuestions": {
+              "type": "boolean",
+              "description": "Whether to randomize the order of questions"
+            },
+            "randomizeOptions": {
+              "type": "boolean",
+              "description": "Whether to randomize the order of answer options"
+            },
+            "passingScore": {
+              "type": "number",
+              "description": "Minimum score required to pass (0-100)",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "showFeedback": {
+              "type": "boolean",
+              "description": "Whether to show explanatory feedback for answers"
+            },
+            "timeLimit": {
+              "type": ["number", "null"],
+              "description": "Time limit for the quiz in minutes (null for no limit)",
+              "minimum": 1
+            },
+            "attemptsAllowed": {
+              "type": ["number", "null"],
+              "description": "Number of attempts allowed (null for unlimited)",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "quiz_topic": {
+      "type": "string",
+      "description": "Short topic description for the quiz",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  }
+}
