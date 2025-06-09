@@ -1,25 +1,27 @@
 {
   "metadata": {
     "id": "azure-a102",
-    "title": "Azure AI Engineer A102 Practice Quiz",
-    "description": "Covers implementation and management of Azure AI services: language, vision, document intelligence, and solution planning.",
+    "title": "Azure AI-102: AI Engineer Associate Practice Quiz",
+    "description": "A comprehensive practice quiz for individuals preparing for the Microsoft Azure AI Engineer Associate (AI-102) certification. This quiz covers the key skills measured in the exam, including planning and managing AI solutions, and implementing computer vision, natural language processing, knowledge mining, and document intelligence solutions.",
+    "version": "1.1.0",
+    "lastUpdated": "2024-05-21",
+    "author": "amankumarshrestha",
+    "source": "https://learn.microsoft.com/en-us/certifications/exams/ai-102/",
     "quizType": "mixed",
+    "quiz_tags": [
+      "Plan and manage an Azure AI solution",
+      "Implement computer vision solutions",
+      "Implement natural language processing solutions",
+      "Implement knowledge mining and document intelligence solutions"
+    ],
     "settings": {
       "randomizeQuestions": false,
-      "randomizeOptions":   false,
-      "passingScore":       70,
-      "showFeedback":       true,
-      "timeLimit":          null,
-      "attemptsAllowed":    null
-    },
-    "author":    "amankumarshrestha",
-    "difficulty":"medium",
-    "tags": [
-      "Implement natural language processing solutions",
-      "Implement computer vision solutions",
-      "Plan and manage an Azure AI solution",
-      "Implement knowledge mining and document intelligence solutions"
-    ]
+      "randomizeOptions": false,
+      "passingScore": 70,
+      "showFeedback": true,
+      "timeLimit": null,
+      "attemptsAllowed": null
+    }
   },
-  "quiz_topic": "Azure AI"
+  "quiz_topic": "Azure AI Engineer Associate (AI-102)"
 }

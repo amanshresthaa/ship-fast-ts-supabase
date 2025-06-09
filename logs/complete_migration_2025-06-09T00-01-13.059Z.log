@@ -1,0 +1,15 @@
+2025-06-09T00:01:13.067Z 🚀 === Complete Quiz Migration Process Started (v4.0) ===
+2025-06-09T00:01:13.068Z 🗄️ === Setting up Database Schema ===
+2025-06-09T00:01:13.068Z 🗄️ Executing: Creating/updating timestamp trigger function
+2025-06-09T00:01:13.407Z ❌ Failed to execute Creating/updating timestamp trigger function: {
+  "code": "PGRST202",
+  "details": "Searched for the function public.exec_sql with parameter sql_query or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.",
+  "hint": null,
+  "message": "Could not find the function public.exec_sql(sql_query) in the schema cache"
+}
+2025-06-09T00:01:13.694Z ❌ The complete migration script failed: {
+  "code": "PGRST202",
+  "details": "Searched for the function public.exec_sql with parameter sql_query or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.",
+  "hint": null,
+  "message": "Could not find the function public.exec_sql(sql_query) in the schema cache"
+}

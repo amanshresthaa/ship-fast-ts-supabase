@@ -1,0 +1,16 @@
+2025-06-09T00:03:56.539Z 🚀 === Complete Quiz Migration Process Started (v4.0) ===
+2025-06-09T00:03:56.540Z 🗄️ === Database Schema Setup ===
+2025-06-09T00:03:57.411Z ✅ ✅ Database schema verification completed - tables exist
+2025-06-09T00:03:57.412Z 🚀 === Starting Quiz Data Migration ===
+2025-06-09T00:03:57.415Z 🚀 Upserting quiz - ID: azure-ai-102-practice-quiz, Tag: azure-a102, Topic: Azure AI Engineer Associate (AI-102)
+2025-06-09T00:03:57.415Z 🚀 Upserting 1 rows into quizzes in 1 chunks...
+2025-06-09T00:03:57.531Z ✅ ✓ Finished upserting to quizzes.
+2025-06-09T00:03:57.533Z 🚀 Loaded 147 total questions from 7 JSON files.
+2025-06-09T00:03:57.534Z 🚀 Prepared 147 questions with quiz_tag: azure-a102
+2025-06-09T00:03:57.534Z 🚀 Upserting 147 rows into questions in 1 chunks...
+2025-06-09T00:03:57.922Z ❌ Error in questions chunk 1/1: {
+  "code": "23503",
+  "details": "Key (quiz_tag)=(azure-a102) is not present in table \"quizzes\".",
+  "hint": null,
+  "message": "insert or update on table \"questions\" violates foreign key constraint \"fk_questions_quiz\""
+}

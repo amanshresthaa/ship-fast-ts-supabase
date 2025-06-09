@@ -1,0 +1,6 @@
+2025-06-09T00:10:57.669Z 🚀 === Complete Quiz Migration Process Started (v4.0) ===
+2025-06-09T00:10:57.670Z 🗄️ === Database Schema Setup ===
+2025-06-09T00:10:57.968Z ✅ ✅ Database schema verification completed - tables exist
+2025-06-09T00:10:57.968Z 🚀 === Starting Quiz Data Migration ===
+2025-06-09T00:10:57.970Z ❌ The complete migration script failed: ReferenceError: quizPath is not defined
+    at /Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/migrate-quiz-data.js:227:42
