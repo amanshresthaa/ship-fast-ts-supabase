@@ -16,7 +16,7 @@ import { ResumeQuizPrompt } from '../components/ResumeQuizPrompt';
 import { SaveStatusIndicator } from '../components/SaveStatusIndicator';
 import LeftSidebar from '../components/LeftSidebar'; // <-- Import LeftSidebar
 import QuizFooter from '../components/QuizFooter'; // <-- Import QuizFooter
-import MobileSidebarToggle from '../components/MobileSidebarToggle'; // <-- Import MobileSidebarToggle
+import { MobileSidebarToggle } from '../components/MobileSidebarToggle'; // <-- Import MobileSidebarToggle
 import MobileQuizStats from '../components/MobileQuizStats'; // <-- Import MobileQuizStats
 import { useQuizTimer } from '../hooks/useQuizTimer'; // <-- Import useQuizTimer
 import { ConfirmationDialog } from '../components/ConfirmationDialog'; // <-- Import ConfirmationDialog

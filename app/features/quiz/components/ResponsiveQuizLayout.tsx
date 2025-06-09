@@ -3,7 +3,7 @@
 import React, { ReactNode, useState, useEffect } from 'react';
 import { useResponsive } from '@/app/hooks/useResponsive';
 import { cn } from '@/lib/utils';
-import MobileSidebarToggle from './MobileSidebarToggle';
+import { MobileSidebarToggle } from './MobileSidebarToggle';
 import LeftSidebar from './LeftSidebar';
 import QuizHeader from './QuizHeader';
 import QuizFooter from './QuizFooter';
