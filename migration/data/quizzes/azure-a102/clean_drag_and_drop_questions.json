@@ -1,0 +1,550 @@
+{
+  "questions": [
+    {
+      "id": "14",
+      "type": "drag_and_drop",
+      "question": "You need to develop an automated call handling system that can respond to callers in their own language. The system will support only French and English. Which Azure Cognitive Services service should you use to meet each requirement? To answer, drag the appropriate services to the correct requirements. Each service may be used once, more than once, or not at all.\nRequirements:\n1. Detect the incoming language:\n2. Respond in the callers\u2019 own language:",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Detect the incoming language"
+        },
+        {
+          "id": "target-2",
+          "text": "Respond in the callers\u2019 own language"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "Service Option: Speaker Recognition",
+          "target_id": null
+        },
+        {
+          "id": "option-2",
+          "text": "Service Option: Speech to Text",
+          "target_id": null
+        },
+        {
+          "id": "option-3",
+          "text": "Service Option: Text Analytics",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "Service Option: Text to Speech",
+          "target_id": null
+        },
+        {
+          "id": "option-5",
+          "text": "Service Option: Translator",
+          "target_id": "target-2",
+          "is_correct": true
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-3",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-5",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Text Analytics detects the language, and Translator translates the response.",
+        "incorrect": "Incorrect. Text Analytics (Language Detection) identifies the language, and Translator is used to provide the response in that language."
+      },
+      "explanation": "Text Analytics (specifically its Language Detection feature) is used to detect the incoming language. Translator service is used to translate responses into the caller's detected language (French or English).",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "21",
+      "type": "drag_and_drop",
+      "question": "You are developing a webpage that will use the Azure Video Analyzer for Media (previously Video Indexer) service to display videos of internal company meetings. You embed the Player widget and the Cognitive Insights widget into the page. You need to configure the widgets to meet the following requirements:\n- Ensure that users can search for keywords.\n- Display the names and faces of people in the video.\n- Show captions in the video in English (United States).\nHow should you complete the URL for each widget? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.\nCognitive Insights Widget URL:\n`https://www.videoindexer.ai/embed/insights/<accountId>/<videoId>/?widgets=` [Target1] `&controls=` [Target2]\nPlayer Widget URL:\n`https://www.videoindexer.ai/embed/player/<accountId>/<videoId>/?showCaptions=true&captions=` [Target3]",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Cognitive Insights Widget 'widgets' parameter"
+        },
+        {
+          "id": "target-2",
+          "text": "Cognitive Insights Widget 'controls' parameter"
+        },
+        {
+          "id": "target-3",
+          "text": "Player Widget 'captions' parameter"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "false",
+          "target_id": null
+        },
+        {
+          "id": "option-2",
+          "text": "people,keywords",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "search",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "en-US",
+          "target_id": "target-3",
+          "is_correct": true
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-2",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-3",
+          "target_id": "target-2"
+        },
+        {
+          "option_id": "option-4",
+          "target_id": "target-3"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! 'people,keywords' enables those insights, 'search' adds the search control, and 'en-US' sets caption language.",
+        "incorrect": "Incorrect. Review the widget parameters for displaying insights, enabling controls, and setting caption language."
+      },
+      "explanation": "For Target1 (Cognitive Insights widgets): 'people,keywords' shows people and keywords insights. For Target2 (Cognitive Insights controls): 'search' enables the search control within the insights widget. For Target3 (Player captions): 'en-US' specifies the language code for English (United States) captions.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "80",
+      "type": "drag_and_drop",
+      "question": "You are developing a webpage that will use the Azure Video Analyzer for Media (previously Video Indexer) service to display videos of internal company meetings. You embed the Player widget and the Cognitive Insights widget into the page. You need to configure the widgets to meet the following requirements:\n- Ensure that users can search for keywords.\n- Display the names and faces of people in the video.\n- Show captions in the video in English (United States).\nHow should you complete the URL for each widget? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Cognitive Insights Widget 'widgets' parameter"
+        },
+        {
+          "id": "target-2",
+          "text": "Cognitive Insights Widget 'controls' parameter"
+        },
+        {
+          "id": "target-3",
+          "text": "Player Widget 'captions' parameter"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "people, keywords",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "search",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "en-US",
+          "target_id": "target-3",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "labels",
+          "target_id": null
+        },
+        {
+          "id": "option-5",
+          "text": "true",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        },
+        {
+          "option_id": "option-3",
+          "target_id": "target-3"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! 'people,keywords' enables those insights, 'search' adds the search control, and 'en-US' sets caption language.",
+        "incorrect": "Incorrect. Review the widget parameters for displaying insights, enabling controls, and setting caption language."
+      },
+      "explanation": "Setting `widgets=people,keywords` adds the 'people' and 'keywords' insight panes. Setting `controls=search` adds the search control to the insights widget. Setting `captions=en-US` specifies the language code for captions to be displayed.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "88",
+      "type": "drag_and_drop",
+      "question": "You are developing a call to the Face API. The call must find similar faces from an existing list named employeefaces. The employeefaces list contains 60,000 images. How should you complete the body of the HTTP request? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "List ID field name"
+        },
+        {
+          "id": "target-2",
+          "text": "Mode field value"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "\"LargeFaceListId\"",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "\"matchFace\"",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "\"faceListId\"",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "\"matchPerson\"",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Use 'LargeFaceListId' for lists over 1,000 faces and 'matchFace' to find visually similar faces.",
+        "incorrect": "Incorrect. Remember to use 'LargeFaceListId' for large lists and 'matchFace' for visual similarity."
+      },
+      "explanation": "For lists potentially exceeding 1,000 faces (like 60,000), 'LargeFaceListId' must be used instead of 'faceListId'. The 'matchFace' mode finds visually similar faces regardless of whether they belong to the same person. 'matchPerson' finds faces belonging to the same person.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "89",
+      "type": "drag_and_drop",
+      "question": "You are developing a photo application that will find photos of a person based on a sample image by using the Face API. You need to create a POST request to find the photos. How should you complete the request? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "URL Path Segment"
+        },
+        {
+          "id": "target-2",
+          "text": "Request Body 'mode' value"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "findsimilars",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "matchPerson",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "detect",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "matchFace",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Use the 'findsimilars' operation and 'matchPerson' mode to find photos of the same person.",
+        "incorrect": "Incorrect. The 'findsimilars' operation with 'matchPerson' mode is needed to find photos belonging to the same person."
+      },
+      "explanation": "The 'findsimilars' operation is used to search for similar faces based on a query face ID against a face list or large face list. The 'matchPerson' mode filters the similar faces found to only include those that likely belong to the same person as the query face.",
+      "quiz_tag": "Implement computer vision solutions"
+    },
+    {
+      "id": "128",
+      "type": "drag_and_drop",
+      "question": "You are building a Language Understanding model for purchasing tickets. You have the following utterance for an intent named PurchaseAndSendTickets: Purchase [2 adult business] tickets to [Paris] [next Monday] and send tickets to [email@domain.com]. You need to select the entity types. The solution must use built-in entity types to minimize training data whenever possible. Which entity type should you use for each label? To answer, drag the appropriate entity types to the correct labels. Each entity type may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Paris"
+        },
+        {
+          "id": "target-2",
+          "text": "email@domain.com"
+        },
+        {
+          "id": "target-3",
+          "text": "2 adult business"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "GeographyV2",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "Email",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "Machine learned",
+          "target_id": "target-3",
+          "is_correct": true
+        },
+        {
+          "id": "option-4",
+          "text": "List",
+          "target_id": null
+        },
+        {
+          "id": "option-5",
+          "text": "DatetimeV2",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        },
+        {
+          "option_id": "option-3",
+          "target_id": "target-3"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Use built-in entities GeographyV2 and Email where possible, and Machine learned for custom concepts.",
+        "incorrect": "Incorrect. Leverage built-in entities like GeographyV2 and Email first. Use Machine learned entities for concepts not covered by built-ins."
+      },
+      "explanation": "GeographyV2 is a built-in entity for recognizing geographical locations like cities and countries. Email is a built-in entity specifically for recognizing email addresses. '2 adult business' represents ticket details (number, type, class). There's no single built-in entity for this complex combination. A machine learned entity, trained with examples, is appropriate. While 'next Monday' would use DatetimeV2, that wasn't one of the target labels.",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "173",
+      "type": "drag_and_drop",
+      "question": "You are building a customer support chatbot. You need to configure the bot to identify the following:\n- Code names for internal product development\n- Messages that include credit card numbers\nThe solution must minimize development effort. Which Azure Cognitive Service for Language feature should you use for each requirement? To answer, drag the appropriate features to the correct requirements. Each feature may be used once, more than once, or not at all.",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Code names for internal product development"
+        },
+        {
+          "id": "target-2",
+          "text": "Messages that include credit card numbers"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "Custom named entity recognition (NER)",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "Personally identifiable Information (PII) detection",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "Key phrase extraction",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "Sentiment analysis",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Custom NER is needed for internal code names, while PII detection handles standard sensitive data like credit card numbers.",
+        "incorrect": "Incorrect. Use Custom NER for unique identifiers like internal code names and the built-in PII detection feature for common sensitive data."
+      },
+      "explanation": "Internal code names are specific to the business and won't be recognized by pre-built NER. Custom NER allows you to train a model to identify these specific entities. The PII detection feature within the Language service is specifically designed to identify sensitive information like credit card numbers, minimizing development effort compared to building custom logic.",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "184",
+      "type": "drag_and_drop",
+      "question": "You develop a Python app named App1 that performs speech-to-speech translation. You need to configure App1 to translate English to German. How should you complete the SpeechTranslationConfig object? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once or not at all.\n```python\ntranslation_config = speechsdk.translation.SpeechTranslationConfig(subscription=speech_key, region=service_region)\ntranslation_config.[Target1] = \"en-US\"\ntranslation_config.[Target2](\"de\")\n```",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Set Input Language Property"
+        },
+        {
+          "id": "target-2",
+          "text": "Add Target Language Method"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "speech_recognition_language",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "add_target_language",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "target_languages",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "set_profanity",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! `speech_recognition_language` sets the input language and `add_target_language` adds a translation target.",
+        "incorrect": "Incorrect. Use `speech_recognition_language` to set the source language and `add_target_language` to specify the translation output language."
+      },
+      "explanation": "The `speech_recognition_language` attribute sets the language of the input speech to be recognized (source language, e.g., 'en-US'). The `add_target_language` method adds a language code (e.g., 'de') to the list of target languages for translation.",
+      "quiz_tag": "Implement natural language processing solutions"
+    },
+    {
+      "id": "189",
+      "type": "drag_and_drop",
+      "question": "You develop an app in C# named App1 that performs speech-to-speech translation. You need to configure App1 to translate English to German. How should you complete the SpeechTranslationConfig object? To answer, drag the appropriate values to the correct targets. Each value may be used once, more than once, or not at all.\n```csharp\nvar translationConfig = SpeechTranslationConfig.FromSubscription(SPEECH_SUBSCRIPTION_KEY, SPEECH_SERVICE_REGION);\ntranslationConfig.[Target1] = \"en-US\";\ntranslationConfig.[Target2](\"de\");\n```",
+      "points": 1,
+      "targets": [
+        {
+          "id": "target-1",
+          "text": "Set Input Language Property"
+        },
+        {
+          "id": "target-2",
+          "text": "Add Target Language Method"
+        }
+      ],
+      "options": [
+        {
+          "id": "option-1",
+          "text": "SpeechRecognitionLanguage",
+          "target_id": "target-1",
+          "is_correct": true
+        },
+        {
+          "id": "option-2",
+          "text": "AddTargetLanguage",
+          "target_id": "target-2",
+          "is_correct": true
+        },
+        {
+          "id": "option-3",
+          "text": "TargetLanguages",
+          "target_id": null
+        },
+        {
+          "id": "option-4",
+          "text": "SetProfanity",
+          "target_id": null
+        }
+      ],
+      "correct_pairs": [
+        {
+          "option_id": "option-1",
+          "target_id": "target-1"
+        },
+        {
+          "option_id": "option-2",
+          "target_id": "target-2"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! `SpeechRecognitionLanguage` sets the input language and `AddTargetLanguage` adds a translation target.",
+        "incorrect": "Incorrect. Use `SpeechRecognitionLanguage` to set the source language and `AddTargetLanguage` to specify the translation output language."
+      },
+      "explanation": "The `SpeechRecognitionLanguage` property sets the language of the input speech to be recognized (source language, e.g., 'en-US'). The `AddTargetLanguage` method adds a language code (e.g., 'de') to the list of target languages for translation.",
+      "quiz_tag": "Implement natural language processing solutions"
+    }
+  ]
+}

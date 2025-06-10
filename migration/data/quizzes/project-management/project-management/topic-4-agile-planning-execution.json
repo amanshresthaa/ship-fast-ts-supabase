@@ -1,0 +1,791 @@
+{
+  "questions": [
+    {
+      "id": "q-planning-yn-001",
+      "type": "yes_no",
+      "question": "User stories should follow the format: 'As a [user type], I want [functionality], so that [benefit]'.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! This is the standard user story format that captures who, what, and why.",
+        "incorrect": "Incorrect. This is the accepted format for user stories that ensures all essential elements are captured."
+      },
+      "explanation": "The standard format ensures user stories capture the user, functionality, and business value.",
+      "quiz_tag": "user_stories",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-002",
+      "type": "yes_no",
+      "question": "According to INVEST criteria, user stories should be independent of each other.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! The 'I' in INVEST stands for Independent - stories should not depend on other stories.",
+        "incorrect": "Incorrect. Independence is a key criterion in INVEST to enable flexible prioritization and development."
+      },
+      "explanation": "Independent stories can be developed and delivered in any order.",
+      "quiz_tag": "invest_criteria",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-003",
+      "type": "yes_no",
+      "question": "The Product Backlog should be prioritized based only on business value.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Prioritization should consider multiple factors: business value, risk, dependencies, learning opportunities, and technical factors.",
+        "incorrect": "Incorrect. While business value is important, other factors like risk, dependencies, and technical considerations also matter."
+      },
+      "explanation": "Effective prioritization balances multiple factors to optimize overall project success.",
+      "quiz_tag": "backlog_management",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-004",
+      "type": "yes_no",
+      "question": "Story points represent the actual time required to complete a user story.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Story points represent relative effort/complexity, not actual time.",
+        "incorrect": "Incorrect. Story points are relative measures of effort, complexity, and uncertainty, not time estimates."
+      },
+      "explanation": "Story points focus on relative sizing rather than absolute time estimation.",
+      "quiz_tag": "estimation",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-005",
+      "type": "yes_no",
+      "question": "Velocity should be used to compare the performance of different teams.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Velocity is team-specific and should not be used for team comparisons.",
+        "incorrect": "Incorrect. Velocity is a team-specific metric and comparing velocities between teams is not meaningful."
+      },
+      "explanation": "Each team's velocity is relative to their context, skills, and definition of story points.",
+      "quiz_tag": "velocity",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-006",
+      "type": "yes_no",
+      "question": "Acceptance criteria define the conditions that must be met for a user story to be considered complete.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Acceptance criteria specify the conditions that must be satisfied for a story to be accepted.",
+        "incorrect": "Incorrect. Acceptance criteria are specifically designed to define completion conditions."
+      },
+      "explanation": "Clear acceptance criteria prevent misunderstandings and ensure quality delivery.",
+      "quiz_tag": "acceptance_criteria",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-007",
+      "type": "yes_no",
+      "question": "Planning Poker is an estimation technique that uses consensus to arrive at story point estimates.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Planning Poker uses team discussion and consensus to estimate story points.",
+        "incorrect": "Incorrect. Planning Poker is specifically designed to achieve consensus through discussion and estimation."
+      },
+      "explanation": "Planning Poker leverages collective wisdom and discussion to improve estimation accuracy.",
+      "quiz_tag": "estimation",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-008",
+      "type": "yes_no",
+      "question": "The Definition of Done is the same as acceptance criteria for a user story.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Definition of Done applies to all work, while acceptance criteria are specific to individual stories.",
+        "incorrect": "Incorrect. Definition of Done is a team standard for all work; acceptance criteria are story-specific."
+      },
+      "explanation": "Definition of Done ensures consistent quality standards across all deliverables.",
+      "quiz_tag": "definition_of_done",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-009",
+      "type": "yes_no",
+      "question": "Release planning focuses on defining which features will be included in upcoming releases.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Release planning determines feature scope and timing for product releases.",
+        "incorrect": "Incorrect. Release planning specifically focuses on feature selection and release timing."
+      },
+      "explanation": "Release planning aligns development work with business objectives and market timing.",
+      "quiz_tag": "release_planning",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-010",
+      "type": "yes_no",
+      "question": "MoSCoW prioritization categorizes requirements into Must have, Should have, Could have, and Won't have.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! MoSCoW is a prioritization technique using these four categories.",
+        "incorrect": "Incorrect. MoSCoW specifically uses these four categories for requirement prioritization."
+      },
+      "explanation": "MoSCoW helps teams focus on essential features first while managing scope.",
+      "quiz_tag": "prioritization",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-single-001",
+      "type": "single_selection",
+      "question": "What does the 'S' in INVEST criteria stand for?",
+      "points": 1,
+      "correctAnswers": ["o-small"],
+      "options": [
+        { "id": "o-specific", "text": "Specific" },
+        { "id": "o-small", "text": "Small" },
+        { "id": "o-simple", "text": "Simple" },
+        { "id": "o-structured", "text": "Structured" }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'S' in INVEST stands for Small - stories should be small enough to complete in one iteration.",
+        "incorrect": "Incorrect. In INVEST criteria, 'S' stands for Small, referring to story size."
+      },
+      "explanation": "Small stories enable faster feedback and reduce risk of incomplete work.",
+      "quiz_tag": "invest_criteria",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-single-002",
+      "type": "single_selection",
+      "question": "Which phase of Agile project management focuses on creating the project vision and initial planning?",
+      "points": 2,
+      "correctAnswers": ["o-envision"],
+      "options": [
+        { "id": "o-envision", "text": "Envision" },
+        { "id": "o-speculate", "text": "Speculate" },
+        { "id": "o-explore", "text": "Explore" },
+        { "id": "o-adapt", "text": "Adapt" }
+      ],
+      "feedback": {
+        "correct": "Correct! The Envision phase focuses on creating project vision, objectives, and initial scope.",
+        "incorrect": "Incorrect. The Envision phase is specifically for vision creation and initial planning."
+      },
+      "explanation": "Envision phase establishes the foundation and direction for the entire project.",
+      "quiz_tag": "agile_phases",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-003",
+      "type": "single_selection",
+      "question": "What is the primary purpose of user story mapping?",
+      "points": 2,
+      "correctAnswers": ["o-understand-user-journey"],
+      "options": [
+        { "id": "o-estimate-effort", "text": "Estimate development effort" },
+        { "id": "o-understand-user-journey", "text": "Understand user journey and prioritize features" },
+        { "id": "o-track-progress", "text": "Track development progress" },
+        { "id": "o-assign-tasks", "text": "Assign tasks to developers" }
+      ],
+      "feedback": {
+        "correct": "Correct! User story mapping helps visualize the user journey and prioritize features that deliver the most value.",
+        "incorrect": "Incorrect. User story mapping focuses on understanding user workflows and feature prioritization."
+      },
+      "explanation": "Story mapping creates a shared understanding of user needs and optimal feature sequencing.",
+      "quiz_tag": "user_story_mapping",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-004",
+      "type": "single_selection",
+      "question": "Which estimation technique uses relative sizing with cards or apps?",
+      "points": 1,
+      "correctAnswers": ["o-planning-poker"],
+      "options": [
+        { "id": "o-planning-poker", "text": "Planning Poker" },
+        { "id": "o-wideband-delphi", "text": "Wideband Delphi" },
+        { "id": "o-three-point", "text": "Three-point estimation" },
+        { "id": "o-analogy", "text": "Analogy estimation" }
+      ],
+      "feedback": {
+        "correct": "Correct! Planning Poker uses cards with relative values for team-based story point estimation.",
+        "incorrect": "Incorrect. Planning Poker is the technique that uses cards or apps for relative sizing."
+      },
+      "explanation": "Planning Poker combines expert judgment with consensus to improve estimation accuracy.",
+      "quiz_tag": "estimation",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-single-005",
+      "type": "single_selection",
+      "question": "What is velocity in Agile?",
+      "points": 2,
+      "correctAnswers": ["o-story-points-completed"],
+      "options": [
+        { "id": "o-team-productivity", "text": "Overall team productivity measure" },
+        { "id": "o-story-points-completed", "text": "Story points completed per iteration" },
+        { "id": "o-lines-of-code", "text": "Lines of code written per day" },
+        { "id": "o-features-delivered", "text": "Number of features delivered" }
+      ],
+      "feedback": {
+        "correct": "Correct! Velocity measures the amount of story points a team completes in an iteration.",
+        "incorrect": "Incorrect. Velocity specifically measures story points completed per iteration."
+      },
+      "explanation": "Velocity helps teams forecast future capacity and plan releases more accurately.",
+      "quiz_tag": "velocity",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-001",
+      "type": "multi",
+      "question": "What are the components of the INVEST criteria? (Select all that apply)",
+      "points": 6,
+      "correctAnswers": ["o-independent", "o-negotiable", "o-valuable", "o-estimable", "o-small", "o-testable"],
+      "options": [
+        { "id": "o-independent", "text": "Independent" },
+        { "id": "o-negotiable", "text": "Negotiable" },
+        { "id": "o-valuable", "text": "Valuable" },
+        { "id": "o-estimable", "text": "Estimable" },
+        { "id": "o-small", "text": "Small" },
+        { "id": "o-testable", "text": "Testable" },
+        { "id": "o-realistic", "text": "Realistic" },
+        { "id": "o-urgent", "text": "Urgent" }
+      ],
+      "feedback": {
+        "correct": "Correct! INVEST stands for Independent, Negotiable, Valuable, Estimable, Small, and Testable.",
+        "incorrect": "Review INVEST criteria: Independent, Negotiable, Valuable, Estimable, Small, and Testable."
+      },
+      "explanation": "INVEST criteria ensure user stories are well-formed and ready for development.",
+      "quiz_tag": "invest_criteria",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-002",
+      "type": "multi",
+      "question": "Which factors should be considered when prioritizing the Product Backlog? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-business-value", "o-risk-level", "o-dependencies", "o-learning-value"],
+      "options": [
+        { "id": "o-business-value", "text": "Business value" },
+        { "id": "o-risk-level", "text": "Risk level" },
+        { "id": "o-dependencies", "text": "Dependencies" },
+        { "id": "o-learning-value", "text": "Learning/knowledge value" },
+        { "id": "o-developer-preference", "text": "Developer preference" },
+        { "id": "o-alphabetical-order", "text": "Alphabetical order" }
+      ],
+      "feedback": {
+        "correct": "Correct! Effective prioritization considers business value, risk, dependencies, and learning opportunities.",
+        "incorrect": "Review prioritization factors: business value, risk level, dependencies, and learning value are key considerations."
+      },
+      "explanation": "Multiple factors ensure optimal value delivery and risk management.",
+      "quiz_tag": "prioritization",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-003",
+      "type": "multi",
+      "question": "Which are benefits of using story points for estimation? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-relative-sizing", "o-team-ownership", "o-focus-complexity", "o-cross-functional"],
+      "options": [
+        { "id": "o-relative-sizing", "text": "Relative sizing is easier than absolute estimation" },
+        { "id": "o-team-ownership", "text": "Team ownership of estimates" },
+        { "id": "o-focus-complexity", "text": "Focus on complexity rather than time" },
+        { "id": "o-cross-functional", "text": "Works across different skill sets" },
+        { "id": "o-precise-timing", "text": "Provides precise delivery dates" },
+        { "id": "o-individual-tracking", "text": "Tracks individual productivity" }
+      ],
+      "feedback": {
+        "correct": "Correct! Story points provide relative sizing, team ownership, complexity focus, and cross-functional applicability.",
+        "incorrect": "Review story point benefits: relative sizing, team ownership, complexity focus, and cross-functional use."
+      },
+      "explanation": "Story points address the challenges of traditional time-based estimation in complex environments.",
+      "quiz_tag": "estimation",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-004",
+      "type": "multi",
+      "question": "What should be included in a Definition of Done? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-code-complete", "o-tested", "o-documented", "o-reviewed"],
+      "options": [
+        { "id": "o-code-complete", "text": "Code is complete and integrated" },
+        { "id": "o-tested", "text": "All tests pass" },
+        { "id": "o-documented", "text": "Necessary documentation updated" },
+        { "id": "o-reviewed", "text": "Code reviewed" },
+        { "id": "o-customer-approved", "text": "Customer explicitly approved" },
+        { "id": "o-deployed-production", "text": "Deployed to production" }
+      ],
+      "feedback": {
+        "correct": "Correct! Definition of Done typically includes code completion, testing, documentation, and review.",
+        "incorrect": "Review common Definition of Done elements: code complete, tested, documented, and reviewed."
+      },
+      "explanation": "Definition of Done ensures consistent quality standards for all completed work.",
+      "quiz_tag": "definition_of_done",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-020",
+      "type": "yes_no",
+      "question": "Sprint Goals should be specific, measurable, and achievable within the sprint timeframe.",
+      "points": 2,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Sprint Goals should follow SMART criteria to provide clear direction and focus for the team.",
+        "incorrect": "Incorrect. Sprint Goals need to be specific, measurable, and achievable to guide the team effectively."
+      },
+      "explanation": "Clear Sprint Goals help the team maintain focus and make decisions during the sprint.",
+      "quiz_tag": "sprint_planning",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-021",
+      "type": "yes_no",
+      "question": "Acceptance criteria should be written before development begins on a user story.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Acceptance criteria should be defined upfront to ensure shared understanding of requirements.",
+        "incorrect": "Incorrect. Acceptance criteria should be defined before development to prevent misunderstandings."
+      },
+      "explanation": "Early definition of acceptance criteria prevents rework and ensures quality delivery.",
+      "quiz_tag": "acceptance_criteria",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-022",
+      "type": "yes_no",
+      "question": "Velocity should be used to compare the performance of different Agile teams.",
+      "points": 3,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Velocity is team-specific and should not be used for comparing different teams.",
+        "incorrect": "Incorrect. Velocity is unique to each team and context, making cross-team comparisons meaningless."
+      },
+      "explanation": "Each team's velocity is influenced by their unique skills, context, and definition of story points.",
+      "quiz_tag": "velocity_tracking",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q-planning-yn-023",
+      "type": "yes_no",
+      "question": "Epic decomposition should result in user stories that can each be completed within a single sprint.",
+      "points": 2,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Epics should be broken down into sprint-sized user stories for effective planning and delivery.",
+        "incorrect": "Incorrect. Epic decomposition should create user stories small enough to fit within a sprint."
+      },
+      "explanation": "Sprint-sized stories enable better planning, estimation, and delivery of value.",
+      "quiz_tag": "epic_decomposition",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-024",
+      "type": "yes_no",
+      "question": "The Product Owner is the only person who can add items to the Product Backlog.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! While the Product Owner manages the backlog, anyone can suggest items - the PO decides what to include.",
+        "incorrect": "Incorrect. Anyone can suggest backlog items, but the Product Owner is responsible for managing and prioritizing them."
+      },
+      "explanation": "Collaboration in backlog creation ensures all stakeholders can contribute ideas while maintaining clear ownership.",
+      "quiz_tag": "backlog_management",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-025",
+      "type": "yes_no",
+      "question": "Continuous integration should occur at least daily to ensure code quality and reduce integration risks.",
+      "points": 2,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Daily integration (or more frequent) helps identify and resolve conflicts quickly.",
+        "incorrect": "Incorrect. Continuous integration should happen at least daily to maintain code quality and reduce risks."
+      },
+      "explanation": "Frequent integration prevents the accumulation of conflicts and integration problems.",
+      "quiz_tag": "continuous_integration",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-026",
+      "type": "yes_no",
+      "question": "Burndown charts should always show a smooth, predictable decline toward zero.",
+      "points": 3,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Real burndown charts often show variations due to scope changes, blocking issues, or new learning.",
+        "incorrect": "Incorrect. Real burndown charts typically show variations as teams deal with changing requirements and unforeseen challenges."
+      },
+      "explanation": "Variations in burndown charts are normal and provide valuable information about team performance and project challenges.",
+      "quiz_tag": "progress_tracking",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q-planning-yn-027",
+      "type": "yes_no",
+      "question": "Risk-adjusted backlog prioritization considers both the value and the uncertainty of user stories.",
+      "points": 2,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Risk-adjusted prioritization balances potential value against uncertainty and risk factors.",
+        "incorrect": "Incorrect. Risk-adjusted prioritization specifically considers both value and uncertainty/risk."
+      },
+      "explanation": "Considering both value and risk helps optimize overall project outcomes and learning.",
+      "quiz_tag": "risk_management",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-013",
+      "type": "single",
+      "question": "What is the primary purpose of a Sprint Retrospective?",
+      "points": 2,
+      "correctAnswer": "o-continuous-improvement",
+      "options": [
+        { "id": "o-continuous-improvement", "text": "Continuous improvement of team processes and practices" },
+        { "id": "o-status-reporting", "text": "Status reporting to stakeholders" },
+        { "id": "o-blame-assignment", "text": "Assigning blame for sprint failures" },
+        { "id": "o-planning-next-sprint", "text": "Planning the next sprint's work" }
+      ],
+      "feedback": {
+        "correct": "Correct! Sprint Retrospectives focus on continuous improvement through reflection and adaptation.",
+        "incorrect": "Incorrect. The primary purpose of retrospectives is continuous improvement of team processes."
+      },
+      "explanation": "Retrospectives embody the Agile principle of regular reflection and adjustment for improvement.",
+      "quiz_tag": "retrospectives",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-single-014",
+      "type": "single",
+      "question": "Which estimation technique involves the entire team discussing and agreeing on story point values?",
+      "points": 2,
+      "correctAnswer": "o-planning-poker",
+      "options": [
+        { "id": "o-planning-poker", "text": "Planning Poker" },
+        { "id": "o-expert-judgment", "text": "Expert judgment" },
+        { "id": "o-historical-data", "text": "Historical data analysis" },
+        { "id": "o-manager-assignment", "text": "Manager assignment" }
+      ],
+      "feedback": {
+        "correct": "Correct! Planning Poker involves team discussion and consensus building around estimates.",
+        "incorrect": "Incorrect. Planning Poker is the collaborative estimation technique that involves the entire team."
+      },
+      "explanation": "Planning Poker leverages team wisdom and builds consensus around estimates.",
+      "quiz_tag": "estimation_techniques",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-single-015",
+      "type": "single",
+      "question": "What is the most effective approach for handling changes to requirements during a sprint?",
+      "points": 3,
+      "correctAnswer": "o-evaluate-impact",
+      "options": [
+        { "id": "o-evaluate-impact", "text": "Evaluate impact and adjust sprint scope with team and Product Owner" },
+        { "id": "o-reject-all-changes", "text": "Reject all changes until next sprint" },
+        { "id": "o-accept-all-changes", "text": "Accept all changes immediately" },
+        { "id": "o-defer-to-manager", "text": "Defer decision to project manager" }
+      ],
+      "feedback": {
+        "correct": "Correct! Changes should be evaluated for impact and scope adjusted collaboratively if necessary.",
+        "incorrect": "Incorrect. The most effective approach involves evaluating impact and making collaborative decisions about scope."
+      },
+      "explanation": "Agile welcomes change but requires thoughtful evaluation of impact on sprint goals and commitments.",
+      "quiz_tag": "change_management",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q-planning-single-016",
+      "type": "single",
+      "question": "Which practice best supports continuous delivery in Agile teams?",
+      "points": 2,
+      "correctAnswer": "o-automated-testing",
+      "options": [
+        { "id": "o-automated-testing", "text": "Automated testing and deployment pipelines" },
+        { "id": "o-manual-testing", "text": "Comprehensive manual testing" },
+        { "id": "o-monthly-releases", "text": "Monthly release cycles" },
+        { "id": "o-feature-branches", "text": "Long-lived feature branches" }
+      ],
+      "feedback": {
+        "correct": "Correct! Automated testing and deployment pipelines enable safe, frequent releases.",
+        "incorrect": "Incorrect. Automated testing and deployment pipelines are essential for continuous delivery."
+      },
+      "explanation": "Automation reduces the risk and effort of frequent releases, enabling continuous value delivery.",
+      "quiz_tag": "continuous_delivery",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-005",
+      "type": "multi",
+      "question": "Which techniques help with effective backlog refinement? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-story-splitting", "o-acceptance-criteria", "o-relative-estimation", "o-dependency-mapping"],
+      "options": [
+        { "id": "o-story-splitting", "text": "Story splitting techniques" },
+        { "id": "o-acceptance-criteria", "text": "Defining clear acceptance criteria" },
+        { "id": "o-relative-estimation", "text": "Relative estimation" },
+        { "id": "o-dependency-mapping", "text": "Dependency mapping" },
+        { "id": "o-detailed-design", "text": "Detailed technical design" },
+        { "id": "o-individual-assignment", "text": "Individual task assignment" }
+      ],
+      "feedback": {
+        "correct": "Correct! Effective backlog refinement uses story splitting, acceptance criteria, estimation, and dependency mapping.",
+        "incorrect": "Review backlog refinement techniques: story splitting, acceptance criteria, relative estimation, and dependency mapping."
+      },
+      "explanation": "These techniques help ensure backlog items are ready for sprint planning and development.",
+      "quiz_tag": "backlog_refinement",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-006",
+      "type": "multi",
+      "question": "Which are characteristics of effective Sprint Goals? (Select all that apply)",
+      "points": 4,
+      "correctAnswers": ["o-customer-focused", "o-measurable-outcome", "o-team-commitment", "o-sprint-aligned"],
+      "options": [
+        { "id": "o-customer-focused", "text": "Customer or user focused" },
+        { "id": "o-measurable-outcome", "text": "Describes measurable outcome" },
+        { "id": "o-team-commitment", "text": "Team can commit to achieving it" },
+        { "id": "o-sprint-aligned", "text": "Aligned with sprint capacity" },
+        { "id": "o-technical-tasks", "text": "Lists all technical tasks" },
+        { "id": "o-individual-goals", "text": "Includes individual performance goals" }
+      ],
+      "feedback": {
+        "correct": "Correct! Effective Sprint Goals are customer-focused, measurable, achievable, and aligned with capacity.",
+        "incorrect": "Review Sprint Goal characteristics: customer focus, measurable outcomes, team commitment, and sprint alignment."
+      },
+      "explanation": "Good Sprint Goals provide direction, focus, and motivation for the team during the sprint.",
+      "quiz_tag": "sprint_goals",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-007",
+      "type": "multi",
+      "question": "Which factors should influence release planning decisions? (Select all that apply)",
+      "points": 5,
+      "correctAnswers": ["o-business-value", "o-market-timing", "o-technical-readiness", "o-risk-factors", "o-resource-availability"],
+      "options": [
+        { "id": "o-business-value", "text": "Business value and customer needs" },
+        { "id": "o-market-timing", "text": "Market timing and competitive factors" },
+        { "id": "o-technical-readiness", "text": "Technical readiness and quality" },
+        { "id": "o-risk-factors", "text": "Risk factors and mitigation strategies" },
+        { "id": "o-resource-availability", "text": "Resource availability and capacity" },
+        { "id": "o-calendar-dates", "text": "Fixed calendar dates only" }
+      ],
+      "feedback": {
+        "correct": "Correct! Release planning should consider business value, market timing, technical readiness, risks, and resources.",
+        "incorrect": "Review release planning factors: business value, market timing, technical readiness, risk factors, and resource availability."
+      },
+      "explanation": "Effective release planning balances multiple factors to optimize value delivery and minimize risk.",
+      "quiz_tag": "release_planning",
+      "difficulty": "hard"
+    },
+    {
+      "id": "q-planning-yn-028",
+      "type": "yes_no",
+      "question": "Story points are a relative estimation technique that compares the size and complexity of user stories.",
+      "points": 1,
+      "correctAnswer": "yes",
+      "feedback": {
+        "correct": "Correct! Story points provide relative estimates rather than absolute time estimates for user stories.",
+        "incorrect": "Incorrect. Story points are specifically designed as a relative estimation method."
+      },
+      "explanation": "Relative estimation helps teams avoid the pitfalls of absolute time estimation and improves planning accuracy.",
+      "quiz_tag": "estimation",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-yn-029",
+      "type": "yes_no",
+      "question": "Definition of Done (DoD) should be the same across all teams in an organization to ensure consistency.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! DoD can vary by team based on their context, technology, and specific requirements.",
+        "incorrect": "Incorrect. Teams should adapt their DoD to their specific context while maintaining quality standards."
+      },
+      "explanation": "While organizations may have baseline standards, teams need flexibility to define completion criteria for their context.",
+      "quiz_tag": "definition_of_done",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-017",
+      "type": "single_select",
+      "question": "What is the primary purpose of release planning in Agile?",
+      "points": 2,
+      "options": [
+        { "id": "o-detailed-schedule", "text": "Create a detailed, unchangeable schedule" },
+        { "id": "o-align-expectations", "text": "Align expectations and coordinate multiple teams" },
+        { "id": "o-assign-blame", "text": "Assign responsibility for delays" },
+        { "id": "o-reduce-testing", "text": "Reduce the need for testing" }
+      ],
+      "correctAnswer": "o-align-expectations",
+      "feedback": {
+        "correct": "Correct! Release planning helps align stakeholder expectations and coordinate efforts across teams.",
+        "incorrect": "Review the goals of release planning in creating shared understanding and coordination."
+      },
+      "explanation": "Release planning provides a roadmap while maintaining flexibility to adapt based on learning.",
+      "quiz_tag": "release_planning",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-018",
+      "type": "single_select",
+      "question": "Which estimation technique involves the team discussing stories until reaching consensus?",
+      "points": 2,
+      "options": [
+        { "id": "o-planning-poker", "text": "Planning Poker" },
+        { "id": "o-expert-estimation", "text": "Expert estimation" },
+        { "id": "o-historical-data", "text": "Historical data analysis" },
+        { "id": "o-management-decree", "text": "Management decree" }
+      ],
+      "correctAnswer": "o-planning-poker",
+      "feedback": {
+        "correct": "Correct! Planning Poker facilitates team discussion and consensus-building around estimates.",
+        "incorrect": "Review collaborative estimation techniques that involve team discussion and consensus."
+      },
+      "explanation": "Planning Poker combines individual thinking with group discussion to reach better estimates.",
+      "quiz_tag": "estimation",
+      "difficulty": "easy"
+    },
+    {
+      "id": "q-planning-multi-008",
+      "type": "multi_select",
+      "question": "Which practices support effective backlog management? (Select all that apply)",
+      "points": 3,
+      "options": [
+        { "id": "o-regular-grooming", "text": "Regular backlog grooming/refinement sessions" },
+        { "id": "o-prioritize-value", "text": "Prioritizing based on business value" },
+        { "id": "o-small-stories", "text": "Breaking large stories into smaller ones" },
+        { "id": "o-detailed-upfront", "text": "Detailed specification of all items upfront" },
+        { "id": "o-acceptance-criteria", "text": "Clear acceptance criteria for ready items" }
+      ],
+      "correctAnswers": ["o-regular-grooming", "o-prioritize-value", "o-small-stories", "o-acceptance-criteria"],
+      "feedback": {
+        "correct": "Correct! These practices help maintain a healthy, actionable product backlog.",
+        "incorrect": "Review practices that keep backlogs manageable and valuable for sprint planning."
+      },
+      "explanation": "Effective backlog management requires ongoing attention and refinement rather than upfront completion.",
+      "quiz_tag": "backlog_management",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-030",
+      "type": "yes_no",
+      "question": "Velocity should be used to compare the performance of different Agile teams.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Velocity is team-specific and should not be used for comparing different teams.",
+        "incorrect": "Incorrect. Velocity is a planning tool for individual teams, not a performance comparison metric."
+      },
+      "explanation": "Different teams have different contexts, skills, and story point calibrations, making velocity comparison meaningless.",
+      "quiz_tag": "velocity",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-019",
+      "type": "single_select",
+      "question": "What is the main benefit of timeboxing in Agile planning?",
+      "points": 2,
+      "options": [
+        { "id": "o-reduce-costs", "text": "Reduce project costs" },
+        { "id": "o-force-decisions", "text": "Force decisions and prevent endless planning" },
+        { "id": "o-eliminate-testing", "text": "Eliminate the need for testing" },
+        { "id": "o-increase-scope", "text": "Increase project scope" }
+      ],
+      "correctAnswer": "o-force-decisions",
+      "feedback": {
+        "correct": "Correct! Timeboxing creates urgency and forces teams to make decisions with available information.",
+        "incorrect": "Review the benefits of timeboxing in creating focus and preventing analysis paralysis."
+      },
+      "explanation": "Timeboxing prevents over-planning and encourages adaptive decision-making.",
+      "quiz_tag": "timeboxing",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-009",
+      "type": "multi_select",
+      "question": "Which elements should be included in a well-written user story? (Select all that apply)",
+      "points": 3,
+      "options": [
+        { "id": "o-user-role", "text": "Clear identification of the user role" },
+        { "id": "o-desired-outcome", "text": "Description of desired outcome or goal" },
+        { "id": "o-business-value", "text": "Reason or business value" },
+        { "id": "o-technical-details", "text": "Detailed technical implementation" },
+        { "id": "o-acceptance-criteria", "text": "Acceptance criteria" }
+      ],
+      "correctAnswers": ["o-user-role", "o-desired-outcome", "o-business-value", "o-acceptance-criteria"],
+      "feedback": {
+        "correct": "Correct! Good user stories follow the INVEST criteria and include these essential elements.",
+        "incorrect": "Review the components of well-written user stories and the INVEST criteria."
+      },
+      "explanation": "User stories should focus on user value rather than technical implementation details.",
+      "quiz_tag": "user_stories",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-yn-031",
+      "type": "yes_no",
+      "question": "Sprint commitment means the team promises to deliver exactly the planned scope, regardless of what they learn during the sprint.",
+      "points": 2,
+      "correctAnswer": "no",
+      "feedback": {
+        "correct": "Correct! Sprint commitment is about doing their best work toward the goal, with flexibility to adapt based on learning.",
+        "incorrect": "Incorrect. Sprint commitment involves working toward the sprint goal while remaining adaptive to new information."
+      },
+      "explanation": "Agile emphasizes adaptive planning over rigid commitment to initial plans.",
+      "quiz_tag": "sprint_planning",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-single-020",
+      "type": "single_select",
+      "question": "What is the primary goal of iteration planning?",
+      "points": 2,
+      "options": [
+        { "id": "o-assign-tasks", "text": "Assign tasks to specific team members" },
+        { "id": "o-create-commitment", "text": "Create a shared understanding and commitment to the iteration goal" },
+        { "id": "o-estimate-everything", "text": "Estimate every possible task in detail" },
+        { "id": "o-blame-assignment", "text": "Assign blame for potential delays" }
+      ],
+      "correctAnswer": "o-create-commitment",
+      "feedback": {
+        "correct": "Correct! Iteration planning creates team alignment and commitment to achieving the iteration goal.",
+        "incorrect": "Review the purposes of iteration planning in creating team alignment and shared understanding."
+      },
+      "explanation": "Iteration planning ensures everyone understands what they're working toward and why it matters.",
+      "quiz_tag": "iteration_planning",
+      "difficulty": "medium"
+    },
+    {
+      "id": "q-planning-multi-010",
+      "type": "multi_select",
+      "question": "Which factors should influence story prioritization? (Select all that apply)",
+      "points": 3,
+      "options": [
+        { "id": "o-business-value", "text": "Business value and ROI" },
+        { "id": "o-dependencies", "text": "Dependencies between stories" },
+        { "id": "o-risk-reduction", "text": "Risk reduction and learning opportunities" },
+        { "id": "o-developer-preference", "text": "Developer personal preferences" },
+        { "id": "o-market-timing", "text": "Market timing and competitive advantage" }
+      ],
+      "correctAnswers": ["o-business-value", "o-dependencies", "o-risk-reduction", "o-market-timing"],
+      "feedback": {
+        "correct": "Correct! Prioritization should be based on strategic business factors and delivery constraints.",
+        "incorrect": "Review the factors that should drive product backlog prioritization decisions."
+      },
+      "explanation": "Prioritization balances value delivery with practical constraints and strategic considerations.",
+      "quiz_tag": "prioritization",
+      "difficulty": "medium"
+    }
+  ]
+}

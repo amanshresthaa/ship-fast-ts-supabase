@@ -1,0 +1,2211 @@
+{
+  "questions": [
+    {
+      "id": "1",
+      "type": "single_selection",
+      "question": "You need to build a chatbot that meets the following requirements:\n- Supports chit-chat, knowledge base, and multilingual models\n- Performs sentiment analysis on user messages\n- Selects the best language model automatically\nWhat should you integrate into the chatbot?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. QnA Maker, Language Understanding, and Dispatch"
+        },
+        {
+          "id": "b",
+          "text": "B. Translator, Speech, and Dispatch"
+        },
+        {
+          "id": "c",
+          "text": "C. Language Understanding, Text Analytics, and QnA Maker"
+        },
+        {
+          "id": "d",
+          "text": "D. Text Analytics, Translator, and Dispatch"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Language Understanding: An AI service that allows users to interact with your applications, bots, and loT devices by using natural language. QnA Maker is a cloud-based Natural Language Processing (NLP) service that allows you to create a natural conversational layer over your data. It is used to find the most appropriate answer for any input from your custom knowledge base (KB) of information. Text Analytics: Mine insights in unstructured text using natural language processing (NLP) (no machine learning expertise required). Gain a deeper understanding of customer opinions with sentiment analysis. The Language Detection feature of the Azure Text Analytics REST API evaluates text input.",
+        "incorrect": "Incorrect! Language Understanding, Text Analytics (now part of Azure AI Language), and QnA Maker (now Custom Question Answering) provide the required capabilities."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "2",
+      "type": "single_selection",
+      "question": "Your company wants to reduce how long it takes for employees to log receipts in expense reports. All the receipts are in English. You need to extract top-level information from the receipts, such as the vendor and the transaction total. The solution must minimize development effort. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Custom Vision"
+        },
+        {
+          "id": "b",
+          "text": "B. Personalizer"
+        },
+        {
+          "id": "c",
+          "text": "C. Form Recognizer"
+        },
+        {
+          "id": "d",
+          "text": "D. Computer Vision"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure Form Recognizer (now Azure AI Document Intelligence) is a cognitive service that lets you build automated data processing software using machine learning technology. Identify and extract text, key/value pairs, selection marks, tables, and structure from your documents. The service outputs structured data that includes the relationships in the original file, bounding boxes, confidence and more. Form Recognizer is composed of custom document processing models, prebuilt models for invoices, receipts, IDs and business cards, and the layout model.",
+        "incorrect": "Incorrect! Form Recognizer (now Azure AI Document Intelligence) has a prebuilt receipt model perfect for this scenario with minimal development effort."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "8",
+      "type": "single_selection",
+      "question": "You plan to perform predictive maintenance. You collect IoT sensor data from 100 industrial machines for a year. Each machine has 50 different sensors that generate data at one-minute intervals. In total, you have 5,000 time series datasets. You need to identify unusual values in each time series to help predict machinery failures. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Anomaly Detector"
+        },
+        {
+          "id": "b",
+          "text": "B. Cognitive Search"
+        },
+        {
+          "id": "c",
+          "text": "C. Form Recognizer"
+        },
+        {
+          "id": "d",
+          "text": "D. Custom Vision"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Anomaly Detector is designed to identify unusual patterns or outliers in time series data, making it suitable for detecting potential machinery failures from sensor readings.",
+        "incorrect": "Incorrect! Anomaly Detector is specifically designed for finding anomalies in time series data like sensor readings."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "12",
+      "type": "single_selection",
+      "question": "You are building a language model by using a Language Understanding (classic) service. You create a new Language Understanding (classic) resource. You need to add more contributors. What should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a conditional access policy in Azure Active Directory (Azure AD)"
+        },
+        {
+          "id": "b",
+          "text": "B. the Access control (IAM) page for the authoring resources in the Azure portal"
+        },
+        {
+          "id": "c",
+          "text": "C. the Access control (IAM) page for the prediction resources in the Azure portal"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Contributors are managed via Azure RBAC roles assigned on the LUIS authoring resource in the Azure portal using Access control (IAM).",
+        "incorrect": "Incorrect! Access control for LUIS resources is managed via IAM roles on the authoring resource in the Azure portal."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "16",
+      "type": "single_selection",
+      "question": "You have a Language Understanding resource named lu1. You build and deploy an Azure bot named bot1 that uses lu1. You need to ensure that bot1 adheres to the Microsoft responsible AI principle of inclusiveness. How should you extend bot1?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Implement authentication for bot1."
+        },
+        {
+          "id": "b",
+          "text": "B. Enable active learning for lu1."
+        },
+        {
+          "id": "c",
+          "text": "C. Host lu1 in a container."
+        },
+        {
+          "id": "d",
+          "text": "D. Add Direct Line Speech to bot1."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Inclusiveness: AI systems should empower everyone and engage people. Direct Line Speech enables voice interaction, making the bot accessible to users who prefer or need to interact via speech, thus enhancing inclusiveness.",
+        "incorrect": "Incorrect! Adding speech capabilities via Direct Line Speech enhances accessibility, supporting the principle of inclusiveness."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "19",
+      "type": "single_selection",
+      "question": "You have a factory that produces food products. You need to build a monitoring solution for staff compliance with personal protective equipment (PPE) requirements. The solution must meet the following requirements:\n* Identify staff who have removed masks or safety glasses.\n* Perform a compliance check every 15 minutes.\n* Minimize development effort.\n* Minimize costs.\nWhich service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Face"
+        },
+        {
+          "id": "b",
+          "text": "B. Computer Vision"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Video Analyzer for Media (formerly Video Indexer)"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Face API is an AI service that analyzes faces in images. Features include face detection that perceives facial features and attributes such as a face mask, glasses, or face location in an image, and identification of a person. This aligns well with detecting masks/glasses with minimal development effort using pre-built capabilities.",
+        "incorrect": "Incorrect! The Face API includes attributes for detecting accessories like masks and glasses with minimal effort."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "26",
+      "type": "single_selection",
+      "question": "You have an Azure Video Analyzer for Media (previously Video Indexer) service that is used to provide a search interface over company videos on your company's website. You need to be able to search for videos based on who is present in the video. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Create a person model and associate the model to the videos."
+        },
+        {
+          "id": "b",
+          "text": "B. Create person objects and provide face images for each object."
+        },
+        {
+          "id": "c",
+          "text": "C. Invite the entire staff of the company to Video Indexer."
+        },
+        {
+          "id": "d",
+          "text": "D. Edit the faces in the videos."
+        },
+        {
+          "id": "e",
+          "text": "E. Upload names to a language model."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Video Indexer supports face detection and celebrity recognition. For non-celebrities, you label faces which adds them to your account's Person model. Associating this model during indexing/reindexing allows recognition and search based on known faces.",
+        "incorrect": "Incorrect! Video Indexer uses Person models to recognize and search for specific individuals in videos."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "33",
+      "type": "single_selection",
+      "question": "You need to build a solution that will use optical character recognition (OCR) to scan sensitive documents by using the Computer Vision API. The solution must NOT be deployed to the public cloud. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Build an on-premises web app to query the Computer Vision endpoint."
+        },
+        {
+          "id": "b",
+          "text": "B. Host the Computer Vision endpoint in a container on an on-premises server."
+        },
+        {
+          "id": "c",
+          "text": "C. Host an exported Open Neural Network Exchange (ONNX) model on an on-premises server."
+        },
+        {
+          "id": "d",
+          "text": "D. Build an Azure web app to query the Computer Vision endpoint."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Cognitive Services, including Computer Vision's Read API (OCR), can be deployed in Docker containers, allowing them to run on-premises, meeting the requirement of not deploying to the public cloud while using the standard API.",
+        "incorrect": "Incorrect! Running the Computer Vision container on-premises keeps data processing local."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "41",
+      "type": "single_selection",
+      "question": "You have the following C# method for creating Azure Cognitive Services resources programmatically.\n```csharp\nstatic void create_resource(CognitiveServicesManagementClient client, string resource_group_name, string resource_name, string kind, string account_tier, string location)\n{\n    CognitiveServicesAccount parameters = new CognitiveServicesAccount(null, null, kind, location, resource_name, new CognitiveServicesAccountProperties(), new Sku(account_tier));\n    var result = client.Accounts.Create(resource_group_name, resource_name, parameters);\n}\n```\nYou need to call the method to create a free Azure resource in the West US Azure region. The resource will be used to generate captions of images automatically. Which code should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(client, \"RG1\", \"res1\", \"ComputerVision\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(client, \"RG1\", \"res1\", \"CustomVision.Prediction\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(client, \"RG1\", \"res1\", \"ComputerVision\", \"S0\", \"westus\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(client, \"RG1\", \"res1\", \"CustomVision.Prediction\", \"S0\", \"westus\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Image captioning is a feature of the Computer Vision service ('Kind' = 'ComputerVision'). 'F0' specifies the Free pricing tier. 'westus' is the location.",
+        "incorrect": "Incorrect! Computer Vision provides image captioning, F0 is the free tier, and westus is the location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "42",
+      "type": "single_selection",
+      "question": "You successfully run the following HTTP request.\nPOST https://management.azure.com/subscriptions/18c51a87-3a69-47a8-aedc-a54745f708a1/resourceGroups/RG1/providers/Microsoft.CognitiveServices/accounts/contoso1/regenerateKey?api-version=2017-04-18\nBody{\"keyName\": \"Key2\"}\nWhat is the result of the request?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. A key for Azure Cognitive Services was generated in Azure Key Vault."
+        },
+        {
+          "id": "b",
+          "text": "B. A new query key was generated."
+        },
+        {
+          "id": "c",
+          "text": "C. The primary subscription key and the secondary subscription key were rotated."
+        },
+        {
+          "id": "d",
+          "text": "D. The secondary subscription key was reset."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The `regenerateKey` action with `keyName: Key2` specifically regenerates (resets) the secondary subscription key for the specified Cognitive Services account.",
+        "incorrect": "Incorrect! Specifying 'Key2' targets the secondary subscription key for regeneration."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "43",
+      "type": "single_selection",
+      "question": "You are developing a new sales system that will process the video and text from a public-facing website. You plan to notify users that their data has been processed by the sales system. Which responsible AI principle does this help meet?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. transparency"
+        },
+        {
+          "id": "b",
+          "text": "B. fairness"
+        },
+        {
+          "id": "c",
+          "text": "C. inclusiveness"
+        },
+        {
+          "id": "d",
+          "text": "D. reliability and safety"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Transparency involves making AI systems understandable. Notifying users about data processing is a key aspect of being transparent about how the system operates and uses their data.",
+        "incorrect": "Incorrect! Informing users how their data is used directly supports the principle of Transparency."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "46",
+      "type": "single_selection",
+      "question": "You have receipts that are accessible from a URL. You need to extract data from the receipts by using Form Recognizer and the SDK. The solution must use a prebuilt model. Which client and method should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. the FormRecognizerClient client and the StartRecognizeContentFromUri method"
+        },
+        {
+          "id": "b",
+          "text": "B. the FormTrainingClient client and the StartRecognizeContentFromUri method"
+        },
+        {
+          "id": "c",
+          "text": "C. the FormRecognizerClient client and the StartRecognizeReceiptsFromUri method"
+        },
+        {
+          "id": "d",
+          "text": "D. the FormTrainingClient client and the StartRecognizeReceiptsFromUri method"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The `FormRecognizerClient` is used for analysis operations. The `StartRecognizeReceiptsFromUri` method specifically targets the prebuilt receipt model and accepts a URL as input.",
+        "incorrect": "Incorrect! Use FormRecognizerClient for analysis and the specific StartRecognizeReceiptsFromUri for the prebuilt receipt model with URL input."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "47",
+      "type": "single_selection",
+      "question": "You have a collection of 50,000 scanned documents that contain text. You plan to make the text available through Azure Cognitive Search. You need to configure an enrichment pipeline to perform optical character recognition (OCR) and text analytics. The solution must minimize costs. What should you attach to the skillset?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a new Computer Vision resource"
+        },
+        {
+          "id": "b",
+          "text": "B. a free (Limited enrichments) Cognitive Services resource"
+        },
+        {
+          "id": "c",
+          "text": "C. an Azure Machine Learning Designer pipeline"
+        },
+        {
+          "id": "d",
+          "text": "D. a new Cognitive Services resource that uses the S0 pricing tier"
+        }
+      ],
+      "feedback": {
+        "correct": "Incorrect! The free Cognitive Services tier allows only a very limited number of enrichments per day (typically 20 documents total for all skills). For 50,000 documents, a paid tier (like S0) is required. The lowest cost option that can realistically process this volume is S0.",
+        "incorrect": "Correct! Cognitive Search skillsets require an attached Cognitive Services multi-service resource for billing enrichments like OCR and text analytics. While the Free tier exists, its limits (e.g., 20 documents per indexer per day) are far too low for 50,000 documents. The S0 tier is the standard paid tier needed for this volume, making D the most practical answer, although B is technically the 'cheapest' option if processing time is not a constraint and the user intends to process over many months/years, which is unlikely."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "51",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Search instance that indexes purchase orders by using Form Recognizer. You need to analyze the extracted information by using Microsoft Power BI. The solution must minimize development effort. What should you add to the indexer?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a projection group"
+        },
+        {
+          "id": "b",
+          "text": "B. a table projection"
+        },
+        {
+          "id": "c",
+          "text": "C. a file projection"
+        },
+        {
+          "id": "d",
+          "text": "D. an object projection"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Knowledge Store projections allow enriched data from the indexing pipeline to be stored outside the search index, typically in Azure Storage. A 'table' projection specifically stores data in Azure Table Storage in a structured format easily consumable by tools like Power BI with minimal effort.",
+        "incorrect": "Incorrect! Table projections store enriched data in Azure Table Storage, which Power BI can easily connect to."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "64",
+      "type": "single_selection",
+      "question": "You have an Azure IoT hub that receives sensor data from machinery. You need to build an app that will perform the following actions:\n- Perform anomaly detection across multiple correlated sensors.\n- Identify the root cause of process stops.\n- Send incident alerts.\nThe solution must minimize development time. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure Metrics Advisor"
+        },
+        {
+          "id": "b",
+          "text": "B. Form Recognizer"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Machine Learning"
+        },
+        {
+          "id": "d",
+          "text": "D. Anomaly Detector"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure Metrics Advisor is designed for time series monitoring, multi-dimensional analysis, anomaly detection across correlated metrics, root cause analysis, and alerting, minimizing development effort for this scenario.",
+        "incorrect": "Incorrect! Metrics Advisor is specifically designed for multivariate anomaly detection, root cause analysis, and alerting on time series data."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "65",
+      "type": "single_selection",
+      "question": "You have an app that analyzes images by using the Computer Vision API. You need to configure the app to provide an output for users who are vision impaired. The solution must provide the output in complete sentences. Which API call should you perform?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. readInStreamAsync"
+        },
+        {
+          "id": "b",
+          "text": "B. analyzeImagesByDomainInStreamAsync"
+        },
+        {
+          "id": "c",
+          "text": "C. tagImageInStreamAsync"
+        },
+        {
+          "id": "d",
+          "text": "D. describeImageInStreamAsync"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Describe Image operation generates a human-readable sentence describing the image content, suitable for alt text or accessibility.",
+        "incorrect": "Incorrect! The Describe Image API generates full-sentence descriptions of images."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "67",
+      "type": "single_selection",
+      "question": "You are building an AI solution that will use Sentiment Analysis results from surveys to calculate bonuses for customer service staff. You need to ensure that the solution meets the Microsoft responsible AI principles. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Add a human review and approval step before making decisions that affect the staff's financial situation."
+        },
+        {
+          "id": "b",
+          "text": "B. Include the Sentiment Analysis results when surveys return a low confidence score."
+        },
+        {
+          "id": "c",
+          "text": "C. Use all the surveys, including surveys by customers who requested that their account be deleted and their data be removed."
+        },
+        {
+          "id": "d",
+          "text": "D. Publish the raw survey data to a central location and provide the staff with access to the location."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! This aligns with the principles of Accountability and Fairness, ensuring that automated decisions with significant impact on individuals are subject to human oversight and intervention, mitigating potential biases or errors from the AI.",
+        "incorrect": "Incorrect! Adding human oversight for high-stakes decisions aligns with Accountability and Fairness."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "68",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains a Language service resource named ta1 and a virtual network named vnet1. You need to ensure that only resources in vnet1 can access ta1. What should you configure?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a network security group (NSG) for vnet1"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure Firewall for vnet1"
+        },
+        {
+          "id": "c",
+          "text": "C. the virtual network settings for ta1"
+        },
+        {
+          "id": "d",
+          "text": "D. a Language service container for ta1"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Configuring the networking settings directly on the Language service resource (ta1), specifically by setting up Private Endpoints or Service Endpoints linked to vnet1 and potentially disabling public access, restricts access to the specified VNet.",
+        "incorrect": "Incorrect! Configuring network settings (like Private Endpoints or VNet service endpoints) on the Language service resource itself restricts access."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "69",
+      "type": "single_selection",
+      "question": "You are developing a monitoring system that will analyze engine sensor data, such as rotation speed, angle, temperature, and pressure. The system must generate an alert in response to atypical values.",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Application Insights in Azure Monitor"
+        },
+        {
+          "id": "b",
+          "text": "B. metric alerts in Azure Monitor"
+        },
+        {
+          "id": "c",
+          "text": "C. Multivariate Anomaly Detection"
+        },
+        {
+          "id": "d",
+          "text": "D. Univariate Anomaly Detection"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Multivariate Anomaly Detection (available in Anomaly Detector API or Metrics Advisor) is designed to analyze correlations between multiple time series (sensors) to find systemic anomalies.",
+        "incorrect": "Incorrect! Analyzing multiple correlated sensors requires Multivariate Anomaly Detection."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "70",
+      "type": "single_selection",
+      "question": "You have an app named App1 that uses an Azure Cognitive Services model to identify anomalies in a time series data stream. You need to run App1 in a location that has limited connectivity. The solution must minimize costs. What should you use to host the model?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure Kubernetes Service (AKS)"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure Container Instances"
+        },
+        {
+          "id": "c",
+          "text": "C. a Kubernetes cluster hosted in an Azure Stack Hub integrated system"
+        },
+        {
+          "id": "d",
+          "text": "D. the Docker Engine"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! ACI allows running single containers without managing underlying infrastructure, offering a cost-effective and simpler way to host the model container, suitable for scenarios like limited connectivity where complex orchestration might not be needed.",
+        "incorrect": "Incorrect! Azure Container Instances (ACI) provides a simple, cost-effective way to run individual containers, suitable for edge scenarios with limited connectivity."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "72",
+      "type": "single_selection",
+      "question": "You are building a solution that will detect anomalies in sensor data from the previous 24 hours. You need to ensure that the solution scans the entire dataset, at the same time, for anomalies. Which type of detection should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. batch"
+        },
+        {
+          "id": "b",
+          "text": "B. streaming"
+        },
+        {
+          "id": "c",
+          "text": "C. change points"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Batch detection processes a whole dataset (like the previous 24 hours) at once.",
+        "incorrect": "Incorrect! Analyzing an entire existing dataset (previous 24 hours) at once is batch detection."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "75",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains an Anomaly Detector resource. You deploy a Docker host server named Server1 to the on-premises network. You need to host an instance of the Anomaly Detector service on Server1. Which parameter should you include in the docker run command?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Fluentd"
+        },
+        {
+          "id": "b",
+          "text": "B. Billing"
+        },
+        {
+          "id": "c",
+          "text": "C. Http Proxy"
+        },
+        {
+          "id": "d",
+          "text": "D. Mounts"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'Billing' parameter is required for all Cognitive Services containers to specify the endpoint of the associated Azure resource for usage metering.",
+        "incorrect": "Incorrect! The Billing endpoint parameter is mandatory for running Cognitive Services containers."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "86",
+      "type": "single_selection",
+      "question": "You have an Azure Video Analyzer for Media (previously Video Indexer) service that is used to provide a search interface over company videos on your company's website. You need to be able to search for videos based on who is present in the video. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Create a person model and associate the model to the videos."
+        },
+        {
+          "id": "b",
+          "text": "B. Create person objects and provide face images for each object."
+        },
+        {
+          "id": "c",
+          "text": "C. Invite the entire staff of the company to Video Indexer."
+        },
+        {
+          "id": "d",
+          "text": "D. Edit the faces in the videos."
+        },
+        {
+          "id": "e",
+          "text": "E. Upload names to a language model."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Video Indexer uses Person models to store known faces. You train this model by labeling unknown faces in videos. Associating the model during indexing allows recognition and searching by name.",
+        "incorrect": "Incorrect! Create and train a Person Model within Video Indexer by labeling faces."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "92",
+      "type": "single_selection",
+      "question": "Your company uses an Azure Cognitive Services solution to detect faces in uploaded images. The method uses the Face API Detect endpoint with `detectionModel=detection_01`. You discover that the solution frequently fails to detect faces in blurred images and in images that contain sideways faces. You need to increase the likelihood that the solution can detect faces in blurred images and images that contain sideways faces. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Use a different version of the Face API."
+        },
+        {
+          "id": "b",
+          "text": "B. Use the Computer Vision service instead of the Face service."
+        },
+        {
+          "id": "c",
+          "text": "C. Use the Identify method instead of the Detect method."
+        },
+        {
+          "id": "d",
+          "text": "D. Change the detection model."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Detection models `detection_02` and `detection_03` offer improved accuracy for challenging images, including blur, sideways orientations, and small faces, compared to `detection_01`. Changing the `detectionModel` parameter in the API call is the correct approach.",
+        "incorrect": "Incorrect! Newer detection models (`detection_02`, `detection_03`) are better at handling challenging images like blurred or sideways faces."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "93",
+      "type": "single_selection",
+      "question": "You have the following Python function for creating Azure Cognitive Services resources programmatically.\n```python\ndef create_resource(resource_group_name, resource_name, kind, account_tier, location):\n    parameters = CognitiveServicesAccount(sku=Sku(name=account_tier), kind=kind, location=location, properties={})\n    client = CognitiveServicesManagementClient(credential, subscription_id)\n    result = client.accounts.begin_create(resource_group_name, resource_name, parameters).result()\n```\nYou need to call the function to create a free Azure resource in the West US Azure region. The resource will be used to generate captions of images automatically. Which code should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(\"RG1\", \"res1\", \"ComputerVision\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(\"RG1\", \"res1\", \"CustomVision.Prediction\", \"F0\", \"westus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(\"RG1\", \"res1\", \"ComputerVision\", \"S0\", \"westus\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(\"RG1\", \"res1\", \"CustomVision.Prediction\", \"S0\", \"westus\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Image captioning is part of 'ComputerVision'. 'F0' represents the Free tier. 'westus' is the location.",
+        "incorrect": "Incorrect! Image captioning is provided by ComputerVision, F0 is the free tier, and westus is the location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "96",
+      "type": "single_selection",
+      "question": "You need to build a solution that will use optical character recognition (OCR) to scan sensitive documents by using the Computer Vision API. The solution must NOT be deployed to the public cloud. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Build an on-premises web app to query the Computer Vision endpoint."
+        },
+        {
+          "id": "b",
+          "text": "B. Host the Computer Vision endpoint in a container on an on-premises server."
+        },
+        {
+          "id": "c",
+          "text": "C. Host an exported Open Neural Network Exchange (ONNX) model on an on-premises server."
+        },
+        {
+          "id": "d",
+          "text": "D. Build an Azure web app to query the Computer Vision endpoint."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Running the Computer Vision Read API container on-premises keeps the data and processing within the local network, meeting the requirement.",
+        "incorrect": "Incorrect! Running the Computer Vision container on-premises allows local processing without sending data to the public cloud."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "97",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Search solution and a collection of handwritten letters stored as JPEG files. You plan to index the collection. The solution must ensure that queries can be performed on the contents of the letters. You need to create an indexer that has a skillset. Which skill should you include?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. image analysis"
+        },
+        {
+          "id": "b",
+          "text": "B. optical character recognition (OCR)"
+        },
+        {
+          "id": "c",
+          "text": "C. key phrase extraction"
+        },
+        {
+          "id": "d",
+          "text": "D. document extraction"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The OCR skill (specifically using its 'printed' or 'handwritten' mode) is designed to extract text content from images, including scanned documents and handwritten letters, making it searchable.",
+        "incorrect": "Incorrect! The OCR skill extracts text (including handwritten) from images, making it searchable."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "99",
+      "type": "single_selection",
+      "question": "You have an app that captures live video of exam candidates. You need to use the Face service to validate that the subjects of the videos are real people.",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Call the face detection API and retrieve the face rectangle by using the FaceRectangle attribute."
+        },
+        {
+          "id": "b",
+          "text": "B. Call the face detection API repeatedly and check for changes to the FaceAttributes.HeadPose attribute."
+        },
+        {
+          "id": "c",
+          "text": "C. Call the face detection API and use the FaceLandmarks attribute to calculate the distance between pupils."
+        },
+        {
+          "id": "d",
+          "text": "D. Call the face detection API repeatedly and check for changes to the FaceAttributes.Accessories attribute."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Natural head movements (changes in yaw, pitch, roll in HeadPose) over a short time suggest a live person rather than a static photo. While not foolproof, it's a basic liveness check available through standard attributes.",
+        "incorrect": "Incorrect! Checking for natural changes in head pose over time is a basic method to infer liveness."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "100",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains an AI enrichment pipeline in Azure Cognitive Search and an Azure Storage account that has 10 GB of scanned documents and images. You need to index the documents and images in the storage account. The solution must minimize how long it takes to build the index. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. From the Azure portal, configure parallel indexing."
+        },
+        {
+          "id": "b",
+          "text": "B. From the Azure portal, configure scheduled indexing."
+        },
+        {
+          "id": "c",
+          "text": "C. Configure field mappings by using the REST API."
+        },
+        {
+          "id": "d",
+          "text": "D. Create a text-based indexer by using the REST API."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Parallel indexing allows the indexer to process multiple documents concurrently, significantly speeding up the indexing process for large datasets, provided the search service has sufficient scale (partitions/replicas).",
+        "incorrect": "Incorrect! Parallel indexing processes multiple documents simultaneously, reducing overall indexing time."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "102",
+      "type": "single_selection",
+      "question": "You have a mobile app that manages printed forms. You need the app to send images of the forms directly to Forms Recognizer to extract relevant information. For compliance reasons, the image files must not be stored in the cloud. In which format should you send the images to the Form Recognizer API endpoint?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. raw image binary"
+        },
+        {
+          "id": "b",
+          "text": "B. form URL encoded"
+        },
+        {
+          "id": "c",
+          "text": "C. JSON"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! To avoid storing the image in the cloud (e.g., by providing a URL), the image can be sent directly in the request body as raw binary data (octet-stream). This meets the compliance requirement.",
+        "incorrect": "Incorrect! Sending the image as raw binary data in the request body avoids storing it externally."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "103",
+      "type": "single_selection",
+      "question": "You plan to build an app that will generate a list of tags for uploaded images. The app must meet the following requirements:\n- Generate tags in a user's preferred language.\n- Support English, French, and Spanish.\n- Minimize development effort.\nYou need to build a function that will generate the tags for the app. Which Azure service endpoint should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Content Moderator Image Moderation"
+        },
+        {
+          "id": "b",
+          "text": "B. Custom Vision image classification"
+        },
+        {
+          "id": "c",
+          "text": "C. Computer Vision Image Analysis"
+        },
+        {
+          "id": "d",
+          "text": "D. Custom Translator"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Computer Vision Image Analysis endpoint (specifically the 'tag' feature) provides thousands of recognizable objects, living things, scenery, and actions. It supports multiple languages for the output tags with minimal development effort using a pre-built model.",
+        "incorrect": "Incorrect! Computer Vision Image Analysis provides pre-built image tagging with multi-language support."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "107",
+      "type": "single_selection",
+      "question": "You are building an app that will include one million scanned magazine articles. Each article will be stored as an image file. You need to configure the app to extract text from the images. The solution must minimize development effort.",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Computer Vision Image Analysis"
+        },
+        {
+          "id": "b",
+          "text": "B. the Read API in Computer Vision"
+        },
+        {
+          "id": "c",
+          "text": "C. Form Recognizer"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure Cognitive Service for Language"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Read API (also known as OCR in v3.2+) is specifically designed for extracting large amounts of printed and handwritten text from images and multi-page PDF documents, making it ideal for scanned articles with minimal development effort using the pre-built model.",
+        "incorrect": "Incorrect! The Computer Vision Read API (OCR) is optimized for extracting text from dense documents like articles."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "108",
+      "type": "single_selection",
+      "question": "You have a 20-GB video file named File1.avi that is stored on a local drive. You need to index File1.avi by using the Azure Video Indexer website. What should you do first?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Upload File1.avi to an Azure Storage queue."
+        },
+        {
+          "id": "b",
+          "text": "B. Upload File1.avi to the Azure Video Indexer website."
+        },
+        {
+          "id": "c",
+          "text": "C. Upload File1.avi to Microsoft OneDrive."
+        },
+        {
+          "id": "d",
+          "text": "D. Upload File1.avi to the www.youtube.com webpage."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Video Indexer website provides an interface to directly upload video files from a local drive or provide a URL for processing. Note: There might be size limits for direct upload vs URL, but upload is the first step.",
+        "incorrect": "Incorrect! The Video Indexer portal allows direct file uploads for processing."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "115",
+      "type": "single_selection",
+      "question": "You are building a Conversational Language Understanding model for an e-commerce chatbot. Users can speak or type their billing address when prompted by the chatbot. You need to construct an entity to capture billing addresses. Which entity type should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. machine learned"
+        },
+        {
+          "id": "b",
+          "text": "B. Regex"
+        },
+        {
+          "id": "c",
+          "text": "C. list"
+        },
+        {
+          "id": "d",
+          "text": "D. Pattern.any"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! A billing address is complex and has varied structure ('123 Main St, Anytown, CA 90210', 'PO Box 100', etc.). A machine learned entity is best suited for learning to identify such complex, context-dependent entities from examples.",
+        "incorrect": "Incorrect! Addresses have variable structure and context, making machine learned entities the best choice."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "118",
+      "type": "single_selection",
+      "question": "You are building a conversational language understanding model. You need to enable active learning.",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Add show-all-intents=true to the prediction endpoint query."
+        },
+        {
+          "id": "b",
+          "text": "B. Enable speech priming."
+        },
+        {
+          "id": "c",
+          "text": "C. Add log=true to the prediction endpoint query."
+        },
+        {
+          "id": "d",
+          "text": "D. Enable sentiment analysis."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Setting the `log=true` query parameter when calling the prediction endpoint logs the utterance, allowing it to be reviewed later for active learning suggestions.",
+        "incorrect": "Incorrect! Setting log=true logs endpoint utterances, enabling active learning."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "120",
+      "type": "single_selection",
+      "question": "You are building a Language Understanding model for an e-commerce platform. You need to construct an entity to capture billing addresses. Which entity type should you use for the billing address?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. machine learned"
+        },
+        {
+          "id": "b",
+          "text": "B. Regex"
+        },
+        {
+          "id": "c",
+          "text": "C. geographyV2"
+        },
+        {
+          "id": "d",
+          "text": "D. Pattern.any"
+        },
+        {
+          "id": "e",
+          "text": "E. list"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! As explained in Q115, addresses are complex and variable, best handled by machine learned entities trained on examples.",
+        "incorrect": "Incorrect! Machine learned entities are best for complex, variable data like addresses."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "121",
+      "type": "single_selection",
+      "question": "You need to upload speech samples to a Speech Studio project for use in training. How should you upload the samples?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Combine the speech samples into a single audio file in the .wma format and upload the file."
+        },
+        {
+          "id": "b",
+          "text": "B. Upload a .zip file that contains a collection of audio files in the .wav format and a corresponding text transcript file."
+        },
+        {
+          "id": "c",
+          "text": "C. Upload individual audio files in the FLAC format and manually upload a corresponding transcript in Microsoft Word format."
+        },
+        {
+          "id": "d",
+          "text": "D. Upload individual audio files in the .wma format."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Speech Studio accepts datasets packaged as a .zip file containing multiple audio files (often .wav or .mp3) and a single transcript file mapping filenames to their text content.",
+        "incorrect": "Incorrect! Speech Studio typically requires a zip file containing audio files (e.g., WAV) and a single transcript text file."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "127",
+      "type": "single_selection",
+      "question": "You are training a Language Understanding model for a user support system. You create the first intent named GetContactDetails and add 200 examples. You need to decrease the likelihood of a false positive.",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enable active learning."
+        },
+        {
+          "id": "b",
+          "text": "B. Add a machine learned entity."
+        },
+        {
+          "id": "c",
+          "text": "C. Add additional examples to the GetContactDetails intent."
+        },
+        {
+          "id": "d",
+          "text": "D. Add examples to the None intent."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Adding varied examples of utterances that should *not* trigger the 'GetContactDetails' intent (or any other defined intent) to the 'None' intent helps the model learn the boundaries between intents and reduces the chance of misclassifying irrelevant utterances (false positives).",
+        "incorrect": "Incorrect! Adding examples to the None intent helps the model learn what is *not* a specific intent, reducing false positives."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "129",
+      "type": "single_selection",
+      "question": "You have the following C# method.\n```csharp\nstatic void create_resource(string resource_group_name, string resource_name, string kind, string account_tier, string location)\n{\n    CognitiveServicesManagementClient client = /* Assume initialized */;\n    CognitiveServicesAccount parameters = new CognitiveServicesAccount(sku: new Sku(account_tier), kind: kind, location: location);\n    var result = client.Accounts.BeginCreate(resource_group_name, resource_name, parameters).Result;\n}\n```\nYou need to deploy an Azure resource to the East US Azure region. The resource will be used to perform sentiment analysis. How should you call the method?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"S0\", \"eastus\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"S0\", \"eastus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"Standard\", \"East US\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"Standard\", \"East US\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Sentiment analysis is part of the 'TextAnalytics' service kind (or the newer 'Language' kind). 'S0' is a valid standard tier name. 'eastus' is the location.",
+        "incorrect": "Incorrect! Sentiment analysis falls under the 'TextAnalytics' (or 'Language') kind, 'S0' is a standard tier, and 'eastus' is the location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "130",
+      "type": "single_selection",
+      "question": "You build a Conversational Language Understanding model by using the Language Services portal. You export the model as a JSON file as shown in the following sample:\n```json\n{\n  \"text\": \"average amount of rain by month at chicago last year\",\n  \"intent\": \"Weather.CheckWeatherValue\",\n  \"entities\": [\n    {\n      \"entity\": \"Weather.WeatherRange\",\n      \"startPos\": 0,\n      \"endPos\": 6,\n      \"children\": []\n    },\n    {\n      \"entity\": \"Weather.WeatherCondition\",\n      \"startPos\": 18,\n      \"endPos\": 21,\n      \"children\": []\n    },\n    {\n      \"entity\": \"Weather.Historic\",\n      \"startPos\": 23,\n      \"endPos\": 30,\n      \"children\": []\n    }\n  ]\n}\n```\nTo what does the Weather.Historic entity correspond in the utterance?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. by month"
+        },
+        {
+          "id": "b",
+          "text": "B. chicago"
+        },
+        {
+          "id": "c",
+          "text": "C. rain"
+        },
+        {
+          "id": "d",
+          "text": "D. location"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'Weather.Historic' entity has `startPos: 23` and `endPos: 30`. Counting characters in the utterance 'average amount of rain by month at chicago last year', index 23 starts at 'b' in 'by month' and index 30 is the end of 'month'.",
+        "incorrect": "Incorrect! The start and end positions (23 to 30) correspond to 'by month' in the utterance."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "131",
+      "type": "single_selection",
+      "question": "You are examining the Text Analytics output of an application. The text analyzed is: \u201cOur tour guide took us up the Space Needle during our trip to Seattle last week.\u201d The response contains the data shown in the following table:\nText | Category | ConfidenceScore\n---|---|---\nTour guide | PersonType | 0.45\nSpace Needle | Location | 0.38\nTrip | Event | 0.78\nSeattle | Location | 0.78\nLast week | DateTime | 0.80\nWhich Text Analytics API is used to analyze the text?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Entity Linking"
+        },
+        {
+          "id": "b",
+          "text": "B. Named Entity Recognition"
+        },
+        {
+          "id": "c",
+          "text": "C. Sentiment Analysis"
+        },
+        {
+          "id": "d",
+          "text": "D. Key Phrase Extraction"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Named Entity Recognition (NER) identifies and categorizes entities in text into predefined categories like Person, Location, Organization, DateTime, Event, etc., which matches the output shown.",
+        "incorrect": "Incorrect! Identifying and categorizing entities like PersonType, Location, Event, and DateTime is Named Entity Recognition (NER)."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "134",
+      "type": "single_selection",
+      "question": "You have the following data sources:\n- Finance: On-premises Microsoft SQL Server database\n- Sales: Azure Cosmos DB using the Core (SQL) API\n- Logs: Azure Table storage\n- HR: Azure SQL database\nYou need to ensure that you can search all the data by using the Azure Cognitive Search REST API. What should you do?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Migrate the data in HR to Azure Blob storage."
+        },
+        {
+          "id": "b",
+          "text": "B. Migrate the data in HR to the on-premises SQL server."
+        },
+        {
+          "id": "c",
+          "text": "C. Export the data in Finance to Azure Data Lake Storage."
+        },
+        {
+          "id": "d",
+          "text": "D. Ingest the data in Logs into Azure Sentinel."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! On-premises SQL Server is NOT a directly supported data source for Cognitive Search indexers. Azure Cosmos DB (SQL API), Azure Table Storage, and Azure SQL Database ARE supported. To make the Finance data searchable via a standard indexer, it must be moved to a supported Azure source like Azure SQL DB, Azure Blob Storage, or Azure Data Lake Storage Gen2.",
+        "incorrect": "Incorrect! On-premises SQL Server is not a directly supported data source for Cognitive Search indexers. Moving the Finance data to a supported Azure source like ADLS Gen2 is necessary."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "137",
+      "type": "single_selection",
+      "question": "You have a Language service resource that performs the following:\n- Sentiment analysis\n- Named Entity Recognition (NER)\n- Personally Identifiable Information (PII) identification\nYou need to prevent the resource from persisting input data once the data is analyzed. Which query parameter in the Language service API should you configure?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. model-version"
+        },
+        {
+          "id": "b",
+          "text": "B. piiCategories"
+        },
+        {
+          "id": "c",
+          "text": "C. showStats"
+        },
+        {
+          "id": "d",
+          "text": "D. loggingOptOut"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Setting `loggingOptOut=true` in the API request prevents the service from logging the input text for 48 hours, helping with compliance and privacy.",
+        "incorrect": "Incorrect! The loggingOptOut parameter prevents the service from logging input text."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "138",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Services model named Model1 that identifies the intent of text input. You develop an app in C# named App1. You need to configure App1 to use Model1. Which package should you add to App1?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Universal.Microsoft.CognitiveServices.Speech"
+        },
+        {
+          "id": "b",
+          "text": "B. SpeechServicesToolkit"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure.AI.Language.Conversations"
+        },
+        {
+          "id": "d",
+          "text": "D. Xamarin.Cognitive.Speech"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! This is the correct .NET SDK package for interacting with the newer Conversational Language Understanding (CLU) service, which identifies intents and entities.",
+        "incorrect": "Incorrect! The Azure.AI.Language.Conversations NuGet package contains the SDK for Conversational Language Understanding."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "140",
+      "type": "single_selection",
+      "question": "You need to measure the public perception of your brand on social media by using natural language processing. Which Azure service should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Language service"
+        },
+        {
+          "id": "b",
+          "text": "B. Content Moderator"
+        },
+        {
+          "id": "c",
+          "text": "C. Computer Vision"
+        },
+        {
+          "id": "d",
+          "text": "D. Form Recognizer"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Azure Cognitive Service for Language includes Sentiment Analysis and Opinion Mining features, which are designed to analyze text (like social media posts) and determine the positive, negative, or neutral sentiment, effectively measuring public perception.",
+        "incorrect": "Incorrect! The Language service's Sentiment Analysis feature is ideal for measuring public perception from text."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "142",
+      "type": "single_selection",
+      "question": "You have an Azure Cognitive Search instance that indexes purchase orders by using Form Recognizer. You need to analyze the extracted information by using Microsoft Power BI. The solution must minimize development effort. What should you add to the indexer?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a projection group"
+        },
+        {
+          "id": "b",
+          "text": "B. a table projection"
+        },
+        {
+          "id": "c",
+          "text": "C. a file projection"
+        },
+        {
+          "id": "d",
+          "text": "D. an object projection"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Knowledge Store table projections save enriched data (like Form Recognizer output) into Azure Table Storage. Power BI has built-in connectors for Table Storage, making it easy to analyze the structured data with minimal effort.",
+        "incorrect": "Incorrect! Table projections output structured data to Azure Table Storage, easily consumable by Power BI."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "143",
+      "type": "single_selection",
+      "question": "You are building a social media extension that will convert text to speech. The solution must meet the following requirements:\n- Support messages of up to 400 characters.\n- Provide users with multiple voice options.\n- Minimize costs.\nYou create an Azure Cognitive Services resource.\nWhich Speech API endpoint provides users with the available voice options?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. https://[region].api.cognitive.microsoft.com/speechtotext/v3.0/models/base"
+        },
+        {
+          "id": "b",
+          "text": "B. https://[region].customvoice.api.speech.microsoft.com/api/texttospeech/v3.0/longaudiosynthesis/voices"
+        },
+        {
+          "id": "c",
+          "text": "C. https://[region].tts.speech.microsoft.com/cognitiveservices/voices/list"
+        },
+        {
+          "id": "d",
+          "text": "D. https://[region].voice.speech.microsoft.com/cognitiveservices/v1?deploymentId={deploymentId}"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! This REST API endpoint specifically lists the available standard and neural Text-to-Speech voices for a given region.",
+        "incorrect": "Incorrect! The /voices/list endpoint provides the available TTS voices."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "148",
+      "type": "single_selection",
+      "question": "You are enriching your Azure Cognitive Search service with knowledge store projections. The main requirement is to save the image extracted from the documents. Which type of projection you need to use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Tables"
+        },
+        {
+          "id": "b",
+          "text": "B. Objects"
+        },
+        {
+          "id": "c",
+          "text": "C. Files"
+        },
+        {
+          "id": "d",
+          "text": "D. Message"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! File projections are specifically designed to save binary files, such as normalized images extracted during the skillset execution (e.g., by the OCR skill), into Azure Blob Storage.",
+        "incorrect": "Incorrect! File projections are used to save binary files like images extracted during enrichment."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "149",
+      "type": "single_selection",
+      "question": "You have been asked to develop a real-time speech-to-speech translation prototype that will be showcased in the next corporate webinar. The prototype will translate conversational English to Spanish, French, and Italian for now. What is the most suitable approach to follow?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Develop one app using Azure AI Translator and select translation of English into Spanish, French, and Italian."
+        },
+        {
+          "id": "b",
+          "text": "B. Develop one app using the Speech Service SDK and add Spanish, French, and Italian as target translation languages."
+        },
+        {
+          "id": "c",
+          "text": "C. Develop separate apps using the Speech Service SDK to translate English into one of the three target languages."
+        },
+        {
+          "id": "d",
+          "text": "D. Develop one app to convert the speech to text using the Speech Service SDK, translate the speech with Azure AI Translator, and then read the translations with Azure AI Immersive Reader."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Speech SDK's `SpeechTranslationConfig` allows specifying the source speech language and multiple target translation languages (`AddTargetLanguage`). The `TranslationRecognizer` then provides both the original transcription and translations to the specified target languages, which can be synthesized back to speech if needed (speech-to-speech).",
+        "incorrect": "Incorrect! The Speech SDK supports real-time speech-to-speech translation to multiple target languages within a single recognizer."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "151",
+      "type": "single_selection",
+      "question": "You are training a Conversational Language Understanding (CLU) application. After you finish training a CLU app, it receives a prediction score of 0.01. How can you describe the result?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. A definite failure to match"
+        },
+        {
+          "id": "b",
+          "text": "B. A high-confidence, low-error model"
+        },
+        {
+          "id": "c",
+          "text": "C. A low-confidence, high-error model"
+        },
+        {
+          "id": "d",
+          "text": "D. A definite match"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! A prediction score close to 0 (like 0.01) indicates very low confidence in the predicted intent or entity. This usually correlates with a high probability of error or misclassification.",
+        "incorrect": "Incorrect! A prediction score close to 0 indicates very low confidence."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "152",
+      "type": "single_selection",
+      "question": "Your company decided to use the Azure AI Vision to analyze images for insights extraction. Given a set of input parameters, such as region/transactions and required features, you have been asked to estimate the upfront and recurring fees for implementing and using this service in a production-level environment. How could you estimate costs?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Collect the required features/inputs elements and send a request to Azure support."
+        },
+        {
+          "id": "b",
+          "text": "B. Use the Azure Price Calculator to estimate costs."
+        },
+        {
+          "id": "c",
+          "text": "C. Create the resources, send sample traffic, and then extrapolate costs using Cost Analysis in the Azure Portal."
+        },
+        {
+          "id": "d",
+          "text": "D. Hire a specialized firm for an accurate estimation."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Azure Pricing Calculator is the standard tool for estimating costs for Azure services based on region, tier, usage volume (e.g., number of transactions), and specific features used.",
+        "incorrect": "Incorrect! The Azure Pricing Calculator is designed for estimating costs based on service configuration and expected usage."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "153",
+      "type": "single_selection",
+      "question": "You developed a chatbot using Conversational Language Understanding (CLU) and published it. The end user interacts with the bot by sending inputs to be interpreted by the application and receiving responses. What is the exact nomination of those inputs?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Utterances"
+        },
+        {
+          "id": "b",
+          "text": "B. Intents"
+        },
+        {
+          "id": "c",
+          "text": "C. Entities"
+        },
+        {
+          "id": "d",
+          "text": "D. Patterns"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! In the context of CLU and LUIS, the raw input text (or speech transcript) provided by the user is referred to as an utterance.",
+        "incorrect": "Incorrect! User input to a CLU/LUIS model is called an utterance."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "155",
+      "type": "single_selection",
+      "question": "A developer is working with Azure Cognitive Search and wants to enhance the current pipeline by adding searchable content out of raw unstructured text in multiple languages and apply language detection and translation. What is the most appropriate approach to fulfill those requirements?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Use AI Enrichment with custom skills to integrate with Translator and Computer Vision API."
+        },
+        {
+          "id": "b",
+          "text": "B. Train and deploy custom models for language detection and translation, then use AI Enrichment to call those APIs."
+        },
+        {
+          "id": "c",
+          "text": "C. Use AI Enrichment with built-in skills for language detection and translation."
+        },
+        {
+          "id": "d",
+          "text": "D. Train and deploy custom models for language detection and translation then call those API right after the source documents are 'cracked'."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Cognitive Search provides built-in cognitive skills, including Language Detection and Text Translation, which can be easily added to an AI enrichment skillset to process multilingual text.",
+        "incorrect": "Incorrect! Cognitive Search has built-in skills for language detection and translation."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "156",
+      "type": "single_selection",
+      "question": "You have been asked to build a solution using Azure and ensure its compliance with Microsoft AI principles. Which of the following is not a Microsoft AI principle?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Privacy and Security"
+        },
+        {
+          "id": "b",
+          "text": "B. Transparency"
+        },
+        {
+          "id": "c",
+          "text": "C. Accountability"
+        },
+        {
+          "id": "d",
+          "text": "D. Scalability"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Scalability is a general cloud computing concept (and desirable for AI solutions) but is not one of the six core Microsoft Responsible AI principles (which are: Fairness, Reliability & Safety, Privacy & Security, Inclusiveness, Transparency, Accountability).",
+        "incorrect": "Incorrect! The six Microsoft Responsible AI principles are Fairness, Reliability & Safety, Privacy & Security, Inclusiveness, Transparency, and Accountability. Scalability is not one of them."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "157",
+      "type": "single_selection",
+      "question": "You want to classify URL-based images using Custom Vision Prediction API. Review the following Python 3 code fragment.\n```python\nimport http.client, urllib.request, urllib.parse, urllib.error, base64\nheaders = {\n    'Content-Type': 'application/json',\n    'Prediction-Key': '{prediction key}',\n}\ntry:\n    body = \"{'Url' : '\" + url + \"' }\"\n    conn = http.client.HTTPSConnection( 'southcentralus.api.cognitive.microsoft.com' )\n    conn.request(\"POST\", \"/customvision/v3.0/Prediction/{projectId}/{PROJECT_TYPE}/iterations/{iterationName}/{IMAGE_TYPE}\", body, headers)\n    response = conn.getresponse()\n    data = response.read()\n    print(data)\n    conn.close()\nexcept Exception as e:\n    print(\"[Errno {}] {}\".format(e.errno, e.strerror))\n```\nWhat parameters should replace PROJECT_TYPE and IMAGE_TYPE in this code snippet?",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enter \u2018classify\u2019 for {PROJECT_TYPE} parameter and enter \u2018url\u2019 for the {IMAGE_TYPE} parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Enter \u2018detect\u2019 for the {PROJECT_TYPE} parameter and enter \u2018image\u2019 for the {IMAGE_TYPE} parameter."
+        },
+        {
+          "id": "c",
+          "text": "C. Enter \u2018classify\u2019 for the {PROJECT_TYPE} parameter and enter \u2018image\u2019 for the {IMAGE_TYPE} parameter."
+        },
+        {
+          "id": "d",
+          "text": "D. Enter \u2018detect\u2019 for the {PROJECT_TYPE} parameter and \u2018url' for the {IMAGE_TYPE} parameter."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The problem states the goal is to 'classify' images. Since the input is a URL (provided in the 'body'), the endpoint variation for URL-based input is used, indicated by 'url' in the path.",
+        "incorrect": "Incorrect! Use 'classify' for image classification projects and 'url' when providing an image URL in the request body."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "158",
+      "type": "single_selection",
+      "question": "Which of the following techniques is not used for natural language processing?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Tokenization"
+        },
+        {
+          "id": "b",
+          "text": "B. Stemming"
+        },
+        {
+          "id": "c",
+          "text": "C. Lemmatization"
+        },
+        {
+          "id": "d",
+          "text": "D. Optical Character Recognition"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Optical Character Recognition (OCR) is used in computer vision to extract text *from images*. NLP techniques are then applied *to* the extracted text. OCR itself is not an NLP technique.",
+        "incorrect": "Incorrect! OCR extracts text from images (Computer Vision); NLP processes the text itself."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "159",
+      "type": "single_selection",
+      "question": "Consider the following C# Computer Vision API code fragment:\n```csharp\nforeach (var category in results.Categories)\n{\n    if (category.Detail?.Celebrities != null)\n    {\n        foreach (var celeb in category.Detail.Celebrities)\n        {\n             Console.WriteLine($\"{celeb.Name} with confidence {celeb.Confidence} at location {celeb.FaceRectangle.Left}, \" +\n             $\"{celeb.FaceRectangle.Top}, {celeb.FaceRectangle.Height}, {celeb.FaceRectangle.Width}\");\n        }\n    }\n}\nConsole.WriteLine();\n```\nWhat is this segment of code designed to do?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Analyze image details"
+        },
+        {
+          "id": "b",
+          "text": "B. Detect celebrities in images"
+        },
+        {
+          "id": "c",
+          "text": "C. Detect image categories"
+        },
+        {
+          "id": "d",
+          "text": "D. Detect faces in images"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The code iterates through `results.Categories`, checks for `category.Detail.Celebrities`, and then iterates through each `celeb` in that collection, printing the celebrity's name, confidence, and face rectangle. This clearly indicates it's processing detected celebrity information.",
+        "incorrect": "Incorrect! The code specifically checks for and iterates through `category.Detail.Celebrities`."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "160",
+      "type": "single_selection",
+      "question": "You have been asked by your management to process all internal documents such as contracts, and invoices. This process needs to identify and classify personal and sensitive information that may exist to be compliant with the regulation and respect customer privacy. What is the most suitable approach to use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Develop a custom machine learning model to identify efficiently personal info and sensitive data."
+        },
+        {
+          "id": "b",
+          "text": "B. Use Computer Vision Optical Character Recognition and custom scripts using heuristics."
+        },
+        {
+          "id": "c",
+          "text": "C. Use the Azure AI Language Named Entity Recognition (NER) to identify personal info and classify the documents."
+        },
+        {
+          "id": "d",
+          "text": "D. Process the documents by integrating the Text Analytics Key Phrases API with Power BI."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure AI Language's NER feature includes pre-built categories for identifying Personally Identifiable Information (PII) and sensitive data within text, providing a suitable and efficient approach.",
+        "incorrect": "Incorrect! Azure AI Language NER has built-in capabilities for PII detection."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "161",
+      "type": "single_selection",
+      "question": "Your company must process hundreds of sales receipts manually and wants to automate the process. All the receipts are available in JPEG and PDF format and 2-3 MB in size. You decided to choose an Azure AI service for such cases. What is the most appropriate service to use?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure AI Vision"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure AI Custom Vision"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure AI Document Intelligence"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure AI Personalizer"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Azure AI Document Intelligence (formerly Form Recognizer) offers a prebuilt receipt model specifically designed to extract key information (merchant name, date, total, etc.) from receipts in various formats like JPEG and PDF.",
+        "incorrect": "Incorrect! Azure AI Document Intelligence (Form Recognizer) has a prebuilt model specifically for receipts."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "164",
+      "type": "single_selection",
+      "question": "Which of the following scenarios is not suited for built-in skills for Azure Cognitive Search?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Scanned documents (JPEG) that you want to make full-text searchable."
+        },
+        {
+          "id": "b",
+          "text": "B. Multi-lingual content against which you want to apply language detection and possibly text translation."
+        },
+        {
+          "id": "c",
+          "text": "C. Unstructured or semi-structured documents containing content that has inherent meaning or context that is hidden in the larger document."
+        },
+        {
+          "id": "d",
+          "text": "D. Identify and extract text, key-value pairs, selection marks, or tables from your documents as forms."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Extracting structured form data (key-value pairs, tables) typically requires Azure AI Document Intelligence (Form Recognizer). While Document Intelligence can be integrated as a *custom skill*, it's not a standard *built-in skill* within Cognitive Search itself for this detailed form extraction.",
+        "incorrect": "Incorrect! Detailed form extraction (key-value pairs, tables) requires Azure AI Document Intelligence, typically integrated as a custom skill, not a built-in skill."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "166",
+      "type": "single_selection",
+      "question": "You have the following Python method.\n```python\ndef create_resource(resource_group_name, resource_name, kind, account_tier, location):\n    parameters = CognitiveServicesAccount(sku=Sku(name=account_tier), kind=kind, location=location, properties={})\n    client = CognitiveServicesManagementClient(credential, subscription_id)\n    result = client.accounts.begin_create(resource_group_name, resource_name, parameters).result()\n```\nYou need to deploy an Azure resource to the East US Azure region. The resource will be used to perform sentiment analysis. How should you call the method?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"Standard\", \"East US\")"
+        },
+        {
+          "id": "b",
+          "text": "B. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"S0\", \"eastus\")"
+        },
+        {
+          "id": "c",
+          "text": "C. create_resource(\"RG1\", \"res1\", \"ContentModerator\", \"Standard\", \"East US\")"
+        },
+        {
+          "id": "d",
+          "text": "D. create_resource(\"RG1\", \"res1\", \"TextAnalytics\", \"S0\", \"eastus\")"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Sentiment analysis uses the 'TextAnalytics' (or 'Language') kind. 'S0' is a valid standard tier SKU name. 'eastus' is the location.",
+        "incorrect": "Incorrect! Use 'TextAnalytics' kind, 'S0' tier, and 'eastus' location."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "167",
+      "type": "single_selection",
+      "question": "You have the following C# function.\n```csharp\nstatic void MyFunction(TextAnalyticsClient textAnalyticsClient, string text)\n{\n    var response = textAnalyticsClient.ExtractKeyPhrases(text);\n    Console.WriteLine(\"Key phrases:\");\n    foreach (string keyphrase in response.Value)\n    {\n        Console.WriteLine($\"{keyphrase}\");\n    }\n}\n```\nYou call the function by using the following code.\n`MyFunction(textAnalyticsClient, \"the quick brown fox jumps over the lazy dog\");`\nWhich output will you receive?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. The quick\\nThe lazy"
+        },
+        {
+          "id": "b",
+          "text": "B. the quick brown fox jumps over the lazy dog"
+        },
+        {
+          "id": "c",
+          "text": "C. jumps over the"
+        },
+        {
+          "id": "d",
+          "text": "D. quick brown fox\\nlazy dog"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The Key Phrase Extraction algorithm identifies the most salient noun phrases. In this common pangram, 'quick brown fox' and 'lazy dog' are the key phrases likely to be extracted.",
+        "incorrect": "Incorrect! Key Phrase Extraction identifies 'quick brown fox' and 'lazy dog' as the main concepts."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "179",
+      "type": "single_selection",
+      "question": "You are building a retail kiosk system that will use a custom neural voice. You acquire audio samples and consent from the voice talent. You need to create a voice talent profile. What should you upload to the profile?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. a .zip file that contains 10-second .wav files and the associated transcripts as .txt files"
+        },
+        {
+          "id": "b",
+          "text": "B. a five-minute .flac audio file and the associated transcript as a .txt file"
+        },
+        {
+          "id": "c",
+          "text": "C. a .wav or .mp3 file of the voice talent consenting to the creation of a synthetic version of their voice"
+        },
+        {
+          "id": "d",
+          "text": "D. a five-minute .wav or .mp3 file of the voice talent describing the kiosk system"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Creating a voice talent profile requires uploading an audio recording where the voice talent reads a specific consent statement provided by Microsoft, verifying their identity and agreement.",
+        "incorrect": "Incorrect! The voice talent profile requires an audio recording of the consent statement."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "185",
+      "type": "single_selection",
+      "question": "You are developing an app that will use the Decision and Language APIs. You need to provision resources for the app. The solution must ensure that each service is accessed by using a single endpoint and credential. Which type of resource should you create?",
+      "points": 1,
+      "correctAnswers": [
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Language"
+        },
+        {
+          "id": "b",
+          "text": "B. Speech"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Cognitive Services"
+        },
+        {
+          "id": "d",
+          "text": "D. Content Moderator"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The multi-service 'Azure Cognitive Services' resource provides a single key and endpoint to access multiple underlying services, including Language, Speech, Vision, and Decision APIs.",
+        "incorrect": "Incorrect! The Azure Cognitive Services multi-service resource provides a single key/endpoint for multiple services like Language and Decision."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "186",
+      "type": "single_selection",
+      "question": "You are building an Azure AI Language Understanding solution. You discover that many intents have similar utterances containing airport names or airport codes. You need to minimize the number of utterances used to train the model. Which type of custom entity should you use?",
+      "points": 1,
+      "correctAnswers": [
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Pattern.any"
+        },
+        {
+          "id": "b",
+          "text": "B. machine-learning"
+        },
+        {
+          "id": "c",
+          "text": "C. regular expression"
+        },
+        {
+          "id": "d",
+          "text": "D. list"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! A List entity is ideal for a defined, finite set of items like airport names or codes. By providing the list (e.g., 'JFK', 'LAX', 'Heathrow') and optional synonyms ('Kennedy Airport', 'Los Angeles International'), you explicitly tell the model what these terms represent. The model can then generalize from fewer examples containing these list items compared to training a machine-learned entity to discover them contextually or using a broad Pattern.any.",
+        "incorrect": "Incorrect. A List entity is the most efficient way to handle a known set of specific terms like airport names/codes, allowing the model to generalize with fewer training utterances compared to other entity types."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "190",
+      "type": "single_selection",
+      "question": "You have an Azure subscription that contains an Azure Cognitive Service for Language resource. You need to identify the URL of the REST interface for the Language service. Which blade should you use in the Azure portal?",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Identity"
+        },
+        {
+          "id": "b",
+          "text": "B. Keys and Endpoint"
+        },
+        {
+          "id": "c",
+          "text": "C. Networking"
+        },
+        {
+          "id": "d",
+          "text": "D. Properties"
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! The 'Keys and Endpoint' blade displays the subscription keys and the base Endpoint URL required to interact with the service's REST API.",
+        "incorrect": "Incorrect! The Endpoint URL is found on the 'Keys and Endpoint' blade."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "191",
+      "type": "single_selection",
+      "question": "You develop a custom question answering project in Azure Cognitive Service for Language. The project will be used by a chatbot. You need to configure the project to engage in multi-turn conversations.",
+      "points": 1,
+      "correctAnswers": [
+        "a"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Add follow-up prompts."
+        },
+        {
+          "id": "b",
+          "text": "B. Enable active learning."
+        },
+        {
+          "id": "c",
+          "text": "C. Add alternate questions."
+        },
+        {
+          "id": "d",
+          "text": "D. Enable chit-chat."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Follow-up prompts are specifically designed to enable multi-turn conversations in question answering by presenting related questions or options after an initial answer, guiding the user through a conversational flow.",
+        "incorrect": "Incorrect! Follow-up prompts enable multi-turn conversations in Custom Question Answering."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    }
+  ]
+}

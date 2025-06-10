@@ -1,0 +1,5 @@
+🗄️ Reading SQL schema file...
+
+(node:8510) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+❌ Error: ENOENT: no such file or directory, open '/Users/amankumarshrestha/Downloads/ship-fast-ts-supabase/migration/scripts/supabase_database.sql'

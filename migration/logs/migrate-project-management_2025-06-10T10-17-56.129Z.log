@@ -1,0 +1,47 @@
+[36m🚀 === Project Management Quiz Migration Started (v1.0) ===[0m
+[36m🚀 Creating quiz - ID: project-management, Topic: Project Management (Agile)[0m
+[36m🚀 Upserting 1 rows into quizzes in 1 chunks...[0m
+[32m✅ ✓ Finished upserting to quizzes.[0m
+[36m🚀 Found 5 topic files: topic-1-fundamentals-of-agile.json, topic-2-agile-lifecycles-methodologies.json, topic-3-creating-agile-environment.json, topic-4-agile-planning-execution.json, topic-5-business-value-justification.json[0m
+[36m🚀 Loaded 45 questions from topic-3-creating-agile-environment.json[0m
+[36m🚀 Loaded 47 questions from topic-2-agile-lifecycles-methodologies.json[0m
+[36m🚀 Loaded 45 questions from topic-4-agile-planning-execution.json[0m
+[36m🚀 Loaded 53 questions from topic-1-fundamentals-of-agile.json[0m
+[36m🚀 Loaded 45 questions from topic-5-business-value-justification.json[0m
+[36m🚀 Loaded 235 total questions from 5 topic files.[0m
+[36m🚀 Prepared 235 questions with quiz_tag: project-management[0m
+[36m🚀 Upserting 235 rows into questions in 1 chunks...[0m
+[32m✅ ✓ Finished upserting to questions.[0m
+[36m🚀 Prepared 298 rows for multi_options[0m
+[36m🚀 Prepared 200 rows for multi_correct_answers[0m
+[36m🚀 Prepared 276 rows for single_selection_options[0m
+[36m🚀 Prepared 44 rows for single_selection_correct_answer[0m
+[36m🚀 Prepared 114 rows for yes_no_answer[0m
+[36m🚀 === Upserting child table data ===[0m
+[36m🚀 Upserting 298 rows into multi_options in 1 chunks...[0m
+[36m🚀 Upserting 276 rows into single_selection_options in 1 chunks...[0m
+[36m🚀 Upserting 114 rows into yes_no_answer in 1 chunks...[0m
+[2m... No rows for yesno_multi_statements (skipped)[0m
+[32m✅ ✓ Finished upserting to yes_no_answer.[0m
+[32m✅ ✓ Finished upserting to single_selection_options.[0m
+[32m✅ ✓ Finished upserting to multi_options.[0m
+[36m🚀 Upserting 200 rows into multi_correct_answers in 1 chunks...[0m
+[36m🚀 Upserting 44 rows into single_selection_correct_answer in 1 chunks...[0m
+[2m... No rows for yesno_multi_correct_answers (skipped)[0m
+[32m✅ ✓ Finished upserting to single_selection_correct_answer.[0m
+[32m✅ ✓ Finished upserting to multi_correct_answers.[0m
+[36m🚀 === Final Validation ===[0m
+[32m✅ ✓ Found quiz: Project Management Professional (PMP) Agile Practice Quiz[0m
+[32m✅ ✓ Total questions: 235[0m
+[36m🚀   - yes_no: 114 questions[0m
+[36m🚀   - multi: 52 questions[0m
+[36m🚀   - single_selection: 69 questions[0m
+[32m✅ === Project Management Quiz Migration Finished Successfully ===[0m
+[36m🚀 Migration Summary:
+    - Quiz ID: project-management
+    - Quiz Title: Project Management Professional (PMP) Agile Practice Quiz
+    - Quiz Topic: Project Management (Agile)
+    - Total Questions: 235
+    - Topic Files Processed: 5
+    - Child Tables Updated: 7
+    - Validation: ✅ Completed[0m

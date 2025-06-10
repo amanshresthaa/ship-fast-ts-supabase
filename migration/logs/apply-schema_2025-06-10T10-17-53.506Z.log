@@ -1,0 +1,12 @@
+🗄️ Reading SQL schema file...
+🚀 Applying database schema...
+📝 Note: This requires direct database access. Please apply the SQL schema manually through Supabase dashboard.
+🔗 Go to: https://supabase.com/dashboard/project/[your-project]/sql
+📄 Copy and paste the contents of supabase_database.sql
+
+After applying the schema, you can run the data migration with:
+node migration/migrate-quiz-data.js
+🔍 Testing database connection and schema...
+✅ Database schema is already applied and working!
+🚀 You can now run the data migration:
+   cd migration && node migrate-quiz-data.js

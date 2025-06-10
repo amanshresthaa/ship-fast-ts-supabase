@@ -1,0 +1,885 @@
+{
+  "questions": [
+    {
+      "id": "3",
+      "type": "multi",
+      "question": "You are developing a new sales system that will process the video and text from a public-facing website. You plan to monitor the sales system to ensure that it provides equitable results regardless of the user's location or background. Which two responsible AI principles provide guidance to meet the monitoring requirements? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. transparency"
+        },
+        {
+          "id": "b",
+          "text": "B. fairness"
+        },
+        {
+          "id": "c",
+          "text": "C. inclusiveness"
+        },
+        {
+          "id": "d",
+          "text": "D. reliability and safety"
+        },
+        {
+          "id": "e",
+          "text": "E. privacy and security"
+        }
+      ],
+      "feedback": {
+        "correct": "Fairness ensures equitable treatment, and inclusiveness ensures that the system serves all groups. Together they provide guidance for monitoring equitable outcomes.",
+        "incorrect": "Incorrect! Review the principles that directly impact equitable treatment and inclusion."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "163",
+      "type": "multi",
+      "question": "You just received the results of the customer experience tests campaign for a recently released Conversational Language Understanding (CLU) app. You notice that the majority of the feedback is about inaccurate responses given to the customers. What modifications could you implement to enhance the prediction accuracy of the CLU app? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enable active learning for the current application."
+        },
+        {
+          "id": "b",
+          "text": "B. Build a new version of the application with a collection of 'good' utterances."
+        },
+        {
+          "id": "c",
+          "text": "C. Add entity roles to your CLU application."
+        },
+        {
+          "id": "d",
+          "text": "D. Duplicate the utterances for your CLU application."
+        }
+      ],
+      "feedback": {
+        "correct": "Correct! Active learning suggests utterances from endpoint traffic that the model is unsure about. Reviewing and correctly labeling these helps improve the model's accuracy over time. Additionally, adding more diverse and representative ('good') utterances directly to the training data for relevant intents and entities will also enhance prediction accuracy.",
+        "incorrect": "Incorrect! Both enabling active learning (to improve from real-world data) and adding more high-quality training utterances directly improve model accuracy."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "5",
+      "type": "multi",
+      "question": "You build a custom Form Recognizer model. You receive sample files to use for training the model as shown in the following table.\nName | Type | Size\nFile1 | PDF | 20 MB\nFile2 | MP4 | 100 MB\nFile3 | JPG | 20 MB\nFile4 | PDF | 100 MB\nFile5 | GIF | 1 MB\nFile6 | JPG | 40 MB\nWhich three files can you use to train the model? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "c",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. File1"
+        },
+        {
+          "id": "b",
+          "text": "B. File2"
+        },
+        {
+          "id": "c",
+          "text": "C. File3"
+        },
+        {
+          "id": "d",
+          "text": "D. File4"
+        },
+        {
+          "id": "e",
+          "text": "E. File5"
+        },
+        {
+          "id": "f",
+          "text": "F. File6"
+        }
+      ],
+      "feedback": {
+        "correct": "Form Recognizer accepts PDFs (with embedded text) and image formats like JPG that are less than 50 MB. Files File1, File3, and File6 meet these criteria.",
+        "incorrect": "Incorrect! Check the file formats and sizes that are supported by Form Recognizer."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "easy"
+    },
+    {
+      "id": "6",
+      "type": "multi",
+      "question": "A customer uses Azure Cognitive Search. The customer plans to enable server-side encryption and use customer-managed keys (CMK) stored in Azure. What are three implications of the planned change? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. The index size will increase."
+        },
+        {
+          "id": "b",
+          "text": "B. Query times will increase."
+        },
+        {
+          "id": "c",
+          "text": "C. A self-signed X.509 certificate is required."
+        },
+        {
+          "id": "d",
+          "text": "D. The index size will decrease."
+        },
+        {
+          "id": "e",
+          "text": "E. Query times will decrease."
+        },
+        {
+          "id": "f",
+          "text": "F. Azure Key Vault is required."
+        }
+      ],
+      "feedback": {
+        "correct": "Enabling CMK encryption can slightly increase index size and query times due to encryption overhead and requires Azure Key Vault to manage the keys.",
+        "incorrect": "Incorrect! Revisit the implications of using customer-managed keys with Cognitive Search."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "11",
+      "type": "multi",
+      "question": "You plan to provision a QnA Maker service in a new resource group named RG1. In RG1, you create an App Service plan named AP1. Which two Azure resources are automatically created in RG1 when you provision the QnA Maker service? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "d",
+        "e"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Language Understanding"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure SQL Database"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure Storage"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure Cognitive Search"
+        },
+        {
+          "id": "e",
+          "text": "E. Azure App Service"
+        }
+      ],
+      "feedback": {
+        "correct": "Provisioning QnA Maker automatically creates an Azure Cognitive Search service (for indexing) and an Azure App Service (to host the endpoint).",
+        "incorrect": "Incorrect! Review which dependent resources are created when provisioning QnA Maker."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "easy"
+    },
+    {
+      "id": "27",
+      "type": "multi",
+      "question": "You use the Custom Vision service to build a classifier. After training is complete, you need to evaluate the classifier. Which two metrics are available for review? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. recall"
+        },
+        {
+          "id": "b",
+          "text": "B. F-score"
+        },
+        {
+          "id": "c",
+          "text": "C. weighted accuracy"
+        },
+        {
+          "id": "d",
+          "text": "D. precision"
+        },
+        {
+          "id": "e",
+          "text": "E. area under the curve (AUC)"
+        }
+      ],
+      "feedback": {
+        "correct": "Custom Vision evaluation shows recall and precision metrics as key performance indicators.",
+        "incorrect": "Incorrect! The available metrics are recall and precision."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "31",
+      "type": "multi",
+      "question": "You are developing a method that uses the Computer Vision client library. The method will perform optical character recognition (OCR) in images. The method has the following code:\n```python\ndef read_file_url(computervision_client, url_file):\n  read_response = computervision_client.read(url_file, raw=True)\n  read_operation_location = read_response.headers[\"Operation-Location\"]\n  operation_id = read_operation_location.split(\"/\")[-1]\n\n  # Wait for the operation to complete\n  while True:\n    read_result = computervision_client.get_read_result(operation_id)\n    # Insert checks here\n    break # Simplified loop for example\n\n  for page in read_result.analyze_result.read_results:\n    for line in page.lines:\n      print(line.text)\n```\nDuring testing, you discover that the call to the get_read_result method occurs before the read operation is complete. You need to prevent get_read_result from proceeding until the operation is complete. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Remove the operation_id parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Add code to verify the read_result.status value."
+        },
+        {
+          "id": "c",
+          "text": "C. Add code to verify the status of the read_operation_location value."
+        },
+        {
+          "id": "d",
+          "text": "D. Wrap the call to get_read_result within a loop that contains a delay."
+        }
+      ],
+      "feedback": {
+        "correct": "Checking the status property and adding a delay loop ensures that the OCR operation is complete before processing results.",
+        "incorrect": "Incorrect! You must verify the operation status and wait appropriately."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "76",
+      "type": "multi",
+      "question": "You are building an app that will use the Speech service. You need to ensure that the app can authenticate to the service by using a Microsoft Azure Active Directory (Azure AD), part of Microsoft Entra, token. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Enable a virtual network service endpoint."
+        },
+        {
+          "id": "b",
+          "text": "B. Configure a custom subdomain."
+        },
+        {
+          "id": "c",
+          "text": "C. Request an X.509 certificate."
+        },
+        {
+          "id": "d",
+          "text": "D. Create a private endpoint."
+        },
+        {
+          "id": "e",
+          "text": "E. Create a Conditional Access policy."
+        }
+      ],
+      "feedback": {
+        "correct": "For AAD token authentication, configuring a custom subdomain and creating a private endpoint are necessary to support secure connectivity.",
+        "incorrect": "Incorrect! Focus on the actions that directly enable Azure AD\u2013based authentication."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "78",
+      "type": "multi",
+      "question": "You are developing a method that uses the Computer Vision client library. The method will perform optical character recognition (OCR) in images using ReadAsync. During testing, you discover that the call to the GetReadResultAsync method occurs before the read operation is complete. You need to prevent GetReadResultAsync from proceeding until the read operation is complete. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Remove the Guid.Parse(operationId) parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Add code to verify the results.Status value."
+        },
+        {
+          "id": "c",
+          "text": "C. Add code to verify the status of the txtHeaders.Status value."
+        },
+        {
+          "id": "d",
+          "text": "D. Wrap the call to GetReadResultAsync within a loop that contains a delay."
+        }
+      ],
+      "feedback": {
+        "correct": "Checking the Status property and implementing a delay loop ensures that the OCR operation has finished before retrieving results.",
+        "incorrect": "Incorrect! Ensure you verify the operation status and delay subsequent calls."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "87",
+      "type": "multi",
+      "question": "You use the Custom Vision service to build a classifier. After training is complete, you need to evaluate the classifier. Which two metrics are available for review? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. recall"
+        },
+        {
+          "id": "b",
+          "text": "B. F-score"
+        },
+        {
+          "id": "c",
+          "text": "C. weighted accuracy"
+        },
+        {
+          "id": "d",
+          "text": "D. precision"
+        },
+        {
+          "id": "e",
+          "text": "E. area under the curve (AUC)"
+        }
+      ],
+      "feedback": {
+        "correct": "Recall and precision are the standard evaluation metrics provided by Custom Vision.",
+        "incorrect": "Incorrect! The available metrics are recall and precision."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "94",
+      "type": "multi",
+      "question": "You are developing a method that uses the Computer Vision client library (Python). The method will perform optical character recognition (OCR) in images using `computervision_client.read`. During testing, you discover that the call to the `get_read_result` method occurs before the read operation is complete. You need to prevent `get_read_result` from proceeding until the read operation is complete. Which two actions should you perform? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Remove the operation_id parameter."
+        },
+        {
+          "id": "b",
+          "text": "B. Add code to verify the read_result.status value."
+        },
+        {
+          "id": "c",
+          "text": "C. Add code to verify the status of the read_operation_location value."
+        },
+        {
+          "id": "d",
+          "text": "D. Wrap the call to get_read_result within a loop that contains a delay."
+        }
+      ],
+      "feedback": {
+        "correct": "Verifying the status and looping with a delay will prevent premature retrieval of the OCR results.",
+        "incorrect": "Incorrect! You must ensure the operation has finished before retrieving results."
+      },
+      "quiz_tag": "Implement computer vision solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "116",
+      "type": "multi",
+      "question": "You are building an Azure WebJob that will create knowledge bases from an array of URLs. You instantiate a QnAMakerClient object that has the relevant API keys and assign the object to a variable named client. You need to develop a method to create the knowledge bases. Which two actions should you include in the method? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Create a list of FileDTO objects that represents data from the WebJob."
+        },
+        {
+          "id": "b",
+          "text": "B. Call the client.Knowledgebase.CreateAsync method."
+        },
+        {
+          "id": "c",
+          "text": "C. Create a list of QnADTO objects that represents data from the WebJob."
+        },
+        {
+          "id": "d",
+          "text": "D. Create a CreateKbDTO object."
+        }
+      ],
+      "feedback": {
+        "correct": "Calling CreateAsync with a properly formed CreateKbDTO object initiates the knowledge base creation process.",
+        "incorrect": "Incorrect! The solution requires invoking the SDK method with the proper DTO."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "122",
+      "type": "multi",
+      "question": "You are developing a method for an application that uses the Translator API. The method will receive the content of a webpage, and then translate the content into Greek (el). The result will also contain a transliteration that uses the Roman alphabet. You need to create the URI for the call to the Translator API. You have the following URI: https://api.cognitive.microsofttranslator.com/translate?api-version=3.0 Which three additional query parameters should you include in the URI? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "c",
+        "d",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. toScript=Cyrl"
+        },
+        {
+          "id": "b",
+          "text": "B. from=el"
+        },
+        {
+          "id": "c",
+          "text": "C. textType=html"
+        },
+        {
+          "id": "d",
+          "text": "D. to=el"
+        },
+        {
+          "id": "e",
+          "text": "E. textType=plain"
+        },
+        {
+          "id": "f",
+          "text": "F. toScript=Latn"
+        }
+      ],
+      "feedback": {
+        "correct": "Using textType=html ensures proper handling of webpage content; specifying to=el sets the target language; and toScript=Latn requests a transliteration to the Roman alphabet.",
+        "incorrect": "Incorrect! Ensure you include parameters that support both translation and transliteration for HTML content."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "123",
+      "type": "multi",
+      "question": "You have a chatbot that was built by using the Microsoft Bot Framework. You need to debug the chatbot endpoint remotely. Which two tools should you install on a local computer? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "c",
+        "e"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Fiddler"
+        },
+        {
+          "id": "b",
+          "text": "B. Bot Framework Composer"
+        },
+        {
+          "id": "c",
+          "text": "C. Bot Framework Emulator"
+        },
+        {
+          "id": "d",
+          "text": "D. Bot Framework CLI"
+        },
+        {
+          "id": "e",
+          "text": "E. ngrok"
+        },
+        {
+          "id": "f",
+          "text": "F. nginx"
+        }
+      ],
+      "feedback": {
+        "correct": "The Bot Framework Emulator is used to test and debug bot endpoints, while ngrok helps expose a local endpoint for remote access.",
+        "incorrect": "Incorrect! Focus on the tools specifically designed for remote bot debugging."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "146",
+      "type": "multi",
+      "question": "You have been asked to build an application that recognizes intents in audio captured from a microphone using exclusively Azure AI Services. Which combination of the following services can you use to fulfill the requirements? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure AI Translator"
+        },
+        {
+          "id": "b",
+          "text": "B. Conversational Language Understanding (CLU)"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure AI Immersive Reader"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure AI Speech Service"
+        }
+      ],
+      "feedback": {
+        "correct": "Azure AI Speech Service converts speech to text, and CLU analyzes the text to recognize intents and entities.",
+        "incorrect": "Incorrect! Translator and Immersive Reader do not directly support intent recognition from audio."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "147",
+      "type": "multi",
+      "question": "You are working with Azure AI Language Preconfigured Name Entity Recognition (NER) features. Which choices belong to general entity categories offered by the service? (Choose 3 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Person"
+        },
+        {
+          "id": "b",
+          "text": "B. Event"
+        },
+        {
+          "id": "c",
+          "text": "C. Location"
+        },
+        {
+          "id": "d",
+          "text": "D. Social"
+        }
+      ],
+      "feedback": {
+        "correct": "The general NER categories include Person, Event, and Location. 'Social' is not a standard top-level category.",
+        "incorrect": "Incorrect! Only Person, Event, and Location are general categories."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "150",
+      "type": "multi",
+      "question": "After your company's call center support staff receive a call, you need to implement an AI solution to identify additional metrics. The solution requires:\n- Processing speech in English, French, and Spanish.\n- Identifying the main topics of customer calls, and\n- Implementing sentiment analysis\nWhich of the following Azure AI services does this solution require? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. Azure AI Speech service's Speech-to-Text"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure AI Speech service's Text-to-Speech"
+        },
+        {
+          "id": "c",
+          "text": "C. Azure AI Translator"
+        },
+        {
+          "id": "d",
+          "text": "D. Azure AI Language"
+        }
+      ],
+      "feedback": {
+        "correct": "Speech-to-Text converts audio to text while Azure AI Language processes the text for topics and sentiment.",
+        "incorrect": "Incorrect! Text-to-Speech and Translator do not fulfill these requirements."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "154",
+      "type": "multi",
+      "question": "You are using the Speech SDK to access the speech service for an application in development. During the tests, you noticed that attempts to connect frequently result in HTTP 403 Forbidden and HTTP 401 Unauthorized errors. What could be the root cause of the 403 errors? (Choose 3 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. The subscription key is missing."
+        },
+        {
+          "id": "b",
+          "text": "B. The subscription usage quota exceeded."
+        },
+        {
+          "id": "c",
+          "text": "C. The endpoint is invalid."
+        },
+        {
+          "id": "d",
+          "text": "D. The subscription key is invalid."
+        }
+      ],
+      "feedback": {
+        "correct": "Missing or invalid subscription keys and exceeded quotas typically cause HTTP 403/401 errors.",
+        "incorrect": "Incorrect! The endpoint being invalid would generally cause connection errors, not 403/401."
+      },
+      "quiz_tag": "Plan and manage an Azure AI solution",
+      "difficulty": "medium"
+    },
+    {
+      "id": "162",
+      "type": "multi",
+      "question": "You received a business requirement from the marketing department for building a Chatbot as a new customer communication channel via social media. The Chatbot needs to be able to respond to customer questions in natural language using the existing knowledge base published on the company's FAQ webpage. Which Azure service would you use to accomplish this task? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. QnA Maker"
+        },
+        {
+          "id": "b",
+          "text": "B. Azure Bot Service"
+        },
+        {
+          "id": "c",
+          "text": "C. Bing Search Service"
+        },
+        {
+          "id": "d",
+          "text": "D. Text Analytics"
+        }
+      ],
+      "feedback": {
+        "correct": "QnA Maker creates a knowledge base from FAQs, and Azure Bot Service hosts the chatbot.",
+        "incorrect": "Incorrect! Bing Search and Text Analytics do not directly support a FAQ-based Chatbot."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "165",
+      "type": "multi",
+      "question": "Consider the following schema of an Azure Search index:\n```json\n{\n  \"name\": \"musicstoreindex\",\n  \"fields\": [ ... ],\n  \"scoringProfiles\": [\n    {\n      \"name\": \"boostGenre\",\n      \"text\": { ... }\n    },\n    {\n      \"name\": \"newAndHighlyRated\",\n      \"functions\": [ ... ]\n    }\n  ],\n  \"suggesters\": [ ... ]\n}\n```\nWhat are scoring profile names used in this index? (Choose 2 answers)",
+      "points": 1,
+      "correctAnswers": [
+        "b",
+        "d"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. freshness"
+        },
+        {
+          "id": "b",
+          "text": "B. boostGenre"
+        },
+        {
+          "id": "c",
+          "text": "C. magnitude"
+        },
+        {
+          "id": "d",
+          "text": "D. newAndHighlyRated"
+        }
+      ],
+      "feedback": {
+        "correct": "The index schema shows scoring profiles named 'boostGenre' and 'newAndHighlyRated'.",
+        "incorrect": "Incorrect! The scoring profiles in the schema are boostGenre and newAndHighlyRated."
+      },
+      "quiz_tag": "Implement knowledge mining and document intelligence solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "176",
+      "type": "multi",
+      "question": "You are developing a method for an application that uses the Translator API. The method will receive the content of a webpage, and then translate the content into Greek (el). The result will also contain a transliteration that uses the Roman alphabet. You need to create the URI for the call to the Translator API. You have the following URI: https://api.cognitive.microsofttranslator.com/translate?api-version=3.0 Which three additional query parameters should you include in the URI? Each correct answer presents part of the solution.",
+      "points": 1,
+      "correctAnswers": [
+        "c",
+        "d",
+        "f"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. toScript=Cyrl"
+        },
+        {
+          "id": "b",
+          "text": "B. from=el"
+        },
+        {
+          "id": "c",
+          "text": "C. textType=html"
+        },
+        {
+          "id": "d",
+          "text": "D. to=el"
+        },
+        {
+          "id": "e",
+          "text": "E. textType=plain"
+        },
+        {
+          "id": "f",
+          "text": "F. toScript=Latn"
+        }
+      ],
+      "feedback": {
+        "correct": "Using textType=html, to=el, and toScript=Latn ensures that the HTML content is properly translated into Greek with a Roman-script transliteration.",
+        "incorrect": "Incorrect! Make sure to include parameters that preserve HTML formatting and provide transliteration."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "177",
+      "type": "multi",
+      "question": "You are developing a method that uses the Text Analytics client library to extract key entities from text. You call the function with the string: \"Our tour of Paris included a visit to the Eiffel Tower\". For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "points": 1,
+      "correctAnswers": [
+        "b"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "Statements: The output will include the words 'our' and 'included'."
+        },
+        {
+          "id": "b",
+          "text": "Statements: The output will include the words 'Paris', 'Eiffel', and 'Tower'."
+        },
+        {
+          "id": "c",
+          "text": "Statements: The function will output all key phrases from the input string."
+        }
+      ],
+      "feedback": {
+        "correct": "RecognizeEntities identifies named entities such as 'Paris' and 'Eiffel Tower' (or its parts), not common words like 'our' or 'included'.",
+        "incorrect": "Incorrect! Only significant named entities are expected."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "183",
+      "type": "multi",
+      "question": "You have a text-based chatbot. You need to enable content moderation by using the Text Moderation API of Content Moderator. Which two service responses should you use? Each correct answer presents part of the solution. (Duplicate of Q175)",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. personal data"
+        },
+        {
+          "id": "b",
+          "text": "B. the adult classification score"
+        },
+        {
+          "id": "c",
+          "text": "C. text classification"
+        },
+        {
+          "id": "d",
+          "text": "D. optical character recognition (OCR)"
+        },
+        {
+          "id": "e",
+          "text": "E. the racy classification score"
+        }
+      ],
+      "feedback": {
+        "correct": "The Text Moderation API returns information on detected personally identifiable information and text classification details.",
+        "incorrect": "Incorrect! The adult and racy scores are part of image moderation."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    },
+    {
+      "id": "188",
+      "type": "multi",
+      "question": "You train a Conversational Language Understanding model to understand the natural language input of users. You need to evaluate the accuracy of the model before deploying it. What are two methods you can use? Each correct answer presents a complete solution.",
+      "points": 1,
+      "correctAnswers": [
+        "a",
+        "c"
+      ],
+      "options": [
+        {
+          "id": "a",
+          "text": "A. From the language authoring REST endpoint, retrieve the model evaluation summary."
+        },
+        {
+          "id": "b",
+          "text": "B. From Language Studio, enable Active Learning, and then validate the utterances logged for review."
+        },
+        {
+          "id": "c",
+          "text": "C. From Language Studio, select Model performance."
+        },
+        {
+          "id": "d",
+          "text": "D. From the Azure portal, enable log collection in Log Analytics, and then analyze the logs."
+        }
+      ],
+      "feedback": {
+        "correct": "You can evaluate model accuracy by retrieving the evaluation summary via the REST endpoint or by checking Model performance in Language Studio.",
+        "incorrect": "Incorrect! Active Learning helps improve models post-deployment rather than for initial evaluation."
+      },
+      "quiz_tag": "Implement natural language processing solutions",
+      "difficulty": "medium"
+    }
+  ]
+}
