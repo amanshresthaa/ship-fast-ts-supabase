@@ -1,0 +1,54 @@
+# .gitignore for React/Node/Next.js/TypeScript/Monorepo projects
+
+# Node modules
+node_modules/
+
+# Build output
+build/
+dist/
+.next/
+
+# Dependency lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Cache
+.cache/
+.parcel-cache/
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Output
+output-quiz-updated/
+
+# Backups
+cleanup-backup*/
+
+# Misc
+.env
+.env.*
+
+# Ignore all dotfiles except .env and .gitignore
+.*
+!.env
+!.gitignore
+
+# Exclude git directory
+!.git/
