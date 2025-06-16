@@ -1,0 +1,18 @@
+# *
+User-agent: *
+Allow: /
+
+# Block admin and API routes for security
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+
+# Allow specific public API routes
+Allow: /api/health
+Allow: /api/docs
+
+# Host
+Host: https://shipfa.st
+
+# Sitemaps
+Sitemap: https://shipfa.st/sitemap.xml
