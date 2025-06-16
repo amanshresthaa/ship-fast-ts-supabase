@@ -1,0 +1,259 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  scroll-behavior: smooth !important;
+}
+
+/* It makes the HTML progress bar filling smooth when value change. */
+progress::-webkit-progress-value {
+  transition: 0.6s width ease-out;
+}
+
+@layer base {
+  .btn-gradient {
+    @apply !bg-gradient !bg-[length:300%_300%] hover:saturate-[1.2] shadow duration-100 !border-0 !border-transparent !bg-transparent animate-shimmer disabled:!bg-none disabled:!bg-gray-500/30  !text-white;
+  }
+  .btn {
+    @apply !capitalize;
+  }
+  
+  /* Add custom style for drag-over state */
+  .drag-over {
+    border-color: #3b82f6 !important; /* blue-500 */
+    background-color: rgba(219, 234, 254, 0.5) !important; /* blue-100 with opacity */
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3) !important; /* blue glow effect */
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+  }
+  
+  /* Additional styles for drag and drop functionality */
+  [data-target-id]:empty.drag-over {
+    background-color: rgba(219, 234, 254, 0.8) !important; /* brighter blue-100 for empty targets */
+  }
+  
+  [data-option-id] {
+    touch-action: none; /* Prevents browsers from handling touch events in ways that interfere with dragging */
+  }
+}
+
+/* Enhanced responsive design utilities */
+@layer utilities {
+  /* Responsive container utilities */
+  .container-responsive {
+    @apply w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16;
+  }
+  
+  .container-tight {
+    @apply w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8;
+  }
+  
+  /* Responsive text utilities */
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm md:text-base;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl;
+  }
+  
+  /* Responsive spacing utilities */
+  .spacing-responsive-xs {
+    @apply p-2 sm:p-3 md:p-4 lg:p-6;
+  }
+  
+  .spacing-responsive-sm {
+    @apply p-3 sm:p-4 md:p-6 lg:p-8;
+  }
+  
+  .spacing-responsive-md {
+    @apply p-4 sm:p-6 md:p-8 lg:p-12;
+  }
+  
+  .spacing-responsive-lg {
+    @apply p-6 sm:p-8 md:p-12 lg:p-16 xl:p-20;
+  }
+  
+  /* Touch-friendly interactive elements */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  .touch-target-large {
+    @apply min-h-[56px] min-w-[56px] flex items-center justify-center;
+  }
+  
+  /* Responsive grid utilities */
+  .grid-responsive-1-2-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+  
+  .grid-responsive-1-2-4 {
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4;
+  }
+  
+  .grid-responsive-2-3-4 {
+    @apply grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4;
+  }
+  
+  /* Mobile-first flex utilities */
+  .flex-mobile-col {
+    @apply flex flex-col md:flex-row;
+  }
+  
+  .flex-mobile-row {
+    @apply flex flex-row md:flex-col;
+  }
+  
+  /* Responsive visibility utilities */
+  .show-mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .show-tablet-only {
+    @apply hidden sm:block lg:hidden;
+  }
+  
+  .show-desktop-only {
+    @apply hidden lg:block;
+  }
+  
+  .hide-mobile {
+    @apply hidden sm:block;
+  }
+  
+  .hide-desktop {
+    @apply block lg:hidden;
+  }
+  
+  /* Responsive aspect ratios */
+  .aspect-responsive-square {
+    @apply aspect-square md:aspect-video;
+  }
+  
+  .aspect-responsive-video {
+    @apply aspect-video lg:aspect-[21/9];
+  }
+  
+  /* Mobile-optimized animations */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-respectful {
+      @apply animate-none;
+    }
+  }
+  
+  /* Enhanced focus states for accessibility */
+  .focus-enhanced {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg;
+  }
+  
+  .focus-enhanced-mobile {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded-lg sm:focus:ring-offset-2;
+  }
+}
+
+/* Enhanced responsive breakpoint helpers */
+@layer components {
+  /* Responsive card component */
+  .card-responsive {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 md:p-8;
+    @apply border border-gray-200 dark:border-gray-700;
+    @apply transition-shadow duration-200 hover:shadow-md;
+  }
+  
+  /* Responsive button variants */
+  .btn-responsive {
+    @apply px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base;
+    @apply rounded-lg transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply min-h-[44px] flex items-center justify-center;
+  }
+  
+  .btn-responsive-large {
+    @apply px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg;
+    @apply rounded-xl transition-all duration-200;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply min-h-[56px] flex items-center justify-center;
+  }
+  
+  /* Responsive input fields */
+  .input-responsive {
+    @apply w-full px-3 py-2 sm:px-4 sm:py-3;
+    @apply border border-gray-300 dark:border-gray-600;
+    @apply rounded-lg bg-white dark:bg-gray-800;
+    @apply text-sm sm:text-base;
+    @apply focus:ring-2 focus:ring-primary focus:border-transparent;
+    @apply min-h-[44px];
+  }
+  
+  /* Responsive modal/dialog */
+  .modal-responsive {
+    @apply w-full mx-4 sm:mx-auto;
+    @apply max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl;
+    @apply max-h-[90vh] sm:max-h-[85vh];
+    @apply bg-white dark:bg-gray-800;
+    @apply rounded-lg sm:rounded-xl;
+    @apply shadow-xl;
+    @apply overflow-hidden;
+  }
+}
+
+/* Device-specific optimizations */
+@media (max-width: 767px) {
+  /* Mobile-specific optimizations */
+  .mobile-optimized {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Improve touch scrolling on mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Tablet-specific optimizations */
+  .tablet-optimized {
+    /* Tablet-specific styles can go here */
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop-specific optimizations */
+  .desktop-optimized {
+    /* Desktop-specific styles can go here */
+  }
+}
+
+/* Print styles for responsive design */
+@media print {
+  .print-hidden {
+    @apply hidden;
+  }
+  
+  .print-visible {
+    @apply block;
+  }
+  
+  .print-text-small {
+    @apply text-sm;
+  }
+}
