@@ -1,54 +1,183 @@
-# .gitignore for React/Node/Next.js/TypeScript/Monorepo projects
-
-# Node modules
+# Dependencies
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# Build output
-build/
-dist/
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# Snowpack dependency directory (https://snowpack.dev/)
+web_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
 .next/
+out/
 
-# Dependency lock files
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Vuepress build output
+.vuepress/dist
+
+# Docusaurus cache and build outputs
+.docusaurus
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # Logs
+logs
 *.log
 
-# OS files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Editor directories
+# IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# Cache
-.cache/
-.parcel-cache/
+# Build outputs
+build/
+dist/
+*.tsbuildinfo
 
-# Test coverage
+# Test outputs
 coverage/
+test-results/
+playwright-report/
 
 # Temporary files
 *.tmp
 *.temp
+temp/
+tmp/
 
-# Output
-output-quiz-updated/
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
-# Backups
-cleanup-backup*/
+# Backup files
+*.backup
+*.bak
+*.old
 
-# Misc
-.env
-.env.*
+# Archive files
+*.zip
+*.tar.gz
+*.rar
 
-# Ignore all dotfiles except .env and .gitignore
-.*
-!.env
-!.gitignore
+# Local environment files
+.env*
+!.env.example
 
-# Exclude git directory
-!.git/
+# Supabase
+.branches
+.temp
+supabase/.branches
+supabase/.temp
+
+# Vercel
+.vercel
+
+# Turbo
+.turbo
